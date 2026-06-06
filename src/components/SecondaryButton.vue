@@ -1,6 +1,7 @@
 <template>
     <button @click="$emit('click')"
-        class="w-full h-9 border border-primary bg-white text-primary font-medium rounded-lg transition-colors cursor-pointer">
+        class="flex items-center justify-center w-full h-9 px-3 border border-primary bg-white text-primary font-medium rounded-lg transition-colors cursor-pointer gap-xs">
+        <slot name="icon"></slot>
         {{ content }}
     </button>
 </template>

@@ -10,7 +10,7 @@ import PositionPage from "../views/PositionPage.vue";
 import EmployeePage from "../views/EmployeePage.vue";
 import RolePage from "../views/RolePage.vue";
 import PermissionPage from "../views/PermissionPage.vue";
-
+import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
 const routes = [
     {
         path: '/',
@@ -64,7 +64,13 @@ const routes = [
         path: '/permissions',
         component: PermissionPage,
         name: 'Permissions'
+    },
+    {
+        path: '/forgot-password',
+        component: ForgotPasswordPage,
+        name: 'ForgotPassword'
     }
+    
 ]
 
 const router = createRouter({
