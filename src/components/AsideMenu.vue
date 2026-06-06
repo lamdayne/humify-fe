@@ -1,5 +1,13 @@
 <template>
-    <aside class="fixed left-0 top-0 h-full w-60 bg-surface flex flex-col py-xl border-r-2 border-slate-200 z-50">
+    <Transition name="fade">
+        <div v-if="open" class="fixed inset-0 bg-black/50 z-40 lg:hidden" @click="$emit('close')" />
+    </Transition>
+    <aside :class="[
+        'fixed left-0 top-0 h-full w-60 bg-surface flex flex-col py-xl border-r-2 border-slate-200 z-50',
+        'transform transition-transform duration-300 ease-in-out',
+        'lg:translate-x-0',
+        open ? 'translate-x-0' : '-translate-x-full'
+    ]">
         <div class="mb-4">
             <h1 class="text-[20px] uppercase text-center">Humfiy</h1>
             <p class="text-center text-lg">Dashboard Management</p>
@@ -13,17 +21,33 @@
                     </span>
                     <span class="font-body-md text-body-md">{{ item.label }}</span>
                 </router-link>
+                <router-link v-if="open"
+                    class="flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 text-red-500">
+                    <span class="font-bold">
+                        <door-open></door-open>
+                    </span>
+                    <span class="font-body-md text-body-md">Logout</span>
+                </router-link>
             </div>
         </nav>
     </aside>
 </template>
 
 <script setup>
-import { Building2, CalendarCheck, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
+import { Building2, CalendarCheck, DoorOpen, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
 import { onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 
 const route = useRoute()
+
+const props = defineProps({
+    open: {
+        type: Boolean,
+        default: false
+    }
+})
+
+defineEmits(['close'])
 
 const menus = [
     {
