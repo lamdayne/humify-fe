@@ -1,5 +1,5 @@
 <template>
-    <span :class="['px-sm py-xs font-label-mono text-label-mono rounded uppercase', getColorByCode(type)]">
+    <span :class="['px-sm py-xs text-xs font-mono font-medium uppercase', getColorByCode(type)]">
         {{ content }}
     </span>
 </template>
