@@ -11,6 +11,7 @@ import EmployeePage from "../views/EmployeePage.vue";
 import RolePage from "../views/RolePage.vue";
 import PermissionPage from "../views/PermissionPage.vue";
 import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
+import EmployeeFormPage from "../views/EmployeeFormPage.vue";
 const routes = [
     {
         path: '/',
@@ -69,8 +70,12 @@ const routes = [
         path: '/forgot-password',
         component: ForgotPasswordPage,
         name: 'ForgotPassword'
+    },
+    {
+        path: '/employee/form',
+        component: EmployeeFormPage,
+        name: 'EmployeeForm'
     }
-    
 ]
 
 const router = createRouter({

@@ -14,7 +14,7 @@
                 </div>
 
                 <div class="w-auto min-w-30">
-                    <PrimaryButton :content="'Add Employee'">
+                    <PrimaryButton :content="'Add Employee'" @click="addEmployee">
                         <template #icon>
                             <Plus class="w-5"></Plus>
                         </template>
@@ -112,6 +112,12 @@ import PrimaryButton from "../components/PrimaryButton.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import PaginationSection from "../components/PaginationSection.vue";
+import { useRouter } from "vue-router";
 
 
+const router = useRouter()
+
+const addEmployee = () => {
+    router.push({ name: 'EmployeeForm' })
+}
 </script>
