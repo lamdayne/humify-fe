@@ -58,7 +58,7 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr v-for="employee in employees" :key="employee.email"
+                            <tr v-if="employees.length > 0" v-for="employee in employees" :key="employee.email"
                                 class="hover:bg-slate-50/40 transition-colors group">
                                 <td class="py-5 px-6">
                                     <span
@@ -92,6 +92,11 @@
                                         <SecondaryButton :content="'View'" />
                                         <PrimaryButton :content="'Edit'" />
                                     </div>
+                                </td>
+                            </tr>
+                            <tr v-else>
+                                <td colspan="7" class="text-center py-6 text-slate-400">
+                                    No data of employee
                                 </td>
                             </tr>
                         </tbody>
