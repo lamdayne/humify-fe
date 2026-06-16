@@ -164,6 +164,7 @@ const handleLogin = async () => {
             showToast(res.data.message || 'Login failed', 'error')
         }
     } catch (error) {
+        console.log("err", error)
         if (error.response) {
             const errorData = error.response.data
             const errorStatus = error.status

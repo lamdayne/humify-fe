@@ -1,12 +1,24 @@
 import { defineStore } from "pinia";
 import axiosInstance from "../axios/axios";
 import { computed, ref } from "vue";
+import { decodeJWT } from "../utils/jwt";
 
 export const useAuthStore = defineStore('auth', () => {
     const accessToken = ref(localStorage.getItem('accessToken') || null)
     const refreshToken = ref(localStorage.getItem('refreshToken') || null)
 
     const isAuthenticated = computed(() => !!accessToken.value)
+
+    const isSystemAdmin = computed(() => {
+        if (!accessToken.value) return false
+
+        try {
+            const payload = decodeJWT(accessToken.value)
+            return payload?.isSystemAdmin === true
+        } catch (e) {
+            return false
+        }
+    })
 
     const login = async (user) => {
         try {
@@ -24,8 +36,7 @@ export const useAuthStore = defineStore('auth', () => {
 
             return res
         } catch (error) {
-            console.error(error)
-            return error
+            throw error
         }
     }
 
@@ -36,8 +47,7 @@ export const useAuthStore = defineStore('auth', () => {
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
         } catch (error) {
-            console.error(error)
-            return error
+            throw error
         }
     }
 
