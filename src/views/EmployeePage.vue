@@ -21,7 +21,8 @@
                     </PrimaryButton>
                 </div>
             </div>
-            <div
+            <TableEmployeeSkeleton v-if="isFirstLoading"></TableEmployeeSkeleton>
+            <div v-if="!isFirstLoading"
                 class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -103,23 +104,25 @@
                     </table>
                 </div>
             </div>
-            <PaginationSection :page-size="pagination.pageNo" :current-page="pagination.pageNo"
-                :item-label="'Employees'" :total-items="pagination.totalItems" :total-page="pagination.totalPages">
+            <PaginationSection :page-size="pagination.pageSize" :current-page="pagination.pageNo"
+                :item-label="'Employees'" :total-items="pagination.totalItems" :total-page="pagination.totalPages"
+                @changePage="handlePageChange">
             </PaginationSection>
         </div>
     </MainContent>
 </template>
 
 <script setup>
-import { ChevronLeft, Eye, Plus } from "@lucide/vue";
+import { ChevronLeft, Circle, Eye, Plus } from "@lucide/vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import { useRouter } from "vue-router";
-import { computed, onMounted, reactive } from "vue";
+import { computed, onMounted, reactive, ref } from "vue";
 import { useEmployeeStore } from "../store/employeeStore.js";
+import TableEmployeeSkeleton from "../components/TableEmployeeSkeleton.vue";
 
 
 const router = useRouter()
@@ -128,9 +131,11 @@ const employeeStore = useEmployeeStore()
 
 const employees = computed(() => employeeStore.employees)
 
+const isFirstLoading = ref(false)
+
 const pagination = reactive({
-    pageNo: 0,
-    pageSize: 0,
+    pageNo: 1,
+    pageSize: 10,
     totalItems: 0,
     totalPages: 0,
     itemLabel: ''
@@ -141,10 +146,24 @@ const addEmployee = () => {
 }
 
 onMounted(async () => {
-    const res = await employeeStore.fetchEmployees()
-    pagination.pageNo = res.data.pageNo
+    isFirstLoading.value = true
+    try {
+        const res = await employeeStore.fetchEmployees(0, pagination.pageSize)
+        pagination.pageNo = res.data.pageNo + 1
+        pagination.pageSize = res.data.pageSize
+        pagination.totalItems = res.data.totalElements
+        pagination.totalPages = res.data.totalPages
+    } finally {
+        isFirstLoading.value = false
+    }
+})
+
+const handlePageChange = async (page) => {
+    pagination.pageNo = page
+    const res = await employeeStore.fetchEmployees(page - 1, pagination.pageSize)
+    pagination.pageNo = res.data.pageNo + 1
     pagination.pageSize = res.data.pageSize
     pagination.totalItems = res.data.totalElements
     pagination.totalPages = res.data.totalPages
-})
+}
 </script>
