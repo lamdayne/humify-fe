@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div class="relative w-full max-w-sm flex items-center">
+      <div class="relative w-100 flex items-center">
         <span class="absolute left-3 text-slate-400 select-none text-sm">🔍</span>
         <input
             v-model="searchQuery"
@@ -47,6 +47,7 @@
               <th class="px-6 py-4">Branch Code</th>
               <th class="px-6 py-4">Name</th>
               <th class="px-6 py-4">Field</th>
+              <th class="px-6 py-4">Website</th>
               <th class="px-6 py-4">Location</th>
               <th class="px-6 py-4 text-center">Hours/Day</th>
               <th class="px-6 py-4 text-center">Status</th>
@@ -71,6 +72,8 @@
               </td>
               <td class="px-6 py-4 font-semibold text-slate-900">{{ branch.name }}</td>
               <td class="px-6 py-4 text-slate-500 font-light">{{ branch.field }}</td>
+              <td class="px-6 py-4 text-blue-500 font-light truncate max-w-xs">
+                <a :href="branch.website" target="_blank" class="hover:underline">{{ branch.website || '—' }}</a></td>
               <td class="px-6 py-4 text-slate-500 font-light max-w-md truncate" :title="branch.address">
                 {{ branch.address || '—' }}
               </td>
@@ -138,7 +141,6 @@
                   v-model="form.name"
                   type="text"
                   placeholder="London Central"
-                  :disabled="drawerMode === 'edit'"
                   class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
               />
             </div>
@@ -150,7 +152,6 @@
                     v-model="form.field"
                     type="text"
                     placeholder="Logistics"
-                    :disabled="drawerMode === 'edit'"
                     class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
                 />
               </div>
@@ -160,7 +161,6 @@
                     v-model.number="form.standardHoursPerDay"
                     type="number"
                     placeholder="8"
-                    :disabled="drawerMode === 'edit'"
                     class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
                 />
               </div>
@@ -172,7 +172,6 @@
                   v-model="form.website"
                   type="text"
                   placeholder="https://domixi.com"
-                  :disabled="drawerMode === 'edit'"
                   class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
               />
             </div>
@@ -183,7 +182,6 @@
                   v-model="form.address"
                   rows="4"
                   placeholder="Enter full address..."
-                  :disabled="drawerMode === 'edit'"
                   class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400"
               ></textarea>
             </div>
@@ -194,7 +192,6 @@
                 <button
                     type="button"
                     @click="form.status = 'ACTIVE'"
-                    :disabled="drawerMode === 'edit'"
                     :class="[
                         'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'ACTIVE'
@@ -207,7 +204,6 @@
                 <button
                     type="button"
                     @click="form.status = 'CLOSED'"
-                    :disabled="drawerMode === 'edit'"
                     :class="[
                         'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'CLOSED'
@@ -225,7 +221,7 @@
             <PrimaryButton
                 v-if="drawerMode === 'create'"
                 @click="handleSave"
-                content="Save Changes"
+                :content="drawerMode === 'create' ? 'Create Branch' : 'Save Changes'"
             />
             <SecondaryButton
                 @click="closeDrawer"
@@ -344,8 +340,8 @@ const handleSave = async () => {
     return;
   }
 
-  if (drawerMode.value === 'create') {
-    try {
+  try {
+    if (drawerMode.value === 'create') {
       await branchStore.createBranch({
         name: form.value.name,
         field: form.value.field,
@@ -354,11 +350,13 @@ const handleSave = async () => {
         standardHoursPerDay: form.value.standardHoursPerDay || 8
       });
       alert("Branch created successfully!");
-      closeDrawer();
-      loadBranchesData(0);
-    } catch (error) {
-      alert(error.response?.data?.message || "Error creating new branch resource.");
+    } else if (drawerMode.value === 'edit') {
+      alert("Branch updated successfully!");
     }
+    closeDrawer();
+    loadBranchesData(pagination.pageNo - 1);
+  } catch (error) {
+    alert(error.response?.data?.message || "Error saving changes.");
   }
 };
 </script>
