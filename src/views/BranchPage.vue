@@ -1,6 +1,6 @@
 <template>
   <MainContent>
-    <div class="w-full space-y-6 pt-4 px-6 text-slate-700">
+    <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
         <div class="flex items-center gap-3">
@@ -29,7 +29,7 @@
         </div>
       </div>
 
-      <div class="relative w-100 flex items-center">
+      <div class="relative w-full max-w-sm flex items-center">
         <span class="absolute left-3 text-slate-400 select-none text-sm">🔍</span>
         <input
             v-model="searchQuery"
@@ -54,10 +54,14 @@
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
-            <tr v-if="filteredBranches.length === 0">
+            <tr v-if="isLoading">
+              <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light animate-pulse">Loading branches data...</td>
+            </tr>
+            <tr v-else-if="filteredBranches.length === 0">
               <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
             </tr>
             <tr
+                v-else
                 v-for="branch in filteredBranches"
                 :key="branch.id"
                 class="hover:bg-slate-50/60 transition-colors"
@@ -71,7 +75,7 @@
                 {{ branch.address || '—' }}
               </td>
               <td class="px-6 py-4 text-center font-mono text-slate-600">
-                {{ branch.standardHoursPerDay?.toFixed(1) }}
+                {{ branch.standardHoursPerDay }}
               </td>
               <td class="px-6 py-4 text-center">
                 <StatusBadge :content="branch.status" :type="branch.status" />
@@ -81,16 +85,9 @@
                   <button
                       @click="openDrawer('edit', branch)"
                       class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer text-sm"
-                      title="Edit Details"
+                      title="View Details"
                   >
                     ✏️
-                  </button>
-                  <button
-                      @click="handleDelete(branch.id)"
-                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer text-sm"
-                      title="Delete"
-                  >
-                    🗑️
                   </button>
                 </div>
               </td>
@@ -101,18 +98,20 @@
 
         <div class="px-6 py-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/50 w-full">
           <span class="text-xs text-slate-400 font-light">
-              Page {{ pagination.pageNo + 1 }} of {{ pagination.totalPages }}
+              Page {{ pagination.pageNo }} of {{ pagination.totalPages }}
           </span>
           <div class="flex gap-2">
             <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
+                @click="handlePageChange(pagination.pageNo - 1)"
+                :disabled="pagination.pageNo === 1 || isLoading"
+                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Previous
             </button>
             <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
+                @click="handlePageChange(pagination.pageNo + 1)"
+                :disabled="pagination.pageNo >= pagination.totalPages || isLoading"
+                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors cursor-pointer"
             >
               Next
             </button>
@@ -127,7 +126,7 @@
 
           <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
             <h3 class="text-lg font-semibold text-slate-900">
-              {{ drawerMode === 'create' ? 'Create Branch' : 'Edit Branch' }}
+              {{ drawerMode === 'create' ? 'Create Branch' : 'Branch Details' }}
             </h3>
             <button @click="closeDrawer" class="text-slate-400 hover:text-slate-900 text-xl font-light cursor-pointer transition-colors">&times;</button>
           </div>
@@ -140,7 +139,7 @@
                   type="text"
                   placeholder="London Central"
                   :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
               />
             </div>
 
@@ -152,7 +151,7 @@
                     type="text"
                     placeholder="Logistics"
                     :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
                 />
               </div>
               <div class="space-y-1">
@@ -162,7 +161,7 @@
                     type="number"
                     placeholder="8"
                     :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
                 />
               </div>
             </div>
@@ -174,7 +173,7 @@
                   type="text"
                   placeholder="https://domixi.com"
                   :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
               />
             </div>
 
@@ -185,7 +184,7 @@
                   rows="4"
                   placeholder="Enter full address..."
                   :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400"
               ></textarea>
             </div>
 
@@ -207,13 +206,13 @@
                 </button>
                 <button
                     type="button"
-                    @click="form.status = 'INACTIVE'"
+                    @click="form.status = 'CLOSED'"
                     :disabled="drawerMode === 'edit'"
                     :class="[
                         'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
-                        form.status === 'INACTIVE'
-                            ? 'bg-slate-100 border-slate-400 text-slate-700 shadow-sm font-semibold'
-                              : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
+                        form.status === 'CLOSED'
+                            ? 'bg-red-50 border-red-600 text-red-600 shadow-sm font-semibold'
+                            : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
                     ]"
                 >
                   Inactive
@@ -243,46 +242,68 @@
 
 <script setup>
 import MainContent from '../components/MainContent.vue'
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import { useBranchStore } from '../store/branchStore.js';
+
+const branchStore = useBranchStore()
 
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
 const isDrawerOpen = ref(false);
 const drawerMode = ref('create');
+const isLoading = ref(false);
 
-const branches = ref([
-  { id: 1, branchCode: 'BR-LON-01', name: 'London Central', field: 'Logistics', address: '22 Baker Street, London, Greater London NW1 6XE, United Kingdom', status: 'ACTIVE', standardHoursPerDay: 8.5, website: 'https://london-humify.com' },
-  { id: 2, branchCode: 'BR-NYC-04', name: 'Manhattan Office', field: 'Corporate', address: 'Fifth Ave, New York, NY', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://nyc-humify.com' },
-  { id: 3, branchCode: 'BR-TOK-09', name: 'Shibuya Annex', field: 'Research', address: '1-2 Shibuya, Tokyo', status: 'INACTIVE', standardHoursPerDay: 9.0, website: 'https://tokyo-humify.com' },
-  { id: 4, branchCode: 'BR-BER-02', name: 'Berlin Hub', field: 'Support', address: 'Mitte District, Berlin', status: 'ACTIVE', standardHoursPerDay: 7.5, website: 'https://berlin-humify.com' },
-  { id: 5, branchCode: 'BR-SYD-12', name: 'Sydney Wharf', field: 'Distribution', address: 'The Rocks, Sydney', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://sydney-humify.com' }
-]);
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalElements: 0,
+  totalPages: 1
+})
 
-const pagination = computed(() => {
-  return {
-    pageNo: 0,
-    totalPages: 1,
-    totalElements: branches.value.length
-  }
-});
+const branches = computed(() => branchStore.branches)
 
 const form = ref({
   name: '',
   field: '',
   website: '',
   address: '',
-  standardHoursPerDay: 8.0,
+  standardHoursPerDay: 8,
   status: 'ACTIVE'
 });
+
+const loadBranchesData = async (page = 0) => {
+  isLoading.value = true
+  try {
+    const res = await branchStore.fetchBranches(page, pagination.pageSize)
+    pagination.pageNo = res.data.pageNo + 1
+    pagination.pageSize = res.data.pageSize
+    pagination.totalElements = res.data.totalElements
+    pagination.totalPages = res.data.totalPages
+  } catch (err) {
+    alert("Failed to load branches from system.");
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadBranchesData(0);
+});
+
+const handlePageChange = (targetPage) => {
+  pagination.pageNo = targetPage
+  loadBranchesData(targetPage - 1)
+}
 
 const filteredBranches = computed(() => {
   let list = branches.value;
 
   if (statusFilter.value !== 'ALL') {
-    list = list.filter(b => b.status === statusFilter.value);
+    const mappedStatus = statusFilter.value === 'INACTIVE' ? 'CLOSED' : 'ACTIVE';
+    list = list.filter(b => b.status === mappedStatus);
   }
 
   if (!searchQuery.value.trim()) {
@@ -306,7 +327,7 @@ const openDrawer = (mode, branchData = null) => {
       field: '',
       website: '',
       address: '',
-      standardHoursPerDay: 8.0,
+      standardHoursPerDay: 8,
       status: 'ACTIVE'
     };
   }
@@ -317,33 +338,27 @@ const closeDrawer = () => {
   isDrawerOpen.value = false;
 };
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!form.value.name || !form.value.field) {
     alert("Please enter a Branch Name and Field.");
     return;
   }
 
   if (drawerMode.value === 'create') {
-    const randomId = Math.floor(Math.random() * 90) + 10;
-    const generatedCode = `BR-${form.value.name.substring(0, 3).toUpperCase()}-${randomId}`;
-
-    branches.value.unshift({
-      id: Date.now(),
-      branchCode: generatedCode,
-      name: form.value.name,
-      field: form.value.field,
-      website: form.value.website,
-      address: form.value.address,
-      status: form.value.status,
-      standardHoursPerDay: form.value.standardHoursPerDay || 8.0
-    });
-  }
-  closeDrawer();
-};
-
-const handleDelete = (id) => {
-  if (confirm("Are you sure you want to delete this branch?")) {
-    branches.value = branches.value.filter(b => b.id !== id);
+    try {
+      await branchStore.createBranch({
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay || 8
+      });
+      alert("Branch created successfully!");
+      closeDrawer();
+      loadBranchesData(0);
+    } catch (error) {
+      alert(error.response?.data?.message || "Error creating new branch resource.");
+    }
   }
 };
 </script>
