@@ -56,10 +56,10 @@
             </thead>
             <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
             <tr v-if="isLoading">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light animate-pulse">Loading branches data...</td>
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light animate-pulse">Loading branches data...</td>
             </tr>
             <tr v-else-if="filteredBranches.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
             </tr>
             <tr
                 v-else
@@ -73,7 +73,8 @@
               <td class="px-6 py-4 font-semibold text-slate-900">{{ branch.name }}</td>
               <td class="px-6 py-4 text-slate-500 font-light">{{ branch.field }}</td>
               <td class="px-6 py-4 text-blue-500 font-light truncate max-w-xs">
-                <a :href="branch.website" target="_blank" class="hover:underline">{{ branch.website || '—' }}</a></td>
+                <a :href="branch.website" target="_blank" class="hover:underline">{{ branch.website || '—' }}</a>
+              </td>
               <td class="px-6 py-4 text-slate-500 font-light max-w-md truncate" :title="branch.address">
                 {{ branch.address || '—' }}
               </td>
@@ -88,9 +89,16 @@
                   <button
                       @click="openDrawer('edit', branch)"
                       class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer text-sm"
-                      title="View Details"
+                      title="Edit Details"
                   >
                     ✏️
+                  </button>
+                  <button
+                      @click="handleDelete(branch.id)"
+                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer text-sm"
+                      title="Delete"
+                  >
+                    🗑️
                   </button>
                 </div>
               </td>
@@ -98,29 +106,17 @@
             </tbody>
           </table>
         </div>
-
-        <div class="px-6 py-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/50 w-full">
-          <span class="text-xs text-slate-400 font-light">
-              Page {{ pagination.pageNo }} of {{ pagination.totalPages }}
-          </span>
-          <div class="flex gap-2">
-            <button
-                @click="handlePageChange(pagination.pageNo - 1)"
-                :disabled="pagination.pageNo === 1 || isLoading"
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              Previous
-            </button>
-            <button
-                @click="handlePageChange(pagination.pageNo + 1)"
-                :disabled="pagination.pageNo >= pagination.totalPages || isLoading"
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-600 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50 transition-colors cursor-pointer"
-            >
-              Next
-            </button>
-          </div>
-        </div>
       </div>
+
+      <PaginationSection
+          :page-size="pagination.pageSize"
+          :current-page="pagination.pageNo"
+          :item-label="'Branches'"
+          :total-items="pagination.totalElements"
+          :total-page="pagination.totalPages"
+          @changePage="handlePageChange"
+      />
+
 
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-xs transition-opacity" @click="closeDrawer"></div>
@@ -129,7 +125,7 @@
 
           <div class="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
             <h3 class="text-lg font-semibold text-slate-900">
-              {{ drawerMode === 'create' ? 'Create Branch' : 'Branch Details' }}
+              {{ drawerMode === 'create' ? 'Create Branch' : 'Edit Branch' }}
             </h3>
             <button @click="closeDrawer" class="text-slate-400 hover:text-slate-900 text-xl font-light cursor-pointer transition-colors">&times;</button>
           </div>
@@ -141,7 +137,7 @@
                   v-model="form.name"
                   type="text"
                   placeholder="London Central"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -152,7 +148,7 @@
                     v-model="form.field"
                     type="text"
                     placeholder="Logistics"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
               <div class="space-y-1">
@@ -161,7 +157,7 @@
                     v-model.number="form.standardHoursPerDay"
                     type="number"
                     placeholder="8"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
             </div>
@@ -172,7 +168,7 @@
                   v-model="form.website"
                   type="text"
                   placeholder="https://domixi.com"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -182,7 +178,7 @@
                   v-model="form.address"
                   rows="4"
                   placeholder="Enter full address..."
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none"
               ></textarea>
             </div>
 
@@ -219,7 +215,6 @@
 
           <div class="border-t border-slate-100 pt-4 mt-4 space-y-2">
             <PrimaryButton
-                v-if="drawerMode === 'create'"
                 @click="handleSave"
                 :content="drawerMode === 'create' ? 'Create Branch' : 'Save Changes'"
             />
@@ -242,6 +237,7 @@ import { ref, computed, onMounted, reactive } from 'vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import PaginationSection from "../components/PaginationSection.vue";
 import { useBranchStore } from '../store/branchStore.js';
 
 const branchStore = useBranchStore()
@@ -293,6 +289,26 @@ const handlePageChange = (targetPage) => {
   pagination.pageNo = targetPage
   loadBranchesData(targetPage - 1)
 }
+
+const handleDelete = async (id) => {
+  if (confirm("Are you sure you want to delete this branch?")) {
+    try {
+      await branchStore.deleteBranchLocal(id)
+
+      pagination.totalElements = Math.max(0, pagination.totalElements - 1)
+
+      pagination.totalPages = Math.ceil(pagination.totalElements / pagination.pageSize) || 1
+
+      alert("Branch deleted successfully!");
+
+      if (filteredBranches.value.length === 0 && pagination.pageNo > 1) {
+        handlePageChange(pagination.pageNo - 1)
+      }
+    } catch (error) {
+      alert("Error deleting branch resources.");
+    }
+  }
+};
 
 const filteredBranches = computed(() => {
   let list = branches.value;
@@ -351,12 +367,12 @@ const handleSave = async () => {
       });
       alert("Branch created successfully!");
     } else if (drawerMode.value === 'edit') {
-      alert("Branch updated successfully!");
+      alert("Branch info simulated to update successfully!");
     }
     closeDrawer();
     loadBranchesData(pagination.pageNo - 1);
   } catch (error) {
-    alert(error.response?.data?.message || "Error saving changes.");
+    alert(error.response?.data?.message || "Error saving branch resources.");
   }
 };
 </script>

@@ -23,10 +23,19 @@ export const useBranchStore = defineStore('branch', () => {
             throw error;
         }
     }
+    const deleteBranchLocal = async (id) => {
+        try {
+
+            branches.value = branches.value.filter(b => b.id !== id)
+        } catch (error) {
+            throw error;
+        }
+    }
 
     return {
         branches,
         fetchBranches,
-        createBranch
+        createBranch,
+        deleteBranchLocal
     }
 })
