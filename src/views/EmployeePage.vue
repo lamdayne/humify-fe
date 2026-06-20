@@ -14,14 +14,15 @@
                 </div>
 
                 <div class="w-auto min-w-30">
-                    <PrimaryButton :content="'Add Employee'">
+                    <PrimaryButton :content="'Add Employee'" @click="addEmployee">
                         <template #icon>
                             <Plus class="w-5"></Plus>
                         </template>
                     </PrimaryButton>
                 </div>
             </div>
-            <div
+            <TableEmployeeSkeleton v-if="isFirstLoading"></TableEmployeeSkeleton>
+            <div v-if="!isFirstLoading"
                 class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
@@ -32,20 +33,20 @@
                                     Employee Code
                                 </th>
                                 <th
-                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
+                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[25%]">
                                     Full name
                                 </th>
                                 <th
-                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[15%]">
-                                    Branch
+                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[25%]">
+                                    Email
                                 </th>
                                 <th
                                     class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[15%]">
-                                    Department
+                                    Start Date
                                 </th>
                                 <th
-                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[15%]">
-                                    Positions
+                                    class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[10%]">
+                                    Gender
                                 </th>
                                 <th
                                     class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[10%]">
@@ -58,35 +59,33 @@
                             </tr>
                         </thead>
                         <tbody class="divide-y divide-slate-100">
-                            <tr class="hover:bg-slate-50/40 transition-colors group">
+                            <tr v-if="employees.length > 0" v-for="employee in employees" :key="employee.email"
+                                class="hover:bg-slate-50/40 transition-colors group">
                                 <td class="py-5 px-6">
                                     <span
                                         class="font-bold text-slate-900 text-[15px] tracking-tight group-hover:text-black transition-colors">
-                                        Test1
+                                        {{ employee.employeeCode }}
                                     </span>
                                 </td>
 
                                 <td class="py-5 px-6 text-sm text-slate-600 font-normal">
-                                    test2
+                                    {{ employee.fullName }}
                                 </td>
 
-                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade"
-                                    :title="'position.description'">
-                                    test3
+                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade">
+                                    {{ employee.email }}
                                 </td>
 
-                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade"
-                                    :title="'position.description'">
-                                    test3
+                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade">
+                                    {{ employee.startDate }}
                                 </td>
 
-                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade"
-                                    :title="'position.description'">
-                                    test3
+                                <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade">
+                                    {{ employee.gender }}
                                 </td>
 
                                 <td class="py-5 px-6 text-xs md:text-sm text-slate-500 font-light whitespace-nowrap">
-                                    <StatusBadge :content="'Check'"></StatusBadge>
+                                    <StatusBadge :content="employee.status"></StatusBadge>
                                 </td>
 
                                 <td class="py-5 px-6 text-right">
@@ -96,22 +95,75 @@
                                     </div>
                                 </td>
                             </tr>
+                            <tr v-else>
+                                <td colspan="7" class="text-center py-6 text-slate-400">
+                                    No data of employee
+                                </td>
+                            </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
-            <PaginationSection></PaginationSection>
+            <PaginationSection :page-size="pagination.pageSize" :current-page="pagination.pageNo"
+                :item-label="'Employees'" :total-items="pagination.totalItems" :total-page="pagination.totalPages"
+                @changePage="handlePageChange">
+            </PaginationSection>
         </div>
     </MainContent>
 </template>
 
 <script setup>
-import { ChevronLeft, Eye, Plus } from "@lucide/vue";
+import { ChevronLeft, Circle, Eye, Plus } from "@lucide/vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
 import StatusBadge from "../components/StatusBadge.vue";
 import PaginationSection from "../components/PaginationSection.vue";
+import { useRouter } from "vue-router";
+import { computed, onMounted, reactive, ref } from "vue";
+import { useEmployeeStore } from "../store/employeeStore.js";
+import TableEmployeeSkeleton from "../components/TableEmployeeSkeleton.vue";
 
 
+const router = useRouter()
+
+const employeeStore = useEmployeeStore()
+
+const employees = computed(() => employeeStore.employees)
+
+const isFirstLoading = ref(false)
+
+const pagination = reactive({
+    pageNo: 1,
+    pageSize: 10,
+    totalItems: 0,
+    totalPages: 0,
+    itemLabel: ''
+})
+
+const addEmployee = () => {
+    router.push({ name: 'EmployeeForm' })
+}
+
+onMounted(async () => {
+    isFirstLoading.value = true
+    try {
+        const res = await employeeStore.fetchEmployees(0, pagination.pageSize)
+        pagination.pageNo = res.data.pageNo + 1
+        pagination.pageSize = res.data.pageSize
+        pagination.totalItems = res.data.totalElements
+        pagination.totalPages = res.data.totalPages
+    } finally {
+        isFirstLoading.value = false
+    }
+})
+
+const handlePageChange = async (page) => {
+    pagination.pageNo = page
+    const res = await employeeStore.fetchEmployees(page - 1, pagination.pageSize)
+    pagination.pageNo = res.data.pageNo + 1
+    pagination.pageSize = res.data.pageSize
+    pagination.totalItems = res.data.totalElements
+    pagination.totalPages = res.data.totalPages
+}
 </script>

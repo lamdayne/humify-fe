@@ -26,7 +26,11 @@
                     <ul class="py-2 text-sm text-gray-700">
                         <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Profile</li>
                         <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Settings</li>
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500">Logout</li>
+                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500">
+                            <button @click="handleLogout">
+                                Logout
+                            </button>
+                        </li>
                     </ul>
                 </div>
             </div>
@@ -36,6 +40,16 @@
 
 <script setup>
 import { Bell, Menu } from '@lucide/vue'
+import { useAuthStore } from '../store/authStore';
+import { useRouter } from 'vue-router';
 
 defineEmits(['toggle-sidebar'])
+
+const router = useRouter()
+const authStore = useAuthStore()
+
+const handleLogout = async () => {
+    authStore.logout()
+    router.push("/login")
+}
 </script>
