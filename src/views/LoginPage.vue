@@ -162,6 +162,7 @@ const handleLogin = async () => {
             router.push(route.query.redirect || { name: 'Dashboard' })
         } else {
             showToast(res.data.message || 'Login failed', 'error')
+            user.companyCode = ''
         }
     } catch (error) {
         console.log("err", error)
@@ -170,6 +171,7 @@ const handleLogin = async () => {
             const errorStatus = error.status
 
             showToast(errorData.message || 'Invalid information', 'error')
+            user.companyCode = ''
         } else {
             showToast('Cannot connect to server', 'error')
         }
@@ -201,8 +203,6 @@ const validateForm = () => {
         return false
     }
 
-    toast.type = 'success'
-    toast.message = 'Login successfully'
     return true
 }
 
@@ -220,6 +220,7 @@ const clearForm = () => {
     isLoading.value = false
     user.email = ''
     user.password = ''
+    user.companyCode = ''
 }
 
 onMounted(() => {

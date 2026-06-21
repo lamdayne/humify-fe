@@ -12,6 +12,7 @@ import RolePage from "../views/RolePage.vue";
 import PermissionPage from "../views/PermissionPage.vue";
 import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
 import EmployeeFormPage from "../views/EmployeeFormPage.vue";
+import VerifyCompanyPage from "../views/VerifyCompanyPage.vue";
 import { useAuthStore } from "../store/authStore.js";
 const routes = [
     {
@@ -26,6 +27,11 @@ const routes = [
     {
         path: '/register',
         component: RegisterPage
+    },
+    {
+        path: '/verify-company',
+        component: VerifyCompanyPage,
+        name: 'VerifyCompany'
     },
     {
         path: '/dashboard',
@@ -111,15 +117,25 @@ const router = createRouter({
     routes
 })
 
-router.beforeEach((to, from, next) => {
+router.beforeEach(async (to, from, next) => {
     const authStore = useAuthStore()
+
+    if (authStore.isAuthenticated && authStore.permissions.length === 0) {
+        try {
+            await authStore.fetchMe()
+        } catch (e) {
+            await authStore.logout()
+            return next({
+                path: '/login',
+                query: { redirect: to.fullPath }
+            })
+        }
+    }
 
     if (to.meta.requiresAuth && !authStore.isAuthenticated) {
         return next({
             path: '/login',
-            query: {
-                redirect: to.fullPath
-            }
+            query: { redirect: to.fullPath }
         })
     }
     next()
