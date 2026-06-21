@@ -114,9 +114,9 @@
                     </div>
                 </div>
             </div>
-            <PaginationSection :page-size="pagination.pageSize" :current-page="pagination.pageNo"
-                :item-label="'Employees'" :total-items="pagination.totalItems" :total-page="pagination.totalPages"
-                @changePage="handlePageChange">
+            <PaginationSection v-if="employees.length > 0" :page-size="pagination.pageSize"
+                :current-page="pagination.pageNo" :item-label="'Employees'" :total-items="pagination.totalItems"
+                :total-page="pagination.totalPages" @changePage="handlePageChange">
             </PaginationSection>
         </div>
     </MainContent>
