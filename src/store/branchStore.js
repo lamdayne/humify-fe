@@ -51,3 +51,4 @@ export const useBranchStore = defineStore('branch', () => {
         deleteBranchLocal
     }
 })
+

@@ -75,19 +75,12 @@
                         Open email app
                     </a>
 
-                    <p class="text-xs text-slate-500 font-light">
-                        Didn't receive the email? 
-                        <button type="button" @click="handleResend" class="text-black underline underline-offset-2 hover:opacity-80 transition-opacity font-medium ml-1">
-                            Click to resend
-                        </button>
-                    </p>
+        
                 </div>
 
             </div>
             
-            <div class="text-[11px] text-slate-400 text-right font-light mt-8">
-                © 2025 Humify
-            </div>
+            
         </div>
     </main>
   </div>

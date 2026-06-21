@@ -1,6 +1,7 @@
 <template>
   <MainContent>
     <div class="p-6 md:p-8 max-w-7xl mx-auto font-sans antialiased text-slate-900 relative">
+      <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show"></ToastMessage>
 
 
       <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between justify-start gap-4 mb-8">
@@ -40,16 +41,14 @@
         </div>
       </div>
 
-      <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
-        <div class="overflow-x-auto">
+      <div class="bg-white border border-slate-200/90 rounded-xl shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+        <div class="w-full">
           <table class="w-full text-left border-collapse">
             <thead>
               <tr class="bg-slate-50/70 border-b border-slate-200/80">
-                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
-                  Position Name</th>
-                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[20%]">Company
-                </th>
                 <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[35%]">
+                  Position Name</th>
+                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[40%]">
                   Description</th>
                 <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[15%]">Created
                   At</th>
@@ -59,16 +58,15 @@
               </tr>
             </thead>
             <tbody class="divide-y divide-slate-100">
+              <tr v-if="positions.length === 0">
+                <td colspan="4" class="px-6 py-12 text-center text-slate-400 font-light">No positions found.</td>
+              </tr>
               <tr v-for="(position, index) in positions" :key="index"
                 class="hover:bg-slate-50/40 transition-colors group">
                 <td class="py-5 px-6">
                   <span
                     class="font-bold text-slate-900 text-[15px] tracking-tight group-hover:text-black transition-colors">{{
                       position.name }}</span>
-                </td>
-
-                <td class="py-5 px-6 text-sm text-slate-600 font-normal">
-                  {{ position.company }}
                 </td>
 
                 <td class="py-5 px-6 text-sm text-slate-400 font-light max-w-xs truncate animate-fade"
@@ -80,42 +78,45 @@
                   {{ position.createdAt }}
                 </td>
 
-                <td class="py-5 px-6 text-right">
+                <td class="py-5 px-6 text-right relative">
                   <button
-                    class="text-slate-400 hover:text-black p-1.5 rounded-md hover:bg-slate-100 transition-all duration-150"
-                    title="More Actions">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
-                      stroke="currentColor" class="w-5 h-5">
-                      <path stroke-linecap="round" stroke-linejoin="round"
-                        d="M6.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM12.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM18.75 12a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z" />
-                    </svg>
+                    @click.stop="toggleDropdown(position.id)"
+                    class="text-slate-400 hover:text-black p-2 rounded-full hover:bg-slate-100 transition-all duration-200 cursor-pointer focus:outline-none flex items-center justify-center"
+                    title="Actions">
+                    <MoreVertical class="w-5 h-5" />
                   </button>
+
+                  <div v-if="activeDropdownId === position.id"
+                    class="absolute right-6 mt-1 w-24 bg-white border border-slate-200/90 rounded-lg shadow-xl z-50 py-1 text-left">
+                    <button type="button" @click="viewDetails(position)"
+                      class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer">
+                      <Eye class="w-3.5 h-3.5" /> Detail
+                    </button>
+                    <button type="button" @click="openEditModal(position)"
+                      class="w-full text-left px-3 py-2 text-xs text-slate-700 hover:bg-slate-50 transition-colors flex items-center gap-1.5 cursor-pointer">
+                      <Pencil class="w-3.5 h-3.5" /> Edit
+                    </button>
+                    <button type="button" @click="confirmDelete(position.id)"
+                      class="w-full text-left px-3 py-2 text-xs text-red-600 hover:bg-red-50 transition-colors flex items-center gap-1.5 cursor-pointer">
+                      <Trash2 class="w-3.5 h-3.5" /> Delete
+                    </button>
+                  </div>
                 </td>
               </tr>
             </tbody>
           </table>
         </div>
+      </div>
 
-        <div
-          class="bg-slate-50/50 border-t border-slate-100 px-6 py-4 flex items-center justify-between text-xs text-slate-400 font-light">
-          <span>Showing {{ positions.length }} of {{ totalPositions }} positions</span>
-          <div class="flex items-center gap-2">
-            <button
-              class="border border-slate-200 hover:border-slate-300 hover:text-slate-800 rounded p-1.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-150 cursor-pointer active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-3.5 h-3.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-              </svg>
-            </button>
-            <button
-              class="border border-slate-200 hover:border-slate-300 hover:text-slate-800 rounded p-1.5 bg-white shadow-[0_1px_2px_rgba(0,0,0,0.02)] transition-all duration-150 cursor-pointer active:scale-95">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
-                stroke="currentColor" class="w-3.5 h-3.5">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
-              </svg>
-            </button>
-          </div>
-        </div>
+      <div class="mt-6">
+        <PaginationSection
+          :current-page="currentPage + 1"
+          :total-items="totalPositions"
+          :total-page="totalPages"
+          :page-size="pageSize"
+          :item-label="'positions'"
+          @changePage="(page) => loadPositions(page - 1)"
+        />
       </div>
 
     </div>
@@ -133,7 +134,9 @@
 
 
         <div class="px-6 py-4.5 border-b border-slate-100 flex items-center justify-between bg-white">
-          <h2 class="text-[17px] font-semibold text-slate-900 tracking-tight">Add New Position</h2>
+          <h2 class="text-[17px] font-semibold text-slate-900 tracking-tight">
+            {{ modalMode === 'create' ? 'Add New Position' : (modalMode === 'edit' ? 'Update Position' : 'Position Details') }}
+          </h2>
           <button @click="closeModal" class="text-slate-400 hover:text-black p-1 rounded-md transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.8"
               stroke="currentColor" class="w-4.5 h-4.5">
@@ -147,7 +150,8 @@
               <label for="position_name"
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Position Name</label>
               <input type="text" id="position_name" v-model="form.name" placeholder="e.g. Senior Frontend Developer"
-                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
+                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+                :disabled="modalMode === 'view'"
                 required />
             </div>
 
@@ -156,18 +160,19 @@
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
               <textarea id="description" v-model="form.description" rows="4"
                 placeholder="Briefly describe the key responsibilities..."
-                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
+                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+                :disabled="modalMode === 'view'"></textarea>
             </div>
           </div>
 
           <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white">
             <button type="button" @click="closeModal"
               class="px-5 py-2.5 text-xs font-medium text-slate-800 hover:bg-slate-50 border border-slate-200 rounded-md transition-all duration-150">
-              Cancel
+              {{ modalMode === 'view' ? 'Close' : 'Cancel' }}
             </button>
-            <button type="submit"
+            <button v-if="modalMode !== 'view'" type="submit"
               class="bg-black hover:bg-slate-900 text-white text-xs font-semibold py-2.5 px-5 rounded-md transition-all duration-200 shadow-sm active:scale-[0.98]">
-              Save Position
+              {{ modalMode === 'create' ? 'Save Position' : 'Update Position' }}
             </button>
           </div>
         </form>
@@ -175,89 +180,203 @@
       </div>
     </div>
   </Teleport>
+
+  <ModalGeneric
+    v-model="isDeleteModalOpen"
+    title="Confirm Delete"
+    width="440px"
+  >
+    <div class="space-y-3">
+      <p class="text-sm text-slate-500 font-light leading-relaxed">
+        Are you sure you want to delete this position? This action cannot be undone.
+      </p>
+    </div>
+    <template #footer>
+      <button
+        type="button"
+        @click="isDeleteModalOpen = false"
+        class="px-4 py-2 text-xs font-medium text-slate-800 hover:bg-slate-50 border border-slate-200 rounded-md transition-all duration-150 cursor-pointer"
+      >
+        Cancel
+      </button>
+      <button
+        type="button"
+        @click="handleConfirmDelete"
+        class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2 px-4 rounded-md transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+      >
+        Delete
+      </button>
+    </template>
+  </ModalGeneric>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive, onMounted, onUnmounted } from 'vue';
+import { MoreVertical, Eye, Pencil, Trash2 } from '@lucide/vue';
+import { storeToRefs } from 'pinia';
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
+import ToastMessage from "../components/ToastMessage.vue";
+import PaginationSection from "../components/PaginationSection.vue";
+import ModalGeneric from "../components/ModalGeneric.vue";
+import { usePositionStore } from "../store/positionStore.js";
+
+// 1. Khởi tạo store
+const positionStore = usePositionStore();
+
+// 2. Kéo dữ liệu từ Store ra để hiển thị lên giao diện
+// Dùng storeToRefs để đảm bảo tính react (dữ liệu thay đổi thì giao diện đổi theo)
+const { positions, totalPositions, openVacancies } = storeToRefs(positionStore);
 
 const isModalOpen = ref(false);
-const totalPositions = ref(24);
-const openVacancies = ref(8);
+const isDeleteModalOpen = ref(false);
+const positionIdToDelete = ref(null);
+const modalMode = ref('create'); // 'create', 'edit', 'view'
 
+const currentPage = ref(0);
+const pageSize = ref(10);
+const totalPages = ref(1);
 
-const companies = ref([
-  { id: 1, name: 'Humify Inc.' },
-  { id: 2, name: 'Humify Tech' },
-  { id: 3, name: 'Humify Global' }
-]);
+const activeDropdownId = ref(null);
 
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success'
+});
+
+const showToast = (message, type = 'success') => {
+  toast.message = message;
+  toast.type = type;
+  toast.show = true;
+  setTimeout(() => {
+    toast.show = false;
+  }, 3000);
+};
+
+const loadPositions = async (page = 0) => {
+  try {
+    const res = await positionStore.fetchPositions(page, pageSize.value);
+    currentPage.value = res.data.pageNo;
+    totalPages.value = res.data.totalPages;
+  } catch (error) {
+    console.error("Error loading positions:", error);
+  }
+};
+
+const toggleDropdown = (id) => {
+  activeDropdownId.value = activeDropdownId.value === id ? null : id;
+};
+
+const closeDropdown = () => {
+  activeDropdownId.value = null;
+};
+
+onMounted(async () => {
+  await loadPositions(0);
+  window.addEventListener('click', closeDropdown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener('click', closeDropdown);
+});
 
 const form = ref({
+  id: null,
   name: '',
-  company: 'Humify Inc.',
   description: ''
 });
 
-const positions = ref([
-  {
-    name: 'Senior Product Designer',
-    company: 'Humify Inc.',
-    description: 'Lead the design system initiatives and core platform...',
-    createdAt: 'Oct 12, 2023'
-  },
-  {
-    name: 'Engineering Manager',
-    company: 'Humify Inc.',
-    description: 'Scaling our infrastructure and mentoring a team of 1...',
-    createdAt: 'Sep 28, 2023'
-  },
-  {
-    name: 'HR Operations Specialist',
-    company: 'Humify Inc.',
-    description: 'Managing employee lifecycle and compliance report...',
-    createdAt: 'Nov 05, 2023'
-  },
-  {
-    name: 'Backend Developer',
-    company: 'Humify Inc.',
-    description: 'Working with Node.js and Postgres to build high-pe...',
-    createdAt: 'Dec 01, 2023'
-  }
-]);
-
 const openModal = () => {
+  modalMode.value = 'create';
+  form.value = {
+    id: null,
+    name: '',
+    description: ''
+  };
+  isModalOpen.value = true;
+};
+
+const openEditModal = (position) => {
+  modalMode.value = 'edit';
+  form.value = {
+    id: position.id,
+    name: position.name,
+    description: position.description
+  };
+  isModalOpen.value = true;
+};
+
+const viewDetails = (position) => {
+  modalMode.value = 'view';
+  form.value = {
+    id: position.id,
+    name: position.name,
+    description: position.description
+  };
   isModalOpen.value = true;
 };
 
 const closeModal = () => {
   isModalOpen.value = false;
-  form.value = {
-    name: '',
-    company: 'Humify Inc.',
-    description: ''
+  form.value = { 
+    id: null,
+    name: '', 
+    description: '' 
   };
 };
 
-const getFormattedDate = () => {
-  const options = { year: 'numeric', month: 'short', day: '2-digit' };
-  return new Date().toLocaleDateString('en-US', options);
+const confirmDelete = (id) => {
+  positionIdToDelete.value = id;
+  isDeleteModalOpen.value = true;
 };
 
-const handleSubmit = () => {
-  if (form.value.name && form.value.company) {
-    positions.value.unshift({
+const handleConfirmDelete = async () => {
+  if (!positionIdToDelete.value) return;
+  const result = await positionStore.deletePosition(positionIdToDelete.value);
+  if (result.success) {
+    showToast("Position deleted successfully!", "success");
+    await loadPositions(currentPage.value);
+  } else {
+    showToast("Error: " + result.message, "error");
+  }
+  isDeleteModalOpen.value = false;
+  positionIdToDelete.value = null;
+};
+
+// 3. Hàm gọi API thông qua Store
+const handleSubmit = async () => {
+  if (!form.value.name || !form.value.description) {
+    showToast("Please fill in all required fields!", "error");
+    return;
+  }
+
+  if (modalMode.value === 'create') {
+    const result = await positionStore.createPosition({
       name: form.value.name,
-      company: form.value.company,
-      description: form.value.description,
-      createdAt: getFormattedDate()
+      description: form.value.description
     });
 
-    totalPositions.value += 1;
-    openVacancies.value += 1;
+    if (result.success) {
+      showToast("Position created successfully!", "success");
+      closeModal();
+      await loadPositions(currentPage.value);
+    } else {
+      showToast("Error: " + result.message, "error");
+    }
+  } else if (modalMode.value === 'edit') {
+    const result = await positionStore.updatePosition(form.value.id, {
+      name: form.value.name,
+      description: form.value.description
+    });
 
-    closeModal();
+    if (result.success) {
+      showToast("Position updated successfully!", "success");
+      closeModal();
+      await loadPositions(currentPage.value);
+    } else {
+      showToast("Error: " + result.message, "error");
+    }
   }
 };
 </script>

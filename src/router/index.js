@@ -12,6 +12,7 @@ import RolePage from "../views/RolePage.vue";
 import PermissionPage from "../views/PermissionPage.vue";
 import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
 import EmployeeFormPage from "../views/EmployeeFormPage.vue";
+import ResetPasswordPage from "../views/ResetPasswordPage.vue";
 import VerifyCompanyPage from "../views/VerifyCompanyPage.vue";
 import { useAuthStore } from "../store/authStore.js";
 const routes = [
@@ -109,6 +110,12 @@ const routes = [
         meta: {
             requiresAuth: true
         }
+    }
+    ,
+    {
+        path: '/reset-password',
+        component: ResetPasswordPage,
+        name: 'ResetPassword'
     }
 ]
 
