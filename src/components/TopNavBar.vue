@@ -24,8 +24,7 @@
                             group-hover:opacity-100 group-hover:visible
                             transition-all duration-200 z-50">
                     <ul class="py-2 text-sm text-gray-700">
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Profile</li>
-                        <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer">Settings</li>
+                        <li class="px-4 py-2 hover:bg-gray-100">{{ userInfo.email }}</li>
                         <li class="px-4 py-2 hover:bg-gray-100 cursor-pointer text-red-500">
                             <button @click="handleLogout">
                                 Logout
@@ -42,11 +41,14 @@
 import { Bell, Menu } from '@lucide/vue'
 import { useAuthStore } from '../store/authStore';
 import { useRouter } from 'vue-router';
+import { computed } from "vue";
 
 defineEmits(['toggle-sidebar'])
 
 const router = useRouter()
 const authStore = useAuthStore()
+
+const userInfo = computed(() => authStore.user)
 
 const handleLogout = async () => {
     authStore.logout()
