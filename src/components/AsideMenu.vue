@@ -14,7 +14,7 @@
         </div>
         <nav class="flex-1">
             <div class="flex flex-col">
-                <router-link v-for="item in menus" :key="item.name" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
+                <router-link v-for="item in visibleMenus" :key="item.name" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
                     isActive(item.name) ? 'border-r-2 border-primary' : '']">
                     <span class="font-bold">
                         <component :is="item.icon"></component>
@@ -35,10 +35,12 @@
 
 <script setup>
 import { Building2, CalendarCheck, DoorOpen, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
-import { onMounted } from 'vue';
+import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
+import { useAuthStore } from '../store/authStore';
 
 const route = useRoute()
+const authStore = useAuthStore()
 
 const props = defineProps({
     open: {
@@ -53,44 +55,60 @@ const menus = [
     {
         label: 'Overview',
         icon: LayoutDashboard,
-        name: 'Dashboard'
+        name: 'Dashboard',
+        permission: null
     },
     {
         label: 'Attendance',
         icon: CalendarCheck,
-        name: 'Attendance'
+        name: 'Attendance',
+        permission: 'ATTENDANCE'
     },
     {
         label: 'Branches',
         icon: Building2,
-        name: 'Branches'
+        name: 'Branches',
+        permission: 'BRANCH'
     },
     {
         label: 'Department',
         icon: Network,
-        name: 'Departments'
+        name: 'Departments',
+        permission: 'DEPARTMENT'
     },
     {
         label: 'Positions',
         icon: IdCardLanyard,
-        name: 'Positions'
+        name: 'Positions',
+        permission: 'POSITION'
     },
     {
         label: 'Employees',
         icon: Users,
-        name: 'Employees'
+        name: 'Employees',
+        permission: 'EMPLOYEE'
     },
     {
         label: 'Role',
         icon: UserLock,
-        name: 'Roles'
+        name: 'Roles',
+        permission: 'ROLE'
     },
     {
         label: 'Permission',
         icon: ShieldCogCorner,
-        name: 'Permissions'
+        name: 'Permissions',
+        permission: 'PERMISSION'
     }
 ]
+
+const visibleMenus = computed(() => {
+    return menus.filter(item => {
+        if (!item.permission) return true
+        if (authStore.isSystemAdmin) return true
+        return authStore.canView(item.permission)
+    })
+})
 
 const isActive = (name) => route.name?.toString().startsWith(name)
 </script>
