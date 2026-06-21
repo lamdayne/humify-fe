@@ -1,8 +1,51 @@
 <template>
   <MainContent>
-    <div class="w-full space-y-6 pt-4 px-6 text-slate-700">
+    <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
 
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+      <!-- TOAST THÔNG BÁO THƯỜNG (Thành công / Thất bại) -->
+      <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show"></ToastMessage>
+
+      <!-- ĐÃ THAY THẾ: Sử dụng ModelGeneric xịn sò làm Dialog xác nhận xóa chính giữa màn hình -->
+      <ModalGeneric
+          v-model="deleteModal.show"
+          title="Delete Branch"
+          width="440px"
+          :closeOnBackdrop="true"
+      >
+        <!-- Phần Body lọt vào default slot -->
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+            <HelpCircle class="w-5 h-5" />
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm text-slate-600 font-normal leading-relaxed">
+              Are you sure you want to delete this branch?
+            </p>
+            <p class="text-xs text-slate-400 font-light">
+              This action cannot be undone and all associated employee assignments might be affected.
+            </p>
+          </div>
+        </div>
+
+        <!-- Phần nút bấm lọt vào slot name="footer" -->
+        <template #footer>
+          <button
+              @click="handleCancelDelete"
+              class="px-4 py-2 border border-slate-200 text-xs font-medium rounded-lg text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+              @click="handleConfirmDelete"
+              class="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Delete Branch
+          </button>
+        </template>
+      </ModalGeneric>
+
+      <!-- THANH TIÊU ĐỀ -->
+      <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Branches</h1>
           <span class="bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-bold rounded-md border border-slate-200 shadow-sm">
@@ -29,8 +72,9 @@
         </div>
       </div>
 
+      <!-- THANH TÌM KIẾM -->
       <div class="relative w-100 flex items-center">
-        <span class="absolute left-3 text-slate-400 select-none text-sm">🔍</span>
+        <span class="absolute left-3 text-slate-400 select-none text-sm"> <Search class="w-4 h-4" /> </span>
         <input
             v-model="searchQuery"
             type="text"
@@ -39,6 +83,7 @@
         />
       </div>
 
+      <!-- BẢNG DỮ LIỆU -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse">
@@ -47,6 +92,7 @@
               <th class="px-6 py-4">Branch Code</th>
               <th class="px-6 py-4">Name</th>
               <th class="px-6 py-4">Field</th>
+              <th class="px-6 py-4">Website</th>
               <th class="px-6 py-4">Location</th>
               <th class="px-6 py-4 text-center">Hours/Day</th>
               <th class="px-6 py-4 text-center">Status</th>
@@ -54,10 +100,14 @@
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
-            <tr v-if="filteredBranches.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
+            <tr v-if="isLoading">
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light animate-pulse">Loading branches data...</td>
+            </tr>
+            <tr v-else-if="filteredBranches.length === 0">
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
             </tr>
             <tr
+                v-else
                 v-for="branch in filteredBranches"
                 :key="branch.id"
                 class="hover:bg-slate-50/60 transition-colors"
@@ -67,30 +117,33 @@
               </td>
               <td class="px-6 py-4 font-semibold text-slate-900">{{ branch.name }}</td>
               <td class="px-6 py-4 text-slate-500 font-light">{{ branch.field }}</td>
+              <td class="px-6 py-4 text-blue-500 font-light truncate max-w-xs">
+                <a :href="branch.website" target="_blank" class="hover:underline">{{ branch.website || '—' }}</a>
+              </td>
               <td class="px-6 py-4 text-slate-500 font-light max-w-md truncate" :title="branch.address">
                 {{ branch.address || '—' }}
               </td>
               <td class="px-6 py-4 text-center font-mono text-slate-600">
-                {{ branch.standardHoursPerDay?.toFixed(1) }}
+                {{ branch.standardHoursPerDay }}
               </td>
               <td class="px-6 py-4 text-center">
                 <StatusBadge :content="branch.status" :type="branch.status" />
               </td>
               <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-3">
+                <div class="flex items-center justify-center gap-4">
                   <button
                       @click="openDrawer('edit', branch)"
-                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
                       title="Edit Details"
                   >
-                    ✏️
+                    <Pencil class="w-4 h-4" />
                   </button>
                   <button
                       @click="handleDelete(branch.id)"
-                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                       title="Delete"
                   >
-                    🗑️
+                    <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -98,28 +151,19 @@
             </tbody>
           </table>
         </div>
-
-        <div class="px-6 py-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/50 w-full">
-          <span class="text-xs text-slate-400 font-light">
-              Page {{ pagination.pageNo + 1 }} of {{ pagination.totalPages }}
-          </span>
-          <div class="flex gap-2">
-            <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
       </div>
 
+      <!-- PHÂN TRANG -->
+      <PaginationSection
+          :page-size="pagination.pageSize"
+          :current-page="pagination.pageNo"
+          :item-label="'Branches'"
+          :total-items="pagination.totalElements"
+          :total-page="pagination.totalPages"
+          @changePage="handlePageChange"
+      />
+
+      <!-- DRAWER OVERLAY -->
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-xs transition-opacity" @click="closeDrawer"></div>
 
@@ -139,8 +183,7 @@
                   v-model="form.name"
                   type="text"
                   placeholder="London Central"
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -151,8 +194,7 @@
                     v-model="form.field"
                     type="text"
                     placeholder="Logistics"
-                    :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
               <div class="space-y-1">
@@ -161,8 +203,7 @@
                     v-model.number="form.standardHoursPerDay"
                     type="number"
                     placeholder="8"
-                    :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
             </div>
@@ -173,8 +214,7 @@
                   v-model="form.website"
                   type="text"
                   placeholder="https://domixi.com"
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -184,8 +224,7 @@
                   v-model="form.address"
                   rows="4"
                   placeholder="Enter full address..."
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none"
               ></textarea>
             </div>
 
@@ -195,7 +234,6 @@
                 <button
                     type="button"
                     @click="form.status = 'ACTIVE'"
-                    :disabled="drawerMode === 'edit'"
                     :class="[
                         'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'ACTIVE'
@@ -207,13 +245,12 @@
                 </button>
                 <button
                     type="button"
-                    @click="form.status = 'INACTIVE'"
-                    :disabled="drawerMode === 'edit'"
+                    @click="form.status = 'CLOSED'"
                     :class="[
                         'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
-                        form.status === 'INACTIVE'
-                            ? 'bg-slate-100 border-slate-400 text-slate-700 shadow-sm font-semibold'
-                              : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
+                        form.status === 'CLOSED'
+                            ? 'bg-red-50 border-red-600 text-red-600 shadow-sm font-semibold'
+                            : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
                     ]"
                 >
                   Inactive
@@ -224,9 +261,8 @@
 
           <div class="border-t border-slate-100 pt-4 mt-4 space-y-2">
             <PrimaryButton
-                v-if="drawerMode === 'create'"
                 @click="handleSave"
-                content="Save Changes"
+                :content="drawerMode === 'create' ? 'Create Branch' : 'Save Changes'"
             />
             <SecondaryButton
                 @click="closeDrawer"
@@ -243,46 +279,128 @@
 
 <script setup>
 import MainContent from '../components/MainContent.vue'
-import { ref, computed } from 'vue';
+import { ref, computed, onMounted, reactive } from 'vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import PaginationSection from "../components/PaginationSection.vue";
+import ToastMessage from '../components/ToastMessage.vue';
+import ModalGeneric from '../components/ModalGeneric.vue';
+import { useBranchStore } from '../store/branchStore.js';
+import { Pencil, Trash2, HelpCircle, Search } from '@lucide/vue';
+
+const branchStore = useBranchStore()
 
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
 const isDrawerOpen = ref(false);
 const drawerMode = ref('create');
+const isLoading = ref(false);
 
-const branches = ref([
-  { id: 1, branchCode: 'BR-LON-01', name: 'London Central', field: 'Logistics', address: '22 Baker Street, London, Greater London NW1 6XE, United Kingdom', status: 'ACTIVE', standardHoursPerDay: 8.5, website: 'https://london-humify.com' },
-  { id: 2, branchCode: 'BR-NYC-04', name: 'Manhattan Office', field: 'Corporate', address: 'Fifth Ave, New York, NY', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://nyc-humify.com' },
-  { id: 3, branchCode: 'BR-TOK-09', name: 'Shibuya Annex', field: 'Research', address: '1-2 Shibuya, Tokyo', status: 'INACTIVE', standardHoursPerDay: 9.0, website: 'https://tokyo-humify.com' },
-  { id: 4, branchCode: 'BR-BER-02', name: 'Berlin Hub', field: 'Support', address: 'Mitte District, Berlin', status: 'ACTIVE', standardHoursPerDay: 7.5, website: 'https://berlin-humify.com' },
-  { id: 5, branchCode: 'BR-SYD-12', name: 'Sydney Wharf', field: 'Distribution', address: 'The Rocks, Sydney', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://sydney-humify.com' }
-]);
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalElements: 0,
+  totalPages: 1
+})
 
-const pagination = computed(() => {
-  return {
-    pageNo: 0,
-    totalPages: 1,
-    totalElements: branches.value.length
-  }
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success'
 });
+
+// Cấu hình lại biến kiểm soát trạng thái Modal xác nhận xóa
+const deleteModal = reactive({
+  show: false,
+  targetId: null
+});
+
+const triggerToast = (message, type = 'success') => {
+  toast.message = message;
+  toast.type = type;
+  toast.show = true;
+  setTimeout(() => {
+    toast.show = false;
+  }, 3500);
+};
+
+const branches = computed(() => branchStore.branches)
 
 const form = ref({
   name: '',
   field: '',
   website: '',
   address: '',
-  standardHoursPerDay: 8.0,
+  standardHoursPerDay: 8,
   status: 'ACTIVE'
 });
+
+const loadBranchesData = async (page = 0) => {
+  isLoading.value = true
+  try {
+    const res = await branchStore.fetchBranches(page, pagination.pageSize)
+    pagination.pageNo = res.data.pageNo + 1
+    pagination.pageSize = res.data.pageSize
+    pagination.totalElements = res.data.totalElements
+    pagination.totalPages = res.data.totalPages
+  } catch (err) {
+    triggerToast("Failed to load branches from system.", "error");
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadBranchesData(0);
+});
+
+const handlePageChange = (targetPage) => {
+  pagination.pageNo = targetPage
+  loadBranchesData(targetPage - 1)
+}
+
+// Bấm nút xóa: Kích hoạt hiện ModelGeneric chính giữa màn hình
+const handleDelete = (id) => {
+  deleteModal.targetId = id;
+  deleteModal.show = true;
+};
+
+// Người dùng bấm nút đỏ "Delete Branch" bên trong ModelGeneric
+const handleConfirmDelete = async () => {
+  if (deleteModal.targetId) {
+    try {
+      await branchStore.deleteBranchLocal(deleteModal.targetId)
+      pagination.totalElements = Math.max(0, pagination.totalElements - 1)
+      pagination.totalPages = Math.ceil(pagination.totalElements / pagination.pageSize) || 1
+
+      handleCancelDelete(); // Đóng Modal
+
+      // Hiện thông báo đen thành công chuẩn chỉ của dự án
+      triggerToast("Branch info deleted successfully!", "success");
+
+      if (filteredBranches.value.length === 0 && pagination.pageNo > 1) {
+        handlePageChange(pagination.pageNo - 1)
+      }
+    } catch (error) {
+      handleCancelDelete();
+      triggerToast("Error deleting branch resources.", "error");
+    }
+  }
+};
+
+// Hủy bỏ thao tác xóa
+const handleCancelDelete = () => {
+  deleteModal.show = false;
+  deleteModal.targetId = null;
+};
 
 const filteredBranches = computed(() => {
   let list = branches.value;
 
   if (statusFilter.value !== 'ALL') {
-    list = list.filter(b => b.status === statusFilter.value);
+    const mappedStatus = statusFilter.value === 'INACTIVE' ? 'CLOSED' : 'ACTIVE';
+    list = list.filter(b => b.status === mappedStatus);
   }
 
   if (!searchQuery.value.trim()) {
@@ -306,7 +424,7 @@ const openDrawer = (mode, branchData = null) => {
       field: '',
       website: '',
       address: '',
-      standardHoursPerDay: 8.0,
+      standardHoursPerDay: 8,
       status: 'ACTIVE'
     };
   }
@@ -317,33 +435,37 @@ const closeDrawer = () => {
   isDrawerOpen.value = false;
 };
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!form.value.name || !form.value.field) {
-    alert("Please enter a Branch Name and Field.");
+    triggerToast("Please enter a Branch Name and Field.", "error");
     return;
   }
 
-  if (drawerMode.value === 'create') {
-    const randomId = Math.floor(Math.random() * 90) + 10;
-    const generatedCode = `BR-${form.value.name.substring(0, 3).toUpperCase()}-${randomId}`;
-
-    branches.value.unshift({
-      id: Date.now(),
-      branchCode: generatedCode,
-      name: form.value.name,
-      field: form.value.field,
-      website: form.value.website,
-      address: form.value.address,
-      status: form.value.status,
-      standardHoursPerDay: form.value.standardHoursPerDay || 8.0
-    });
-  }
-  closeDrawer();
-};
-
-const handleDelete = (id) => {
-  if (confirm("Are you sure you want to delete this branch?")) {
-    branches.value = branches.value.filter(b => b.id !== id);
+  try {
+    if (drawerMode.value === 'create') {
+      await branchStore.createBranch({
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay || 8
+      });
+      triggerToast("Branch created successfully!", "success");
+    } else if (drawerMode.value === 'edit') {
+      await branchStore.updateBranch(form.value.id, {
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay,
+        status: form.value.status
+      });
+      triggerToast("Branch info updated successfully!", "success");
+    }
+    closeDrawer();
+    loadBranchesData(pagination.pageNo - 1);
+  } catch (error) {
+    triggerToast(error.response?.data?.message || "Error saving branch resources.", "error");
   }
 };
 </script>
