@@ -4,10 +4,13 @@ import { computed, ref } from "vue";
 import { decodeJWT } from "../utils/jwt";
 
 export const useAuthStore = defineStore('auth', () => {
+    const user = ref(null)
     const accessToken = ref(localStorage.getItem('accessToken') || null)
     const refreshToken = ref(localStorage.getItem('refreshToken') || null)
 
     const isAuthenticated = computed(() => !!accessToken.value)
+
+    const permissions = ref([])
 
     const isSystemAdmin = computed(() => {
         if (!accessToken.value) return false
@@ -19,6 +22,9 @@ export const useAuthStore = defineStore('auth', () => {
             return false
         }
     })
+
+    const canView = (resources) => permissions.value.includes(`${resources}_READ`)
+        || permissions.value.includes(`${resources}_FULL`)
 
     const login = async (user) => {
         try {
@@ -34,6 +40,8 @@ export const useAuthStore = defineStore('auth', () => {
             localStorage.setItem('accessToken', at)
             localStorage.setItem('refreshToken', rt)
 
+            await fetchMe()
+
             return res
         } catch (error) {
             throw error
@@ -44,8 +52,47 @@ export const useAuthStore = defineStore('auth', () => {
         try {
             accessToken.value = null
             refreshToken.value = null
+            permissions.value = []
+
             localStorage.removeItem('accessToken')
             localStorage.removeItem('refreshToken')
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const fetchMe = async () => {
+        try {
+            const res = await axiosInstance.get("/auth/me")
+            permissions.value = res.data?.data?.permissions;
+            user.value = res.data.data
+            return res
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const verifyCompany = async (token) => {
+        try {
+            const res = await axiosInstance.post('/auth/verify-company', null, {
+                headers: {
+                    'x-verify-token': token
+                }
+            })
+            return res
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const resendVerifyCompany = async (token) => {
+        try {
+            const res = await axiosInstance.post('/auth/resend-verify', null, {
+                headers: {
+                    'x-verify-token': token
+                }
+            })
+            return res
         } catch (error) {
             throw error
         }
@@ -54,6 +101,16 @@ export const useAuthStore = defineStore('auth', () => {
     return {
         login,
         isAuthenticated,
-        logout
+        logout,
+        permissions,
+        isSystemAdmin,
+        accessToken,
+        refreshToken,
+        fetchMe,
+        canView,
+        user,
+        verifyCompany,
+        resendVerifyCompany
     }
-})
+}
+)

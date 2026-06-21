@@ -1,13 +1,55 @@
 <template>
   <MainContent>
     <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
-      <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show"></ToastMessage>
 
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+      <!-- TOAST THÔNG BÁO THƯỜNG (Thành công / Thất bại) -->
+      <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show"></ToastMessage>
+
+      <!-- ĐÃ THAY THẾ: Sử dụng ModelGeneric xịn sò làm Dialog xác nhận xóa chính giữa màn hình -->
+      <ModalGeneric
+          v-model="deleteModal.show"
+          title="Delete Branch"
+          width="440px"
+          :closeOnBackdrop="true"
+      >
+        <!-- Phần Body lọt vào default slot -->
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+            <HelpCircle class="w-5 h-5" />
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm text-slate-600 font-normal leading-relaxed">
+              Are you sure you want to delete this branch?
+            </p>
+            <p class="text-xs text-slate-400 font-light">
+              This action cannot be undone and all associated employee assignments might be affected.
+            </p>
+          </div>
+        </div>
+
+        <!-- Phần nút bấm lọt vào slot name="footer" -->
+        <template #footer>
+          <button
+              @click="handleCancelDelete"
+              class="px-4 py-2 border border-slate-200 text-xs font-medium rounded-lg text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+              @click="handleConfirmDelete"
+              class="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Delete Branch
+          </button>
+        </template>
+      </ModalGeneric>
+
+      <!-- THANH TIÊU ĐỀ -->
+      <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Branches</h1>
           <span class="bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-bold rounded-md border border-slate-200 shadow-sm">
-            {{ totalBranches }}
+            {{ pagination.totalElements }}
           </span>
         </div>
 
@@ -20,8 +62,7 @@
             >
               <option value="ALL">All Branches</option>
               <option value="ACTIVE">Active</option>
-              <option value="PENDING">Pending</option>
-              <option value="CLOSED">Closed</option>
+              <option value="INACTIVE">Inactive</option>
             </select>
           </div>
 
@@ -31,8 +72,9 @@
         </div>
       </div>
 
+      <!-- THANH TÌM KIẾM -->
       <div class="relative w-100 flex items-center">
-        <span class="absolute left-3 text-slate-400 select-none text-sm">🔍</span>
+        <span class="absolute left-3 text-slate-400 select-none text-sm"> <Search class="w-4 h-4" /> </span>
         <input
             v-model="searchQuery"
             type="text"
@@ -41,14 +83,16 @@
         />
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm w-full">
-        <div class="w-full">
+      <!-- BẢNG DỮ LIỆU -->
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
+        <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse">
             <thead>
             <tr class="bg-slate-50/70 border-b border-slate-200 text-xs uppercase font-semibold tracking-wider text-slate-500">
               <th class="px-6 py-4">Branch Code</th>
               <th class="px-6 py-4">Name</th>
               <th class="px-6 py-4">Field</th>
+              <th class="px-6 py-4">Website</th>
               <th class="px-6 py-4">Location</th>
               <th class="px-6 py-4 text-center">Hours/Day</th>
               <th class="px-6 py-4 text-center">Status</th>
@@ -56,10 +100,14 @@
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
-            <tr v-if="filteredBranches.length === 0">
-              <td colspan="7" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
+            <tr v-if="isLoading">
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light animate-pulse">Loading branches data...</td>
+            </tr>
+            <tr v-else-if="filteredBranches.length === 0">
+              <td colspan="8" class="px-6 py-12 text-center text-slate-400 font-light">No branches found.</td>
             </tr>
             <tr
+                v-else
                 v-for="branch in filteredBranches"
                 :key="branch.id"
                 class="hover:bg-slate-50/60 transition-colors"
@@ -69,6 +117,9 @@
               </td>
               <td class="px-6 py-4 font-semibold text-slate-900">{{ branch.name }}</td>
               <td class="px-6 py-4 text-slate-500 font-light">{{ branch.field }}</td>
+              <td class="px-6 py-4 text-blue-500 font-light truncate max-w-xs">
+                <a :href="branch.website" target="_blank" class="hover:underline">{{ branch.website || '—' }}</a>
+              </td>
               <td class="px-6 py-4 text-slate-500 font-light max-w-md truncate" :title="branch.address">
                 {{ branch.address || '—' }}
               </td>
@@ -79,17 +130,17 @@
                 <StatusBadge :content="branch.status" :type="branch.status" />
               </td>
               <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-3">
+                <div class="flex items-center justify-center gap-4">
                   <button
                       @click="openDrawer('edit', branch)"
-                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer flex items-center justify-center p-1 rounded hover:bg-slate-100"
+                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
                       title="Edit Details"
                   >
                     <Pencil class="w-4 h-4" />
                   </button>
                   <button
                       @click="handleDelete(branch.id)"
-                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer flex items-center justify-center p-1 rounded hover:bg-red-50"
+                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                       title="Delete"
                   >
                     <Trash2 class="w-4 h-4" />
@@ -102,17 +153,17 @@
         </div>
       </div>
 
-      <div class="mt-6">
-        <PaginationSection
-          :current-page="currentPage + 1"
-          :total-items="totalBranches"
-          :total-page="totalPages"
-          :page-size="pageSize"
-          :item-label="'branches'"
-          @changePage="(page) => loadBranches(page - 1)"
-        />
-      </div>
+      <!-- PHÂN TRANG -->
+      <PaginationSection
+          :page-size="pagination.pageSize"
+          :current-page="pagination.pageNo"
+          :item-label="'Branches'"
+          :total-items="pagination.totalElements"
+          :total-page="pagination.totalPages"
+          @changePage="handlePageChange"
+      />
 
+      <!-- DRAWER OVERLAY -->
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-xs transition-opacity" @click="closeDrawer"></div>
 
@@ -179,12 +230,12 @@
 
             <div class="space-y-1">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Operational Status</label>
-              <div class="grid grid-cols-3 gap-2">
+              <div class="grid grid-cols-2 gap-4">
                 <button
                     type="button"
                     @click="form.status = 'ACTIVE'"
                     :class="[
-                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'ACTIVE'
                             ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm font-semibold'
                             : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
@@ -194,27 +245,15 @@
                 </button>
                 <button
                     type="button"
-                    @click="form.status = 'PENDING'"
+                    @click="form.status = 'CLOSED'"
                     :class="[
-                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
-                        form.status === 'PENDING'
-                            ? 'bg-yellow-50 border-yellow-600 text-yellow-600 shadow-sm font-semibold'
+                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        form.status === 'CLOSED'
+                            ? 'bg-red-50 border-red-600 text-red-600 shadow-sm font-semibold'
                             : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
                     ]"
                 >
-                  Pending
-                </button>
-                <button
-                    type="button"
-                    @click="form.status = 'CLOSED'"
-                    :class="[
-                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
-                        form.status === 'CLOSED'
-                            ? 'bg-slate-100 border-slate-400 text-slate-700 shadow-sm font-semibold'
-                              : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
-                    ]"
-                >
-                  Closed
+                  Inactive
                 </button>
               </div>
             </div>
@@ -223,7 +262,7 @@
           <div class="border-t border-slate-100 pt-4 mt-4 space-y-2">
             <PrimaryButton
                 @click="handleSave"
-                :content="drawerMode === 'create' ? 'Save Changes' : 'Update Branch'"
+                :content="drawerMode === 'create' ? 'Create Branch' : 'Save Changes'"
             />
             <SecondaryButton
                 @click="closeDrawer"
@@ -235,62 +274,35 @@
       </div>
 
     </div>
-
-    <ModalGeneric
-      v-model="isDeleteModalOpen"
-      title="Delete Branch"
-      width="440px"
-    >
-      <div class="space-y-3">
-        <p class="text-sm text-slate-500 font-light leading-relaxed">
-          Are you sure you want to delete this branch? This action cannot be undone.
-        </p>
-      </div>
-      <template #footer>
-        <button
-          type="button"
-          @click="isDeleteModalOpen = false"
-          class="px-4 py-2 text-xs font-medium text-slate-800 hover:bg-slate-50 border border-slate-200 rounded-md transition-all duration-150 cursor-pointer"
-        >
-          Cancel
-        </button>
-        <button
-          type="button"
-          @click="handleConfirmDelete"
-          class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2 px-4 rounded-md transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
-        >
-          Delete
-        </button>
-      </template>
-    </ModalGeneric>
   </MainContent>
 </template>
 
 <script setup>
-import MainContent from '../components/MainContent.vue';
-import ToastMessage from '../components/ToastMessage.vue';
-import PaginationSection from '../components/PaginationSection.vue';
+import MainContent from '../components/MainContent.vue'
+import { ref, computed, onMounted, reactive } from 'vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import PaginationSection from "../components/PaginationSection.vue";
+import ToastMessage from '../components/ToastMessage.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
-import { ref, reactive, computed, onMounted } from 'vue';
-import { storeToRefs } from 'pinia';
-import { Pencil, Trash2 } from '@lucide/vue';
 import { useBranchStore } from '../store/branchStore.js';
+import { Pencil, Trash2, HelpCircle, Search } from '@lucide/vue';
 
-const branchStore = useBranchStore();
-const { branches, totalBranches, totalPages } = storeToRefs(branchStore);
+const branchStore = useBranchStore()
 
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
 const isDrawerOpen = ref(false);
-const isDeleteModalOpen = ref(false);
-const branchIdToDelete = ref(null);
 const drawerMode = ref('create');
+const isLoading = ref(false);
 
-const currentPage = ref(0);
-const pageSize = ref(10);
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalElements: 0,
+  totalPages: 1
+})
 
 const toast = reactive({
   show: false,
@@ -298,30 +310,24 @@ const toast = reactive({
   type: 'success'
 });
 
-const showToast = (message, type = 'success') => {
+// Cấu hình lại biến kiểm soát trạng thái Modal xác nhận xóa
+const deleteModal = reactive({
+  show: false,
+  targetId: null
+});
+
+const triggerToast = (message, type = 'success') => {
   toast.message = message;
   toast.type = type;
   toast.show = true;
   setTimeout(() => {
     toast.show = false;
-  }, 3000);
+  }, 3500);
 };
 
-const loadBranches = async (page = 0) => {
-  try {
-    await branchStore.fetchBranches(page, pageSize.value);
-    currentPage.value = page;
-  } catch (error) {
-    showToast("Error loading branches data", "error");
-  }
-};
-
-onMounted(async () => {
-  await loadBranches(0);
-});
+const branches = computed(() => branchStore.branches)
 
 const form = ref({
-  id: null,
   name: '',
   field: '',
   website: '',
@@ -330,11 +336,71 @@ const form = ref({
   status: 'ACTIVE'
 });
 
+const loadBranchesData = async (page = 0) => {
+  isLoading.value = true
+  try {
+    const res = await branchStore.fetchBranches(page, pagination.pageSize)
+    pagination.pageNo = res.data.pageNo + 1
+    pagination.pageSize = res.data.pageSize
+    pagination.totalElements = res.data.totalElements
+    pagination.totalPages = res.data.totalPages
+  } catch (err) {
+    triggerToast("Failed to load branches from system.", "error");
+  } finally {
+    isLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadBranchesData(0);
+});
+
+const handlePageChange = (targetPage) => {
+  pagination.pageNo = targetPage
+  loadBranchesData(targetPage - 1)
+}
+
+// Bấm nút xóa: Kích hoạt hiện ModelGeneric chính giữa màn hình
+const handleDelete = (id) => {
+  deleteModal.targetId = id;
+  deleteModal.show = true;
+};
+
+// Người dùng bấm nút đỏ "Delete Branch" bên trong ModelGeneric
+const handleConfirmDelete = async () => {
+  if (deleteModal.targetId) {
+    try {
+      await branchStore.deleteBranchLocal(deleteModal.targetId)
+      pagination.totalElements = Math.max(0, pagination.totalElements - 1)
+      pagination.totalPages = Math.ceil(pagination.totalElements / pagination.pageSize) || 1
+
+      handleCancelDelete(); // Đóng Modal
+
+      // Hiện thông báo đen thành công chuẩn chỉ của dự án
+      triggerToast("Branch info deleted successfully!", "success");
+
+      if (filteredBranches.value.length === 0 && pagination.pageNo > 1) {
+        handlePageChange(pagination.pageNo - 1)
+      }
+    } catch (error) {
+      handleCancelDelete();
+      triggerToast("Error deleting branch resources.", "error");
+    }
+  }
+};
+
+// Hủy bỏ thao tác xóa
+const handleCancelDelete = () => {
+  deleteModal.show = false;
+  deleteModal.targetId = null;
+};
+
 const filteredBranches = computed(() => {
   let list = branches.value;
 
   if (statusFilter.value !== 'ALL') {
-    list = list.filter(b => b.status === statusFilter.value);
+    const mappedStatus = statusFilter.value === 'INACTIVE' ? 'CLOSED' : 'ACTIVE';
+    list = list.filter(b => b.status === mappedStatus);
   }
 
   if (!searchQuery.value.trim()) {
@@ -351,18 +417,9 @@ const filteredBranches = computed(() => {
 const openDrawer = (mode, branchData = null) => {
   drawerMode.value = mode;
   if (mode === 'edit' && branchData) {
-    form.value = {
-      id: branchData.id,
-      name: branchData.name,
-      field: branchData.field,
-      website: branchData.website || '',
-      address: branchData.address || '',
-      standardHoursPerDay: branchData.standardHoursPerDay || 8,
-      status: branchData.status || 'ACTIVE'
-    };
+    form.value = { ...branchData };
   } else {
     form.value = {
-      id: null,
       name: '',
       field: '',
       website: '',
@@ -380,47 +437,36 @@ const closeDrawer = () => {
 
 const handleSave = async () => {
   if (!form.value.name || !form.value.field) {
-    showToast("Please enter a Branch Name and Field.", "error");
+    triggerToast("Please enter a Branch Name and Field.", "error");
     return;
   }
 
-  if (drawerMode.value === 'create') {
-    const result = await branchStore.createBranch(form.value);
-    if (result.success) {
-      showToast("Branch created successfully!", "success");
-      closeDrawer();
-      await loadBranches(0);
-    } else {
-      showToast("Error creating branch: " + result.message, "error");
+  try {
+    if (drawerMode.value === 'create') {
+      await branchStore.createBranch({
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay || 8
+      });
+      triggerToast("Branch created successfully!", "success");
+    } else if (drawerMode.value === 'edit') {
+      await branchStore.updateBranch(form.value.id, {
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay,
+        status: form.value.status
+      });
+      triggerToast("Branch info updated successfully!", "success");
     }
-  } else if (drawerMode.value === 'edit') {
-    const result = await branchStore.updateBranch(form.value.id, form.value);
-    if (result.success) {
-      showToast("Branch updated successfully!", "success");
-      closeDrawer();
-      await loadBranches(currentPage.value);
-    } else {
-      showToast("Error updating branch: " + result.message, "error");
-    }
+    closeDrawer();
+    loadBranchesData(pagination.pageNo - 1);
+  } catch (error) {
+    triggerToast(error.response?.data?.message || "Error saving branch resources.", "error");
   }
-};
-
-const handleDelete = (id) => {
-  branchIdToDelete.value = id;
-  isDeleteModalOpen.value = true;
-};
-
-const handleConfirmDelete = async () => {
-  if (!branchIdToDelete.value) return;
-  const result = await branchStore.deleteBranch(branchIdToDelete.value);
-  if (result.success) {
-    showToast("Branch deleted successfully!", "success");
-    await loadBranches(currentPage.value);
-  } else {
-    showToast("Error deleting branch: " + result.message, "error");
-  }
-  isDeleteModalOpen.value = false;
-  branchIdToDelete.value = null;
 };
 </script>
 
