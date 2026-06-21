@@ -1,12 +1,13 @@
 <template>
   <MainContent>
-    <div class="w-full space-y-6 pt-4 px-6 text-slate-700">
+    <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
+      <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show"></ToastMessage>
 
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Branches</h1>
           <span class="bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-bold rounded-md border border-slate-200 shadow-sm">
-            {{ pagination.totalElements }}
+            {{ totalBranches }}
           </span>
         </div>
 
@@ -19,7 +20,8 @@
             >
               <option value="ALL">All Branches</option>
               <option value="ACTIVE">Active</option>
-              <option value="INACTIVE">Inactive</option>
+              <option value="PENDING">Pending</option>
+              <option value="CLOSED">Closed</option>
             </select>
           </div>
 
@@ -39,8 +41,8 @@
         />
       </div>
 
-      <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
-        <div class="overflow-x-auto w-full">
+      <div class="bg-white border border-slate-200 rounded-xl shadow-sm w-full">
+        <div class="w-full">
           <table class="w-full text-left border-collapse">
             <thead>
             <tr class="bg-slate-50/70 border-b border-slate-200 text-xs uppercase font-semibold tracking-wider text-slate-500">
@@ -71,7 +73,7 @@
                 {{ branch.address || '—' }}
               </td>
               <td class="px-6 py-4 text-center font-mono text-slate-600">
-                {{ branch.standardHoursPerDay?.toFixed(1) }}
+                {{ branch.standardHoursPerDay }}
               </td>
               <td class="px-6 py-4 text-center">
                 <StatusBadge :content="branch.status" :type="branch.status" />
@@ -80,17 +82,17 @@
                 <div class="flex items-center justify-center gap-3">
                   <button
                       @click="openDrawer('edit', branch)"
-                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer flex items-center justify-center p-1 rounded hover:bg-slate-100"
                       title="Edit Details"
                   >
-                    ✏️
+                    <Pencil class="w-4 h-4" />
                   </button>
                   <button
                       @click="handleDelete(branch.id)"
-                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer flex items-center justify-center p-1 rounded hover:bg-red-50"
                       title="Delete"
                   >
-                    🗑️
+                    <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -98,26 +100,17 @@
             </tbody>
           </table>
         </div>
+      </div>
 
-        <div class="px-6 py-3 border-t border-slate-200 flex items-center justify-between bg-slate-50/50 w-full">
-          <span class="text-xs text-slate-400 font-light">
-              Page {{ pagination.pageNo + 1 }} of {{ pagination.totalPages }}
-          </span>
-          <div class="flex gap-2">
-            <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
-            >
-              Previous
-            </button>
-            <button
-                disabled
-                class="px-3 py-1 border border-slate-200 bg-white rounded-lg text-xs font-medium text-slate-400 opacity-40 cursor-not-allowed"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+      <div class="mt-6">
+        <PaginationSection
+          :current-page="currentPage + 1"
+          :total-items="totalBranches"
+          :total-page="totalPages"
+          :page-size="pageSize"
+          :item-label="'branches'"
+          @changePage="(page) => loadBranches(page - 1)"
+        />
       </div>
 
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
@@ -139,8 +132,7 @@
                   v-model="form.name"
                   type="text"
                   placeholder="London Central"
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -151,8 +143,7 @@
                     v-model="form.field"
                     type="text"
                     placeholder="Logistics"
-                    :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
               <div class="space-y-1">
@@ -161,8 +152,7 @@
                     v-model.number="form.standardHoursPerDay"
                     type="number"
                     placeholder="8"
-                    :disabled="drawerMode === 'edit'"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
                 />
               </div>
             </div>
@@ -173,8 +163,7 @@
                   v-model="form.website"
                   type="text"
                   placeholder="https://domixi.com"
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
               />
             </div>
 
@@ -184,20 +173,18 @@
                   v-model="form.address"
                   rows="4"
                   placeholder="Enter full address..."
-                  :disabled="drawerMode === 'edit'"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none disabled:bg-slate-50 disabled:text-slate-400 disabled:border-slate-100"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none"
               ></textarea>
             </div>
 
             <div class="space-y-1">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Operational Status</label>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-3 gap-2">
                 <button
                     type="button"
                     @click="form.status = 'ACTIVE'"
-                    :disabled="drawerMode === 'edit'"
                     :class="[
-                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'ACTIVE'
                             ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm font-semibold'
                             : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
@@ -207,16 +194,27 @@
                 </button>
                 <button
                     type="button"
-                    @click="form.status = 'INACTIVE'"
-                    :disabled="drawerMode === 'edit'"
+                    @click="form.status = 'PENDING'"
                     :class="[
-                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
-                        form.status === 'INACTIVE'
+                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        form.status === 'PENDING'
+                            ? 'bg-yellow-50 border-yellow-600 text-yellow-600 shadow-sm font-semibold'
+                            : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
+                    ]"
+                >
+                  Pending
+                </button>
+                <button
+                    type="button"
+                    @click="form.status = 'CLOSED'"
+                    :class="[
+                        'py-2 text-xs font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        form.status === 'CLOSED'
                             ? 'bg-slate-100 border-slate-400 text-slate-700 shadow-sm font-semibold'
                               : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
                     ]"
                 >
-                  Inactive
+                  Closed
                 </button>
               </div>
             </div>
@@ -224,9 +222,8 @@
 
           <div class="border-t border-slate-100 pt-4 mt-4 space-y-2">
             <PrimaryButton
-                v-if="drawerMode === 'create'"
                 @click="handleSave"
-                content="Save Changes"
+                :content="drawerMode === 'create' ? 'Save Changes' : 'Update Branch'"
             />
             <SecondaryButton
                 @click="closeDrawer"
@@ -238,43 +235,98 @@
       </div>
 
     </div>
+
+    <ModalGeneric
+      v-model="isDeleteModalOpen"
+      title="Delete Branch"
+      width="440px"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-slate-500 font-light leading-relaxed">
+          Are you sure you want to delete this branch? This action cannot be undone.
+        </p>
+      </div>
+      <template #footer>
+        <button
+          type="button"
+          @click="isDeleteModalOpen = false"
+          class="px-4 py-2 text-xs font-medium text-slate-800 hover:bg-slate-50 border border-slate-200 rounded-md transition-all duration-150 cursor-pointer"
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          @click="handleConfirmDelete"
+          class="bg-red-600 hover:bg-red-700 text-white text-xs font-semibold py-2 px-4 rounded-md transition-all duration-200 shadow-sm active:scale-[0.98] cursor-pointer"
+        >
+          Delete
+        </button>
+      </template>
+    </ModalGeneric>
   </MainContent>
 </template>
 
 <script setup>
-import MainContent from '../components/MainContent.vue'
-import { ref, computed } from 'vue';
+import MainContent from '../components/MainContent.vue';
+import ToastMessage from '../components/ToastMessage.vue';
+import PaginationSection from '../components/PaginationSection.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
+import ModalGeneric from '../components/ModalGeneric.vue';
+import { ref, reactive, computed, onMounted } from 'vue';
+import { storeToRefs } from 'pinia';
+import { Pencil, Trash2 } from '@lucide/vue';
+import { useBranchStore } from '../store/branchStore.js';
+
+const branchStore = useBranchStore();
+const { branches, totalBranches, totalPages } = storeToRefs(branchStore);
 
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
 const isDrawerOpen = ref(false);
+const isDeleteModalOpen = ref(false);
+const branchIdToDelete = ref(null);
 const drawerMode = ref('create');
 
-const branches = ref([
-  { id: 1, branchCode: 'BR-LON-01', name: 'London Central', field: 'Logistics', address: '22 Baker Street, London, Greater London NW1 6XE, United Kingdom', status: 'ACTIVE', standardHoursPerDay: 8.5, website: 'https://london-humify.com' },
-  { id: 2, branchCode: 'BR-NYC-04', name: 'Manhattan Office', field: 'Corporate', address: 'Fifth Ave, New York, NY', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://nyc-humify.com' },
-  { id: 3, branchCode: 'BR-TOK-09', name: 'Shibuya Annex', field: 'Research', address: '1-2 Shibuya, Tokyo', status: 'INACTIVE', standardHoursPerDay: 9.0, website: 'https://tokyo-humify.com' },
-  { id: 4, branchCode: 'BR-BER-02', name: 'Berlin Hub', field: 'Support', address: 'Mitte District, Berlin', status: 'ACTIVE', standardHoursPerDay: 7.5, website: 'https://berlin-humify.com' },
-  { id: 5, branchCode: 'BR-SYD-12', name: 'Sydney Wharf', field: 'Distribution', address: 'The Rocks, Sydney', status: 'ACTIVE', standardHoursPerDay: 8.0, website: 'https://sydney-humify.com' }
-]);
+const currentPage = ref(0);
+const pageSize = ref(10);
 
-const pagination = computed(() => {
-  return {
-    pageNo: 0,
-    totalPages: 1,
-    totalElements: branches.value.length
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success'
+});
+
+const showToast = (message, type = 'success') => {
+  toast.message = message;
+  toast.type = type;
+  toast.show = true;
+  setTimeout(() => {
+    toast.show = false;
+  }, 3000);
+};
+
+const loadBranches = async (page = 0) => {
+  try {
+    await branchStore.fetchBranches(page, pageSize.value);
+    currentPage.value = page;
+  } catch (error) {
+    showToast("Error loading branches data", "error");
   }
+};
+
+onMounted(async () => {
+  await loadBranches(0);
 });
 
 const form = ref({
+  id: null,
   name: '',
   field: '',
   website: '',
   address: '',
-  standardHoursPerDay: 8.0,
+  standardHoursPerDay: 8,
   status: 'ACTIVE'
 });
 
@@ -299,14 +351,23 @@ const filteredBranches = computed(() => {
 const openDrawer = (mode, branchData = null) => {
   drawerMode.value = mode;
   if (mode === 'edit' && branchData) {
-    form.value = { ...branchData };
+    form.value = {
+      id: branchData.id,
+      name: branchData.name,
+      field: branchData.field,
+      website: branchData.website || '',
+      address: branchData.address || '',
+      standardHoursPerDay: branchData.standardHoursPerDay || 8,
+      status: branchData.status || 'ACTIVE'
+    };
   } else {
     form.value = {
+      id: null,
       name: '',
       field: '',
       website: '',
       address: '',
-      standardHoursPerDay: 8.0,
+      standardHoursPerDay: 8,
       status: 'ACTIVE'
     };
   }
@@ -317,34 +378,49 @@ const closeDrawer = () => {
   isDrawerOpen.value = false;
 };
 
-const handleSave = () => {
+const handleSave = async () => {
   if (!form.value.name || !form.value.field) {
-    alert("Please enter a Branch Name and Field.");
+    showToast("Please enter a Branch Name and Field.", "error");
     return;
   }
 
   if (drawerMode.value === 'create') {
-    const randomId = Math.floor(Math.random() * 90) + 10;
-    const generatedCode = `BR-${form.value.name.substring(0, 3).toUpperCase()}-${randomId}`;
-
-    branches.value.unshift({
-      id: Date.now(),
-      branchCode: generatedCode,
-      name: form.value.name,
-      field: form.value.field,
-      website: form.value.website,
-      address: form.value.address,
-      status: form.value.status,
-      standardHoursPerDay: form.value.standardHoursPerDay || 8.0
-    });
+    const result = await branchStore.createBranch(form.value);
+    if (result.success) {
+      showToast("Branch created successfully!", "success");
+      closeDrawer();
+      await loadBranches(0);
+    } else {
+      showToast("Error creating branch: " + result.message, "error");
+    }
+  } else if (drawerMode.value === 'edit') {
+    const result = await branchStore.updateBranch(form.value.id, form.value);
+    if (result.success) {
+      showToast("Branch updated successfully!", "success");
+      closeDrawer();
+      await loadBranches(currentPage.value);
+    } else {
+      showToast("Error updating branch: " + result.message, "error");
+    }
   }
-  closeDrawer();
 };
 
 const handleDelete = (id) => {
-  if (confirm("Are you sure you want to delete this branch?")) {
-    branches.value = branches.value.filter(b => b.id !== id);
+  branchIdToDelete.value = id;
+  isDeleteModalOpen.value = true;
+};
+
+const handleConfirmDelete = async () => {
+  if (!branchIdToDelete.value) return;
+  const result = await branchStore.deleteBranch(branchIdToDelete.value);
+  if (result.success) {
+    showToast("Branch deleted successfully!", "success");
+    await loadBranches(currentPage.value);
+  } else {
+    showToast("Error deleting branch: " + result.message, "error");
   }
+  isDeleteModalOpen.value = false;
+  branchIdToDelete.value = null;
 };
 </script>
 
