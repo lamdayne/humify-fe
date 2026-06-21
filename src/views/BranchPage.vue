@@ -2,17 +2,14 @@
   <MainContent>
     <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
 
-      <!-- TOAST THÔNG BÁO THƯỜNG (Thành công / Thất bại) -->
       <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show"></ToastMessage>
 
-      <!-- ĐÃ THAY THẾ: Sử dụng ModelGeneric xịn sò làm Dialog xác nhận xóa chính giữa màn hình -->
       <ModalGeneric
           v-model="deleteModal.show"
           title="Delete Branch"
           width="440px"
           :closeOnBackdrop="true"
       >
-        <!-- Phần Body lọt vào default slot -->
         <div class="flex items-start gap-3.5">
           <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
             <HelpCircle class="w-5 h-5" />
@@ -27,7 +24,6 @@
           </div>
         </div>
 
-        <!-- Phần nút bấm lọt vào slot name="footer" -->
         <template #footer>
           <button
               @click="handleCancelDelete"
@@ -44,7 +40,6 @@
         </template>
       </ModalGeneric>
 
-      <!-- THANH TIÊU ĐỀ -->
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Branches</h1>
@@ -62,6 +57,7 @@
             >
               <option value="ALL">All Branches</option>
               <option value="ACTIVE">Active</option>
+              <option value="PENDING">Pending</option>
               <option value="INACTIVE">Inactive</option>
             </select>
           </div>
@@ -72,7 +68,6 @@
         </div>
       </div>
 
-      <!-- THANH TÌM KIẾM -->
       <div class="relative w-100 flex items-center">
         <span class="absolute left-3 text-slate-400 select-none text-sm"> <Search class="w-4 h-4" /> </span>
         <input
@@ -83,7 +78,6 @@
         />
       </div>
 
-      <!-- BẢNG DỮ LIỆU -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse">
@@ -153,7 +147,6 @@
         </div>
       </div>
 
-      <!-- PHÂN TRANG -->
       <PaginationSection
           :page-size="pagination.pageSize"
           :current-page="pagination.pageNo"
@@ -163,7 +156,6 @@
           @changePage="handlePageChange"
       />
 
-      <!-- DRAWER OVERLAY -->
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-xs transition-opacity" @click="closeDrawer"></div>
 
@@ -230,12 +222,12 @@
 
             <div class="space-y-1">
               <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Operational Status</label>
-              <div class="grid grid-cols-2 gap-4">
+              <div class="grid grid-cols-3 gap-2">
                 <button
                     type="button"
                     @click="form.status = 'ACTIVE'"
                     :class="[
-                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        'py-2 text-[13px] font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'ACTIVE'
                             ? 'bg-blue-50 border-blue-600 text-blue-600 shadow-sm font-semibold'
                             : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
@@ -245,11 +237,23 @@
                 </button>
                 <button
                     type="button"
+                    @click="form.status = 'PENDING'"
+                    :class="[
+                        'py-2 text-[13px] font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        form.status === 'PENDING'
+                            ? 'bg-amber-50 border-amber-500 text-amber-600 shadow-sm font-semibold'
+                            : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
+                    ]"
+                >
+                  Pending
+                </button>
+                <button
+                    type="button"
                     @click="form.status = 'CLOSED'"
                     :class="[
-                        'py-2 text-sm font-medium border rounded-lg transition-all text-center cursor-pointer',
+                        'py-2 text-[13px] font-medium border rounded-lg transition-all text-center cursor-pointer',
                         form.status === 'CLOSED'
-                            ? 'bg-red-50 border-red-600 text-red-600 shadow-sm font-semibold'
+                            ? 'bg-slate-100 border-slate-400 text-slate-600 shadow-sm font-semibold'
                             : 'bg-white border-slate-200 text-slate-400 hover:bg-slate-50'
                     ]"
                 >
@@ -310,7 +314,6 @@ const toast = reactive({
   type: 'success'
 });
 
-// Cấu hình lại biến kiểm soát trạng thái Modal xác nhận xóa
 const deleteModal = reactive({
   show: false,
   targetId: null
@@ -360,46 +363,37 @@ const handlePageChange = (targetPage) => {
   loadBranchesData(targetPage - 1)
 }
 
-// Bấm nút xóa: Kích hoạt hiện ModelGeneric chính giữa màn hình
 const handleDelete = (id) => {
   deleteModal.targetId = id;
   deleteModal.show = true;
 };
 
-// Người dùng bấm nút đỏ "Delete Branch" bên trong ModelGeneric
 const handleConfirmDelete = async () => {
   if (deleteModal.targetId) {
     try {
-      await branchStore.deleteBranchLocal(deleteModal.targetId)
-      pagination.totalElements = Math.max(0, pagination.totalElements - 1)
-      pagination.totalPages = Math.ceil(pagination.totalElements / pagination.pageSize) || 1
-
-      handleCancelDelete(); // Đóng Modal
-
-      // Hiện thông báo đen thành công chuẩn chỉ của dự án
-      triggerToast("Branch info deleted successfully!", "success");
-
-      if (filteredBranches.value.length === 0 && pagination.pageNo > 1) {
-        handlePageChange(pagination.pageNo - 1)
-      }
+      await branchStore.deleteBranch(deleteModal.targetId)
+      handleCancelDelete();
+      triggerToast("Branch deleted successfully!", "success");
+      loadBranchesData(pagination.pageNo - 1);
     } catch (error) {
       handleCancelDelete();
-      triggerToast("Error deleting branch resources.", "error");
+      triggerToast(error.response?.data?.message || "Error deleting branch resources.", "error");
     }
   }
 };
 
-// Hủy bỏ thao tác xóa
 const handleCancelDelete = () => {
   deleteModal.show = false;
   deleteModal.targetId = null;
 };
 
+// CẬP NHẬT: Hỗ trợ lọc thêm điều kiện PENDING đồng bộ với database
 const filteredBranches = computed(() => {
   let list = branches.value;
 
   if (statusFilter.value !== 'ALL') {
-    const mappedStatus = statusFilter.value === 'INACTIVE' ? 'CLOSED' : 'ACTIVE';
+    let mappedStatus = statusFilter.value;
+    if (statusFilter.value === 'INACTIVE') mappedStatus = 'CLOSED';
     list = list.filter(b => b.status === mappedStatus);
   }
 
@@ -433,6 +427,14 @@ const openDrawer = (mode, branchData = null) => {
 
 const closeDrawer = () => {
   isDrawerOpen.value = false;
+  form.value = {
+    name: '',
+    field: '',
+    website: '',
+    address: '',
+    standardHoursPerDay: 8,
+    status: 'ACTIVE'
+  };
 };
 
 const handleSave = async () => {
@@ -448,7 +450,8 @@ const handleSave = async () => {
         field: form.value.field,
         website: form.value.website,
         address: form.value.address,
-        standardHoursPerDay: form.value.standardHoursPerDay || 8
+        standardHoursPerDay: form.value.standardHoursPerDay || 8,
+        status: form.value.status
       });
       triggerToast("Branch created successfully!", "success");
     } else if (drawerMode.value === 'edit') {

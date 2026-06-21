@@ -34,10 +34,10 @@ export const useBranchStore = defineStore('branch', () => {
     }
 
 
-    const deleteBranchLocal = async (id) => {
+    const deleteBranch = async (id) => {
         try {
-
-            branches.value = branches.value.filter(b => b.id !== id)
+            const res = await axiosInstance.delete(`/branches/${id}`)
+            return res.data
         } catch (error) {
             throw error;
         }
@@ -48,6 +48,6 @@ export const useBranchStore = defineStore('branch', () => {
         fetchBranches,
         createBranch,
         updateBranch,
-        deleteBranchLocal
+        deleteBranch
     }
 })
