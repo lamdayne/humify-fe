@@ -325,7 +325,7 @@ import SecondaryButton from "../components/SecondaryButton.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import ModalGeneric from "../components/ModalGeneric.vue";
 import {useDepartmentStore} from "../store/departmentStore.js";
-import {useBranchStore} from "../store/branchStore";
+import {useBranchStore} from "../store/branchStore.js";
 
 const branchStore = useBranchStore();
 const departmentStore = useDepartmentStore();
@@ -462,8 +462,8 @@ const handlePageChange = async (page) => {
 
 const loadBranches = async () => {
   try {
-    const res = await branchStore.getAllBranches();
-    branches.value = res.data.data.items || [];
+    const res = await branchStore.fetchBranches(0, 100, "id:asc");
+    branches.value = branchStore.branches;
     if (branches.value.length > 0) {
       selectedBranchId.value = branches.value[0].id;
       createForm.value.branchId = branches.value[0].id;
