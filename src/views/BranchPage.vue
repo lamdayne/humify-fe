@@ -2,7 +2,50 @@
   <MainContent>
     <div class="w-full space-y-6 pt-4 px-6 text-slate-700 relative">
 
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full">
+      <!-- TOAST THÔNG BÁO THƯỜNG (Thành công / Thất bại) -->
+      <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show"></ToastMessage>
+
+      <!-- ĐÃ THAY THẾ: Sử dụng ModelGeneric xịn sò làm Dialog xác nhận xóa chính giữa màn hình -->
+      <ModalGeneric
+          v-model="deleteModal.show"
+          title="Delete Branch"
+          width="440px"
+          :closeOnBackdrop="true"
+      >
+        <!-- Phần Body lọt vào default slot -->
+        <div class="flex items-start gap-3.5">
+          <div class="w-10 h-10 rounded-full bg-red-50 flex items-center justify-center text-red-600 shrink-0">
+            <HelpCircle class="w-5 h-5" />
+          </div>
+          <div class="space-y-1">
+            <p class="text-sm text-slate-600 font-normal leading-relaxed">
+              Are you sure you want to delete this branch?
+            </p>
+            <p class="text-xs text-slate-400 font-light">
+              This action cannot be undone and all associated employee assignments might be affected.
+            </p>
+          </div>
+        </div>
+
+        <!-- Phần nút bấm lọt vào slot name="footer" -->
+        <template #footer>
+          <button
+              @click="handleCancelDelete"
+              class="px-4 py-2 border border-slate-200 text-xs font-medium rounded-lg text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            Cancel
+          </button>
+          <button
+              @click="handleConfirmDelete"
+              class="px-4 py-2 text-xs font-semibold rounded-lg text-white bg-red-600 hover:bg-red-700 shadow-sm active:scale-[0.98] transition-all cursor-pointer"
+          >
+            Delete Branch
+          </button>
+        </template>
+      </ModalGeneric>
+
+      <!-- THANH TIÊU ĐỀ -->
+      <div class="flex justify-between items-center">
         <div class="flex items-center gap-3">
           <h1 class="text-2xl font-bold tracking-tight text-slate-900">Branches</h1>
           <span class="bg-slate-100 text-slate-700 px-2 py-0.5 text-xs font-bold rounded-md border border-slate-200 shadow-sm">
@@ -29,8 +72,9 @@
         </div>
       </div>
 
+      <!-- THANH TÌM KIẾM -->
       <div class="relative w-100 flex items-center">
-        <span class="absolute left-3 text-slate-400 select-none text-sm">🔍</span>
+        <span class="absolute left-3 text-slate-400 select-none text-sm"> <Search class="w-4 h-4" /> </span>
         <input
             v-model="searchQuery"
             type="text"
@@ -39,6 +83,7 @@
         />
       </div>
 
+      <!-- BẢNG DỮ LIỆU -->
       <div class="bg-white border border-slate-200 rounded-xl shadow-sm overflow-hidden w-full">
         <div class="overflow-x-auto w-full">
           <table class="w-full text-left border-collapse">
@@ -85,20 +130,20 @@
                 <StatusBadge :content="branch.status" :type="branch.status" />
               </td>
               <td class="px-6 py-4 text-center">
-                <div class="flex items-center justify-center gap-3">
+                <div class="flex items-center justify-center gap-4">
                   <button
                       @click="openDrawer('edit', branch)"
-                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-slate-900 transition-colors cursor-pointer"
                       title="Edit Details"
                   >
-                    ✏️
+                    <Pencil class="w-4 h-4" />
                   </button>
                   <button
                       @click="handleDelete(branch.id)"
-                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer text-sm"
+                      class="text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
                       title="Delete"
                   >
-                    🗑️
+                    <Trash2 class="w-4 h-4" />
                   </button>
                 </div>
               </td>
@@ -108,6 +153,7 @@
         </div>
       </div>
 
+      <!-- PHÂN TRANG -->
       <PaginationSection
           :page-size="pagination.pageSize"
           :current-page="pagination.pageNo"
@@ -117,7 +163,7 @@
           @changePage="handlePageChange"
       />
 
-
+      <!-- DRAWER OVERLAY -->
       <div v-if="isDrawerOpen" class="fixed inset-0 z-[100] overflow-hidden flex justify-end">
         <div class="absolute inset-0 bg-black/30 backdrop-blur-xs transition-opacity" @click="closeDrawer"></div>
 
@@ -238,7 +284,10 @@ import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
 import PaginationSection from "../components/PaginationSection.vue";
+import ToastMessage from '../components/ToastMessage.vue';
+import ModalGeneric from '../components/ModalGeneric.vue';
 import { useBranchStore } from '../store/branchStore.js';
+import { Pencil, Trash2, HelpCircle, Search } from '@lucide/vue';
 
 const branchStore = useBranchStore()
 
@@ -254,6 +303,27 @@ const pagination = reactive({
   totalElements: 0,
   totalPages: 1
 })
+
+const toast = reactive({
+  show: false,
+  message: '',
+  type: 'success'
+});
+
+// Cấu hình lại biến kiểm soát trạng thái Modal xác nhận xóa
+const deleteModal = reactive({
+  show: false,
+  targetId: null
+});
+
+const triggerToast = (message, type = 'success') => {
+  toast.message = message;
+  toast.type = type;
+  toast.show = true;
+  setTimeout(() => {
+    toast.show = false;
+  }, 3500);
+};
 
 const branches = computed(() => branchStore.branches)
 
@@ -275,7 +345,7 @@ const loadBranchesData = async (page = 0) => {
     pagination.totalElements = res.data.totalElements
     pagination.totalPages = res.data.totalPages
   } catch (err) {
-    alert("Failed to load branches from system.");
+    triggerToast("Failed to load branches from system.", "error");
   } finally {
     isLoading.value = false
   }
@@ -290,24 +360,39 @@ const handlePageChange = (targetPage) => {
   loadBranchesData(targetPage - 1)
 }
 
-const handleDelete = async (id) => {
-  if (confirm("Are you sure you want to delete this branch?")) {
+// Bấm nút xóa: Kích hoạt hiện ModelGeneric chính giữa màn hình
+const handleDelete = (id) => {
+  deleteModal.targetId = id;
+  deleteModal.show = true;
+};
+
+// Người dùng bấm nút đỏ "Delete Branch" bên trong ModelGeneric
+const handleConfirmDelete = async () => {
+  if (deleteModal.targetId) {
     try {
-      await branchStore.deleteBranchLocal(id)
-
+      await branchStore.deleteBranchLocal(deleteModal.targetId)
       pagination.totalElements = Math.max(0, pagination.totalElements - 1)
-
       pagination.totalPages = Math.ceil(pagination.totalElements / pagination.pageSize) || 1
 
-      alert("Branch deleted successfully!");
+      handleCancelDelete(); // Đóng Modal
+
+      // Hiện thông báo đen thành công chuẩn chỉ của dự án
+      triggerToast("Branch info deleted successfully!", "success");
 
       if (filteredBranches.value.length === 0 && pagination.pageNo > 1) {
         handlePageChange(pagination.pageNo - 1)
       }
     } catch (error) {
-      alert("Error deleting branch resources.");
+      handleCancelDelete();
+      triggerToast("Error deleting branch resources.", "error");
     }
   }
+};
+
+// Hủy bỏ thao tác xóa
+const handleCancelDelete = () => {
+  deleteModal.show = false;
+  deleteModal.targetId = null;
 };
 
 const filteredBranches = computed(() => {
@@ -352,7 +437,7 @@ const closeDrawer = () => {
 
 const handleSave = async () => {
   if (!form.value.name || !form.value.field) {
-    alert("Please enter a Branch Name and Field.");
+    triggerToast("Please enter a Branch Name and Field.", "error");
     return;
   }
 
@@ -365,14 +450,22 @@ const handleSave = async () => {
         address: form.value.address,
         standardHoursPerDay: form.value.standardHoursPerDay || 8
       });
-      alert("Branch created successfully!");
+      triggerToast("Branch created successfully!", "success");
     } else if (drawerMode.value === 'edit') {
-      alert("Branch info simulated to update successfully!");
+      await branchStore.updateBranch(form.value.id, {
+        name: form.value.name,
+        field: form.value.field,
+        website: form.value.website,
+        address: form.value.address,
+        standardHoursPerDay: form.value.standardHoursPerDay,
+        status: form.value.status
+      });
+      triggerToast("Branch info updated successfully!", "success");
     }
     closeDrawer();
     loadBranchesData(pagination.pageNo - 1);
   } catch (error) {
-    alert(error.response?.data?.message || "Error saving branch resources.");
+    triggerToast(error.response?.data?.message || "Error saving branch resources.", "error");
   }
 };
 </script>
