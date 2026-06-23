@@ -15,8 +15,18 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
+    const createEmployee = async (employeeData) => {
+        try {
+            const res = await axiosInstance.post('/employees', employeeData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
         employees,
-        fetchEmployees
+        fetchEmployees,
+        createEmployee
     }
 })

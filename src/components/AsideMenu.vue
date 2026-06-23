@@ -8,9 +8,9 @@
         'lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
     ]">
-        <div class="mb-4">
-            <h1 class="text-[20px] uppercase text-center">Humfiy</h1>
-            <p class="text-center text-lg">Dashboard Management</p>
+        <div class="flex justify-center">
+            <img class="w-30" src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044819/logo_lgugm5.png"
+                alt="">
         </div>
         <nav class="flex-1">
             <div class="flex flex-col">

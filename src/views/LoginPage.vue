@@ -82,7 +82,7 @@
                             </router-link>
                             <router-link to="/register"
                                 class="text-xs text-slate-500 hover:text-black underline underline-offset-4 transition-colors font-light">
-                                Đăng ký tài khoản
+                                Register an account
                             </router-link>
                         </div>
                     </form>
