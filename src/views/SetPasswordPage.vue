@@ -14,23 +14,31 @@
             </div>
         </header>
 
-        <!-- Hộp thông báo nổi Toast báo thành công -->
+        <!-- Hộp thông báo nổi Toast báo trạng thái -->
         <Transition name="slide-fade">
             <div v-if="toast.show"
-                class="fixed top-20 right-6 z-[9999] flex items-center gap-3 bg-black text-white px-5 py-3.5 rounded-xl shadow-2xl border border-slate-800">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                :class="[
+                    toast.type === 'success' ? 'bg-black border-slate-800' : 'bg-red-600 border-red-700',
+                    'fixed top-20 right-6 z-[9999] flex items-center gap-3 text-white px-5 py-3.5 rounded-xl shadow-2xl border'
+                ]">
+                <svg v-if="toast.type === 'success'" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
                     stroke="currentColor" class="w-5 h-5 text-emerald-400">
                     <path stroke-linecap="round" stroke-linejoin="round"
                         d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+                <svg v-else xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                    stroke="currentColor" class="w-5 h-5 text-red-200">
+                    <path stroke-linecap="round" stroke-linejoin="round"
+                        d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
                 </svg>
                 <span class="text-sm font-medium">{{ toast.message }}</span>
             </div>
         </Transition>
 
-        <!-- Thân trang chia đôi màn hình hoàn hảo (Có padding top 14 để không bị Header đè) -->
+        <!-- Thân trang chia đôi màn hình hoàn hảo -->
         <main class="flex-grow flex flex-col md:flex-row min-h-screen w-full pt-14">
 
-            <!-- Cột trái: Thương hiệu (Nền tối chiếm 50% chiều rộng - Khớp 100% ảnh image_55512b) -->
+            <!-- Cột trái: Thương hiệu (Nền tối chiếm 50% chiều rộng) -->
             <div
                 class="w-full md:w-1/2 bg-[#050b14] flex flex-col items-center justify-center text-center p-10 md:p-20 relative overflow-hidden">
                 <!-- Hiệu ứng lưới tinh tế phía sau logo -->
@@ -39,35 +47,34 @@
                 </div>
 
                 <div class="relative z-10">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-2">Humify
-                    </h1>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-2">Humify</h1>
                     <p class="text-sm md:text-base text-slate-400 font-light tracking-wide">Workforce. Simplified.</p>
                 </div>
             </div>
 
-            <!-- Cột phải: Form Xử lý Đặt lại mật khẩu (Nền trắng tinh tế) -->
+            <!-- Cột phải: Form Xử lý Thiết lập mật khẩu (Nền trắng tinh tế) -->
             <div class="w-full md:w-1/2 bg-white flex flex-col p-8 md:p-16 lg:p-24 justify-between">
                 <!-- Căn giữa form theo chiều dọc -->
                 <div class="my-auto flex justify-center items-center w-full">
 
                     <div class="w-full max-w-[380px]">
-                        <h2 class="text-3xl font-normal text-black tracking-tight mb-2">Reset your password</h2>
-                        <p class="text-[14px] text-slate-500 mb-8 font-light">Please enter your new password below to
-                            regain access.</p>
+                        <h2 class="text-3xl font-normal text-black tracking-tight mb-2">Set up your password</h2>
+                        <p class="text-[14px] text-slate-500 mb-8 font-light">
+                            Welcome to Humify! Please choose a secure password to complete your account setup.
+                        </p>
 
                         <!-- Cảnh báo nếu thiếu Token kích hoạt -->
                         <div v-if="!token" class="mb-6 p-4 bg-red-50 border border-red-100 rounded-xl text-red-600 text-xs font-light leading-relaxed">
-                            <span class="font-semibold block mb-1">Reset token is missing</span>
-                            The link you followed is invalid or has expired. Please request a new password reset email.
+                            <span class="font-semibold block mb-1">Activation token is missing</span>
+                            The link you followed is invalid or has expired. Please check your invitation email or contact your administrator.
                         </div>
 
-                        <form v-else @submit.prevent="handleResetPassword" class="space-y-5">
+                        <form v-else @submit.prevent="handleSetPassword" class="space-y-5">
 
                             <!-- Mật khẩu mới (New Password) -->
                             <div>
                                 <label for="newPassword"
-                                    class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">New
-                                    Password</label>
+                                    class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">New Password</label>
                                 <div class="relative">
                                     <input :type="isNewPasswordVisible ? 'text' : 'password'" id="newPassword"
                                         v-model="newPassword" placeholder="••••••••"
@@ -75,7 +82,6 @@
                                         required />
                                     <button type="button" @click="isNewPasswordVisible = !isNewPasswordVisible"
                                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black transition-colors">
-                                        <!-- Icon mắt thay đổi trạng thái ẩn/hiện -->
                                         <svg v-if="!isNewPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none"
                                             viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor"
                                             class="w-5 h-5">
@@ -93,11 +99,11 @@
                                 </div>
                             </div>
 
+
                             <!-- Xác nhận mật khẩu (Confirm Password) -->
                             <div>
                                 <label for="confirmPassword"
-                                    class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Confirm
-                                    Password</label>
+                                    class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Confirm Password</label>
                                 <div class="relative">
                                     <input :type="isConfirmPasswordVisible ? 'text' : 'password'" id="confirmPassword"
                                         v-model="confirmPassword" placeholder="••••••••"
@@ -122,16 +128,14 @@
                                 </div>
                             </div>
 
-
-
-                            <!-- Nút Đặt lại mật khẩu (RESET PASSWORD) -->
+                            <!-- Nút Xác nhận mật khẩu -->
                             <button type="submit" :disabled="isSubmitting"
                                 class="w-full bg-[#09090b] hover:bg-black disabled:opacity-50 text-white text-xs font-semibold py-3.5 px-4 rounded-md transition-all duration-200 active:scale-[0.99] flex items-center justify-center gap-2">
                                 <svg v-if="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                 </svg>
-                                Reset Password
+                                Complete Activation
                             </button>
 
                             <!-- Liên kết quay lại trang Đăng nhập -->
@@ -150,7 +154,6 @@
 
                     </div>
                 </div>
-
 
             </div>
 
@@ -172,13 +175,11 @@ const newPassword = ref('');
 const confirmPassword = ref('');
 const isSubmitting = ref(false);
 
-// Trạng thái ẩn/hiện mật khẩu
 const isNewPasswordVisible = ref(false);
 const isConfirmPasswordVisible = ref(false);
 
 
-
-// Trạng thái thông báo Toast
+// Quản lý thông báo toast
 const toast = reactive({
     show: false,
     message: '',
@@ -195,32 +196,31 @@ const showToast = (message, type = 'success') => {
 };
 
 onMounted(() => {
+    // Lấy token từ query params: /set-password?token=XYZ
     token.value = route.query.token || '';
 });
 
-// Xử lý khi nhấn nút Đặt lại mật khẩu
-const handleResetPassword = async () => {
-    // Kiểm tra xem 2 mật khẩu đã trùng khớp chưa
+const handleSetPassword = async () => {
     if (newPassword.value !== confirmPassword.value) {
-        showToast('Mật khẩu xác nhận không trùng khớp!', 'error');
+        showToast('Passwords do not match.', 'error');
         return;
     }
 
     isSubmitting.value = true;
     try {
-        await axiosInstance.post('/auth/reset-password', {
+        await axiosInstance.post('/auth/set-password', {
             token: token.value,
             newPassword: newPassword.value,
             confirmNewPassword: confirmPassword.value
         });
 
-        showToast('Mật khẩu của bạn đã được cập nhật thành công! Đang chuyển hướng về trang đăng nhập...', 'success');
+        showToast('Your account password has been set successfully! Redirecting to login...', 'success');
         
         setTimeout(() => {
             router.push('/login');
         }, 2500);
     } catch (error) {
-        const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi đặt lại mật khẩu. Token có thể đã hết hạn hoặc không hợp lệ.';
+        const errorMsg = error.response?.data?.message || 'Failed to set password. The token may be expired or invalid.';
         showToast(errorMsg, 'error');
     } finally {
         isSubmitting.value = false;
@@ -229,7 +229,7 @@ const handleResetPassword = async () => {
 </script>
 
 <style>
-/* Đảm bảo nền trắng phủ kín vùng làm việc chính */
+/* Reset/Override background style for this full page layout */
 html,
 body,
 #app {
@@ -241,7 +241,7 @@ body,
     background-color: white !important;
 }
 
-/* Hiệu ứng trượt và mờ cực kỳ tự nhiên cho hộp Toast */
+/* Toast animation support */
 .slide-fade-enter-active {
     transition: all 0.3s ease-out;
 }

@@ -29,21 +29,13 @@
             Branch
           </label>
 
-          <select
-              v-model="selectedBranchId"
-              @change="handleBranchChange"
-              class="w-full h-11 border border-slate-200 rounded-lg px-3
-           focus:ring-2 focus:ring-black outline-none"
-          >
+          <select v-model="selectedBranchId" @change="handleBranchChange" class="w-full h-11 border border-slate-200 rounded-lg px-3
+           focus:ring-2 focus:ring-black outline-none">
             <option :value="null">
               Select Branch
             </option>
 
-            <option
-                v-for="branch in branches"
-                :key="branch.id"
-                :value="branch.id"
-            >
+            <option v-for="branch in branches" :key="branch.id" :value="branch.id">
               {{ branch.name }}
             </option>
           </select>
@@ -51,127 +43,103 @@
         </div>
       </div>
 
-      <div
-          class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
+      <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]">
         <div class="overflow-x-auto">
           <table class="w-full text-left border-collapse">
             <thead>
-            <tr class="bg-slate-50/70 border-b border-slate-200/80">
-              <th
-                  class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[20%]">
-                Name
-              </th>
-              <th
-                  class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
-                Description
-              </th>
-              <th
-                  class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
-                Branch
-              </th>
+              <tr class="bg-slate-50/70 border-b border-slate-200/80">
+                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[20%]">
+                  Name
+                </th>
+                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
+                  Description
+                </th>
+                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
+                  Branch
+                </th>
 
-              <th
-                  class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
-                Created
-              </th>
-              <th
+                <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[30%]">
+                  Created
+                </th>
+                <th
                   class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest w-[10%] text-right">
-                Actions
-              </th>
-            </tr>
+                  Actions
+                </th>
+              </tr>
             </thead>
             <tbody>
-            <tr
-                v-for="department in departments"
-                :key="department.id"
-                class="hover:bg-slate-50"
-            >
-              <td class="px-6 py-4">
-                <div class="font-medium">
-                  {{ department.name }}
-                </div>
-              </td>
+              <tr v-for="department in departments" :key="department.id" class="hover:bg-slate-50">
+                <td class="px-6 py-4">
+                  <div class="font-medium">
+                    {{ department.name }}
+                  </div>
+                </td>
 
-              <td class="px-6 py-4 text-slate-500 max-w-sm">
-                <div class="truncate">
-                  {{ department.description || '-' }}
-                </div>
+                <td class="px-6 py-4 text-slate-500 max-w-sm">
+                  <div class="truncate">
+                    {{ department.description || '-' }}
+                  </div>
 
-              </td>
+                </td>
 
-              <td class="px-6 py-4">
-                {{ getBranchName(department.branchId) }}
-              </td>
+                <td class="px-6 py-4">
+                  {{ getBranchName(department.branchId) }}
+                </td>
 
-              <td class="px-6 py-4 text-slate-500">
-                {{ formatDate(department.createdAt) }}
-              </td>
+                <td class="px-6 py-4 text-slate-500">
+                  {{ formatDate(department.createdAt) }}
+                </td>
 
-              <td class="px-6 py-4">
-                <div class="flex justify-end gap-2">
-                  <SecondaryButton content="View"  @click="handleViewDepartment(department)"/>
-                  <PrimaryButton content="Edit" @click="openEditModal(department)"/>
-                </div>
-              </td>
-            </tr>
+                <td class="px-6 py-4">
+                  <div class="flex justify-end gap-2">
+                    <SecondaryButton content="View" @click="handleViewDepartment(department)" />
+                    <PrimaryButton content="Edit" @click="openEditModal(department)" />
+                  </div>
+                </td>
+              </tr>
             </tbody>
             <tbody v-if="loading">
-            <tr>
-              <td colspan="5" class="text-center py-10">
-                Loading departments...
-              </td>
-            </tr>
+              <tr>
+                <td colspan="5" class="text-center py-10">
+                  Loading departments...
+                </td>
+              </tr>
             </tbody>
-            <tbody
-                v-else-if="
-selectedBranchId &&
-departments &&
-departments.length === 0
-"
-            >
-            <tr>
-              <td
-                  colspan="5"
-                  class="text-center py-10 text-slate-500"
-              >
-                No departments found
-              </td>
-            </tr>
+            <tbody v-else-if="
+              selectedBranchId &&
+              departments &&
+              departments.length === 0
+            ">
+              <tr>
+                <td colspan="5" class="text-center py-10 text-slate-500">
+                  No departments found
+                </td>
+              </tr>
             </tbody>
           </table>
         </div>
       </div>
-      <PaginationSection v-model:currentPage="currentPage"
-                         :totalItems="totalItems"
-                         :totalPage="totalPages"
-                         :pageSize="pageSize"
-                         itemLabel="departments"
-                         @changePage="handlePageChange">
+      <PaginationSection v-model:currentPage="currentPage" :totalItems="totalItems" :totalPage="totalPages"
+        :pageSize="pageSize" itemLabel="departments" @changePage="handlePageChange">
       </PaginationSection>
       <ModalGeneric v-model="isOpen" :title="'Add New Department'">
         <div class="space-y-6">
           <div>
-            <label for="position_name"
-                   class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <label for="position_name" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Department Name
             </label>
             <input v-model="createForm.name" type="text" id="position_name" placeholder="Department Name"
-                   class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
-                   required/>
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
+              required />
           </div>
 
           <div>
-            <label for="position_name"
-                   class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <label for="position_name" class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">
               Branch
             </label>
             <select v-model.number="createForm.branchId"
-                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-              <option
-                  v-for="branch in branches"
-                  :key="branch.id"
-                  :value="branch.id"
-              >
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+              <option v-for="branch in branches" :key="branch.id" :value="branch.id">
                 {{ branch.name }}
               </option>
 
@@ -180,10 +148,10 @@ departments.length === 0
 
           <div>
             <label for="description"
-                   class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
+              class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
             <textarea v-model="createForm.description" id="description" rows="4"
-                      placeholder="Briefly describe the key responsibilities..."
-                      class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
+              placeholder="Briefly describe the key responsibilities..."
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
           </div>
         </div>
         <template #footer>
@@ -194,11 +162,8 @@ departments.length === 0
         </template>
 
       </ModalGeneric>
-<!--view-->
-      <ModalGeneric
-          v-model="isViewOpen"
-          title="Department Details"
-      >
+      <!--view-->
+      <ModalGeneric v-model="isViewOpen" title="Department Details">
         <div class="space-y-5">
 
           <div>
@@ -240,13 +205,10 @@ departments.length === 0
         </div>
 
         <template #footer>
-          <SecondaryButton
-              content="Close"
-              @click="isViewOpen = false"
-          />
+          <SecondaryButton content="Close" @click="isViewOpen = false" />
         </template>
       </ModalGeneric>
-<!--// edit-->
+      <!--// edit-->
       <ModalGeneric v-model="isEditOpen" title="Edit Department">
 
         <div class="space-y-6">
@@ -255,10 +217,7 @@ departments.length === 0
             <label class="block text-xs font-bold text-slate-400 uppercase mb-2">
               Department Name
             </label>
-            <input
-                v-model="editForm.name"
-                class="w-full border rounded-md p-3"
-            >
+            <input v-model="editForm.name" class="w-full border rounded-md p-3">
           </div>
 
           <div>
@@ -266,18 +225,11 @@ departments.length === 0
               Branch
             </label>
 
-            <select
-                v-model="editForm.branchId"
-                class="w-full border rounded-md p-3"
-            >
+            <select v-model="editForm.branchId" class="w-full border rounded-md p-3">
               <option :value="null" disabled>
                 Select Branch
               </option>
-              <option
-                  v-for="branch in branches"
-                  :key="branch.id"
-                  :value="branch.id"
-              >
+              <option v-for="branch in branches" :key="branch.id" :value="branch.id">
                 {{ branch.name }}
               </option>
             </select>
@@ -288,26 +240,16 @@ departments.length === 0
               Description
             </label>
 
-            <textarea
-                rows="4"
-                v-model="editForm.description"
-                class="w-full border rounded-md p-3"
-            ></textarea>
+            <textarea rows="4" v-model="editForm.description" class="w-full border rounded-md p-3"></textarea>
           </div>
 
         </div>
 
         <template #footer>
           <div class="flex gap-2">
-            <SecondaryButton
-                content="Cancel"
-                @click="isEditOpen=false"
-            />
+            <SecondaryButton content="Cancel" @click="isEditOpen = false" />
 
-            <PrimaryButton
-                content="Save"
-                @click="handleUpdateDepartment"
-            />
+            <PrimaryButton content="Save" @click="handleUpdateDepartment" />
           </div>
         </template>
 
@@ -317,15 +259,15 @@ departments.length === 0
 </template>
 
 <script setup>
-import {ref, onMounted} from "vue";
+import { ref, onMounted } from "vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
-import {Plus} from "@lucide/vue";
+import { Plus } from "@lucide/vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import ModalGeneric from "../components/ModalGeneric.vue";
-import {useDepartmentStore} from "../store/departmentStore.js";
-import {useBranchStore} from "../store/branchStore.js";
+import { useDepartmentStore } from "../store/departmentStore.js";
+import { useBranchStore } from "../store/branchStore.js";
 
 const branchStore = useBranchStore();
 const departmentStore = useDepartmentStore();
@@ -358,12 +300,12 @@ const handleUpdateDepartment = async () => {
   try {
 
     await departmentStore.updateDepartment(
-        editForm.value.id,
-        {
-          branchId: editForm.value.branchId,
-          name: editForm.value.name,
-          description: editForm.value.description
-        }
+      editForm.value.id,
+      {
+        branchId: editForm.value.branchId,
+        name: editForm.value.name,
+        description: editForm.value.description
+      }
     );
 
     isEditOpen.value = false;
@@ -373,8 +315,8 @@ const handleUpdateDepartment = async () => {
   } catch (error) {
 
     console.log(
-        "UPDATE ERROR:",
-        error?.response?.data || error
+      "UPDATE ERROR:",
+      error?.response?.data || error
     );
 
   }
@@ -413,7 +355,7 @@ const loading = ref(false);
 
 const getBranchName = (branchId) => {
   const branch = branches.value.find(
-      b => b.id === branchId
+    b => b.id === branchId
   );
 
   return branch?.name || `Branch #${branchId}`;
@@ -441,9 +383,9 @@ const loadDepartments = async () => {
 
   try {
     const res = await departmentStore.getDepartmentsByBranch(
-        selectedBranchId.value,
-        currentPage.value - 1, // backend bắt đầu từ 0
-        pageSize.value
+      selectedBranchId.value,
+      currentPage.value - 1, // backend bắt đầu từ 0
+      pageSize.value
     );
     const data = res.data.data;
     departments.value = data || [];
@@ -499,7 +441,7 @@ const handleCreateDepartment = async () => {
   }
   try {
     await departmentStore.createDepartment(
-        createForm.value
+      createForm.value
     );
 
     isOpen.value = false;
