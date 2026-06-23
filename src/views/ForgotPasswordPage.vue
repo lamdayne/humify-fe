@@ -11,6 +11,19 @@
         </div>
     </header>
 
+    <!-- Hộp thông báo nổi Toast báo lỗi -->
+    <Transition name="slide-fade">
+        <div v-if="toast.show"
+            class="fixed top-20 right-6 z-[9999] flex items-center gap-3 bg-red-600 text-white px-5 py-3.5 rounded-xl shadow-2xl border border-red-700">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2"
+                stroke="currentColor" class="w-5 h-5 text-red-200">
+                <path stroke-linecap="round" stroke-linejoin="round"
+                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z" />
+            </svg>
+            <span class="text-sm font-medium">{{ toast.message }}</span>
+        </div>
+    </Transition>
+
     <main class="flex-grow flex flex-col md:flex-row min-h-screen w-full pt-14">
         <div class="w-full md:w-1/2 bg-[#050b14] flex flex-col items-center justify-center text-center p-10 md:p-20 relative overflow-hidden">
             <div class="absolute inset-0 bg-[linear-gradient(to_right,#111827_1px,transparent_1px),linear-gradient(to_bottom,#111827_1px,transparent_1px)] bg-[size:4rem_4rem] opacity-20"></div>
@@ -43,8 +56,13 @@
 
                         <button 
                             type="submit" 
-                            class="w-full bg-[#09090b] hover:bg-black text-white text-sm font-medium py-3 px-4 rounded-md transition-colors duration-200 mb-6"
+                            :disabled="isSubmitting"
+                            class="w-full bg-[#09090b] hover:bg-black disabled:opacity-50 text-white text-sm font-medium py-3 px-4 rounded-md transition-colors duration-200 mb-6 flex items-center justify-center gap-2"
                         >
+                            <svg v-if="isSubmitting" class="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                            </svg>
                             Reset password
                         </button>
 
@@ -87,20 +105,42 @@
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref, reactive } from 'vue';
+import axiosInstance from '../axios/axios.js';
 import PrimaryButton from '../components/PrimaryButton.vue';
 
 const email = ref('');
 const isEmailSent = ref(false);
+const isSubmitting = ref(false);
 
-const handleForgotPassword = () => {
-    if (email.value.trim() !== '') {
-        isEmailSent.value = true;
-    }
+const toast = reactive({
+    show: false,
+    message: ''
+});
+
+const showToast = (message) => {
+    toast.message = message;
+    toast.show = true;
+    setTimeout(() => {
+        toast.show = false;
+    }, 4000);
 };
 
-const handleResend = () => {
-    alert(`Đã gửi lại liên kết khôi phục tới: ${email.value}`);
+const handleForgotPassword = async () => {
+    if (!email.value.trim()) return;
+
+    isSubmitting.value = true;
+    try {
+        await axiosInstance.post('/auth/forgot-password', {
+            email: email.value
+        });
+        isEmailSent.value = true;
+    } catch (error) {
+        const errorMsg = error.response?.data?.message || 'Có lỗi xảy ra khi gửi yêu cầu khôi phục mật khẩu.';
+        showToast(errorMsg);
+    } finally {
+        isSubmitting.value = false;
+    }
 };
 </script>
 
@@ -111,5 +151,20 @@ html, body, #app {
   max-width: none !important;
   width: 100% !important;
   min-height: 100vh !important;
+}
+
+/* Toast animation support */
+.slide-fade-enter-active {
+    transition: all 0.3s ease-out;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.2s cubic-bezier(1, 0.5, 0.8, 1);
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+    transform: translateY(-12px);
+    opacity: 0;
 }
 </style>

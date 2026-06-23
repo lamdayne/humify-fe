@@ -14,6 +14,7 @@ import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
 import EmployeeFormPage from "../views/EmployeeFormPage.vue";
 import ResetPasswordPage from "../views/ResetPasswordPage.vue";
 import VerifyCompanyPage from "../views/VerifyCompanyPage.vue";
+import SetPasswordPage from "../views/SetPasswordPage.vue";
 import { useAuthStore } from "../store/authStore.js";
 const routes = [
     {
@@ -116,6 +117,11 @@ const routes = [
         path: '/reset-password',
         component: ResetPasswordPage,
         name: 'ResetPassword'
+    },
+    {
+        path: '/set-password',
+        component: SetPasswordPage,
+        name: 'SetPassword'
     }
 ]
 
