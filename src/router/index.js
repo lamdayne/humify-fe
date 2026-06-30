@@ -18,6 +18,8 @@ import SetPasswordPage from "../views/SetPasswordPage.vue";
 import InvitePage from "../views/InvitePage.vue";
 import GoogleCallbackPage from "../views/GoogleCallbackPage.vue";
 import { useAuthStore } from "../store/authStore.js";
+import ProjectPage from "../views/ProjectPage.vue";
+import BoardColumnPage from "../views/BoardColumnPage.vue";
 const routes = [
     {
         path: '/',
@@ -134,6 +136,22 @@ const routes = [
         path: '/auth/google/callback',
         component: GoogleCallbackPage,
         name: 'GoogleCallback'
+    },
+    {
+        path: '/project',
+        component: ProjectPage,
+        name: 'Project',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/board',
+        component: BoardColumnPage,
+        name: 'BoardColumn',
+        meta: {
+            requiresAuth: true
+        }
     }
 ]
 
