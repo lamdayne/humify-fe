@@ -296,9 +296,8 @@ const openEditModal = (department) => {
 };
 
 const handleUpdateDepartment = async () => {
-
+  console.log(editForm.value);
   try {
-
     await departmentStore.updateDepartment(
       editForm.value.id,
       {
@@ -387,10 +386,13 @@ const loadDepartments = async () => {
       currentPage.value - 1, // backend bắt đầu từ 0
       pageSize.value
     );
-    const data = res.data.data;
-    departments.value = data || [];
-    totalItems.value = data.length;
-    totalPages.value = Math.ceil(data.length / pageSize.value);
+    console.log(res.data);
+    console.log(res.data.data);
+    const page = res.data.data;
+
+    departments.value = page.items;
+    totalItems.value = page.totalElements;
+    totalPages.value = page.totalPages;
   } catch (error) {
     console.log(error);
   } finally {
