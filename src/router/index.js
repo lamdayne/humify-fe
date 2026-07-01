@@ -146,7 +146,7 @@ const routes = [
         }
     },
     {
-        path: '/board',
+        path: '/project/:id',
         component: BoardColumnPage,
         name: 'BoardColumn',
         meta: {

@@ -22,7 +22,7 @@
 
             <ProjectSkeleton v-if="isLoading"></ProjectSkeleton>
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-                <div v-for="project in projects" :key="project.id"
+                <router-link :to="`/project/${project.id}`" v-for="project in projects" :key="project.id"
                     class="bg-slate w-full flex flex-col justify-between h-35 rounded-xl border border-slate-200 shadow-xs p-4 cursor-pointer">
                     <div class="flex items-center justify-between">
                         <h1 class="text-lg">{{ project.name }}</h1>
@@ -34,18 +34,18 @@
                         }}
                     </p>
                     <div class="relative self-end">
-                        <Settings class="w-4 h-4"></Settings>
-                        <div v-if="showMenu"
+                        <Settings @click="toggleMenuSetting(project.id)" class="w-4 h-4"></Settings>
+                        <div v-if="activeMenuId === project.id"
                             class="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
-                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100">
+                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
                                 Update
                             </button>
-                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100">
+                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
                                 Setting
                             </button>
                         </div>
                     </div>
-                </div>
+                </router-link>
             </div>
         </div>
         <ModalGeneric v-model="isModalOpen" :title="'Create new project'">
@@ -92,7 +92,7 @@ import PrimaryButton from '../components/PrimaryButton.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { computed, onBeforeUnmount, onMounted, reactive, ref, watch } from 'vue';
 import ProjectSkeleton from '../components/ProjectSkeleton.vue';
 import { useProject } from '../store/projectStore.js';
 import ToastMessage from '../components/ToastMessage.vue';
@@ -100,7 +100,7 @@ import ToastMessage from '../components/ToastMessage.vue';
 const isModalOpen = ref(false)
 const isLoading = ref(false)
 const toastOpen = ref(false)
-
+const activeMenuId = ref(null)
 
 const toastInfo = reactive({
     message: null,
@@ -192,6 +192,10 @@ const resolveStatusType = (projectStatus) => {
         default:
             return 'PENDING'
     }
+}
+
+const toggleMenuSetting = (id) => {
+    activeMenuId.value = activeMenuId.value === id ? null : id
 }
 
 watch(isModalOpen, (newValue) => {
