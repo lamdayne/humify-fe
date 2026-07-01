@@ -4,14 +4,29 @@
             <div v-for="(col, index) in columns" :key="col.id" draggable="true" @dragover.prevent
                 @dragstart="onColumnDragStart(index)" @drop="onColumnDrop(index)"
                 class="w-60 shrink-0 bg-gray-300 p-3 rounded-xl space-y-2 flex flex-col max-h-[85vh]">
-                <div class="font-bold">
+                <div class="font-bold flex justify-between relative">
                     <span class="">{{ col.title }}</span>
+                    <button @click="col.showMenu = !col.showMenu"
+                        class="px-1 rounded-full hover:bg-slate-200 cursor-pointer">
+                        <EllipsisVertical class="w-4"></EllipsisVertical>
+                    </button>
+
+                    <div v-if="col.showMenu" @click="col.showMenu = false" class="fixed inset-0 z-10 cursor-default">
+                    </div>
+                    <div v-if="col.showMenu"
+                        class="absolute top-8 right-0 bg-white shadow-lg rounded-lg w-32 border border-gray-200 z-20 text-sm font-normal overflow-hidden">
+                        <button @click="col.showMenu = false"
+                            class="w-full text-left px-3 py-2 hover:bg-gray-100 cursor-pointer transition">Rename</button>
+                        <button @click="deleteColumn(col.id)"
+                            class="w-full text-left px-3 py-2 hover:bg-red-100 text-red-600 cursor-pointer border-t border-gray-100 transition">Delete</button>
+                    </div>
                 </div>
-                <div class="space-y-2 flex-1 overflow-y-auto hide-scrollbar">
+                <div class="space-y-2 flex-1 overflow-y-auto hide-scrollbar" @dragover.prevent
+                    @drop.stop="onTaskDrop(col.id, col.tasks.length)">
                     <div v-for="(task, i) in col.tasks" :key="task.id" draggable="true" @dragover.prevent.stop
                         @dragstart.stop="onTaskDragStart(col.id, i)" @drop.stop="onTaskDrop(col.id, i)"
                         class="group bg-white p-3 rounded-lg shadow-sm cursor-pointer border-2 border-transparent hover:border-slate-400 flex items-start gap-2">
-                        <input type="checkbox" name="" id=""
+                        <input type="checkbox" name="" id="" draggable="false"
                             class="mt-1 opacity-0 group-hover:opacity-100 checked:opacity-100 transition cursor-pointer">
                         <div class="flex-1">
                             {{ task.title }}
@@ -64,7 +79,7 @@
 </template>
 
 <script setup>
-import { Plus, X } from '@lucide/vue';
+import { EllipsisVertical, Plus, X } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
 import { onMounted, ref } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
@@ -83,7 +98,8 @@ const columns = ref([
         title: 'To do',
         tasks: [],
         isAdding: false,
-        newTask: ''
+        newTask: '',
+        showMenu: false
     }
 ])
 
@@ -92,30 +108,70 @@ const taskStore = useTaskStore()
 
 const onColumnDragStart = (index) => {
     draggedColumn.value = index
+    draggedTask.value = null
 }
 
-const onColumnDrop = (index) => {
+const onColumnDrop = async (index) => {
+    if (draggedTask.value !== null) {
+        const targetCol = columns.value[index]
+        onTaskDrop(targetCol.id, targetCol.tasks.length)
+        return
+    }
+
+    if (draggedColumn.value === null) return
     const from = draggedColumn.value
     const to = index
 
-    if (from === to) return
+    if (from === to) {
+        draggedColumn.value = null
+        return
+    }
 
     const moved = columns.value.splice(from, 1)[0]
     columns.value.splice(to, 0, moved)
+    draggedColumn.value = null
+
+    const projectId = route.params?.id
+    const columnIds = {
+        columnIds: columns.value.map(c => c.id)
+    }
+    await columnStore.reorderColumn(projectId, columnIds)
 }
 
 const onTaskDragStart = (colId, index) => {
-
+    draggedTask.value = { colId, index }
+    draggedColumn.value = null
 }
 
 const onTaskDrop = (targetColId, targetIndex) => {
+    if (!draggedTask.value) return;
 
+    const { colId: sourceColId, index: sourceIndex } = draggedTask.value;
+
+    const sourceCol = columns.value.find(c => c.id === sourceColId);
+    const targetCol = columns.value.find(c => c.id === targetColId);
+
+    if (sourceCol && targetCol) {
+        const [movedTask] = sourceCol.tasks.splice(sourceIndex, 1);
+
+        if (sourceColId === targetColId && sourceIndex < targetIndex) {
+            targetIndex--;
+        }
+
+        targetCol.tasks.splice(targetIndex, 0, movedTask);
+    }
+
+    draggedTask.value = null;
 }
 
 const addTask = (col) => {
     if (!col.newTask.trim()) return
 
-    col.tasks.push(col.newTask)
+    col.tasks.push({
+        id: Date.now(),
+        title: col.newTask,
+        position: col.tasks.length
+    })
     col.newTask = ''
     col.isAdding = false
 }
@@ -125,15 +181,25 @@ const cancelTask = (col) => {
     col.isAdding = false
 }
 
-const addColumn = () => {
+const addColumn = async () => {
     if (!newColumnTitle.value.trim()) return
 
+    const columnInfo = {
+        name: newColumnTitle.value,
+        category: 'IN_PROGRESS'
+    }
+
+    const projectId = route.params?.id;
+    const res = await columnStore.createColumn(projectId, columnInfo)
+
+    const newCol = res.data?.data;
     columns.value.push({
-        id: Date.now(),
+        id: newCol.id,
         title: newColumnTitle.value,
         tasks: [],
         isAdding: false,
-        newTask: ""
+        newTask: "",
+        showMenu: false
     })
 
     newColumnTitle.value = ""
@@ -145,6 +211,13 @@ const cancelColumn = () => {
     isAddingColumn.value = false
 }
 
+const deleteColumn = (colId) => {
+    const index = columns.value.findIndex(c => c.id === colId);
+    if (index !== -1) {
+        columns.value.splice(index, 1);
+    }
+}
+
 onMounted(async () => {
     const projectId = route.params?.id;
     const res = await columnStore.fetchColumnsByProjectId(projectId)
@@ -154,7 +227,8 @@ onMounted(async () => {
         position: col.position,
         tasks: [],
         isAdding: false,
-        newTask: ''
+        newTask: '',
+        showMenu: false
     })).sort((a, b) => a.position - b.position)
 
     const taskRes = await taskStore.fetchTaskByProjectId(projectId)
