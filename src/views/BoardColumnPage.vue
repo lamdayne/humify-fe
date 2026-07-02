@@ -1,5 +1,15 @@
 <template>
     <MainContent>
+        <div class="bg-gray-100 h-15 flex items-center justify-between">
+            <div></div>
+            <div class="mr-4">
+                <PrimaryButton content="Share" @click="showShareModal">
+                    <template #icon>
+                        <Plus></Plus>
+                    </template>
+                </PrimaryButton>
+            </div>
+        </div>
         <div class="flex items-start p-3 overflow-x-auto gap-3 hide-scrollbar">
             <div v-for="(col, index) in columns" :key="col.id" draggable="true" @dragover.prevent
                 @dragstart="onColumnDragStart(index)" @drop="onColumnDrop(index)"
@@ -123,9 +133,9 @@
                 <div class="col-span-2 flex flex-col gap-2">
                     <div class="flex gap-2 items-center">
                         <input type="checkbox" name="" id=""
-                            class="mt-1 opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer">
-                        <StatusBadge :type="'INACTIVE'" :content="taskDetail.taskKey"></StatusBadge>
-                        <input type="text" class="text-xl font-medium" :value="taskDetail.title">
+                            class="opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer shrink-0">
+                        <StatusBadge :type="'INACTIVE'" :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
+                        <input type="text" class="flex-1 min-w-0 text-xl font-medium" :value="taskDetail.title">
                     </div>
                     <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
                         <!-- <SecondaryButton :content="'Add'">
@@ -195,6 +205,61 @@
                 </div>
             </div>
         </ModalGeneric>
+        <ModalGeneric v-model="openShareModal" width="700px">
+            <div class="flex gap-2">
+                <div class="w-2/3">
+                    <label for="projectName"
+                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Project Name
+                    </label>
+                    <input type="text" id="projectName" placeholder="Email address"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                </div>
+                <div class="flex w-1/3 gap-2">
+                    <div class="w-2/3">
+                        <label for="projectKey"
+                            class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                            Role
+                        </label>
+                        <select type="text" id="projectKey"
+                            class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                            <option v-for="pr in projectRoles" :value="pr.id">{{ pr }}</option>
+                        </select>
+                    </div>
+                    <div class="w-1/3 mt-6">
+                        <button class="p-3 bg-slate-200 rounded-lg cursor-pointer">Share</button>
+                    </div>
+                </div>
+            </div>
+            <div class="border-b border-slate-200 mt-5">
+                <div class="flex items-center gap-6">
+                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer">
+                        <span class="font-medium text-[16px]">Board members</span>
+                    </button>
+                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer">
+                        <span class="font-medium text-[16px]">Join requests</span>
+                    </button>
+                </div>
+            </div>
+            <div class="flex mt-4 justify-between px-4">
+                <div class="flex gap-5 justify-between">
+                    <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
+                        alt="" class="rounded-full w-12">
+                    <div class="flex flex-col">
+                        <span class="font-medium">nlam32428@gmail.com</span>
+                        <span>Admin</span>
+                    </div>
+                </div>
+                <div>
+                    <select type="text" id="projectKey"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                        <option value="MANAGER">Manager</option>
+                        <option value="MEMBER">Member</option>
+                        <option value="VIEWER">Viewer</option>
+                    </select>
+                </div>
+            </div>
+        </ModalGeneric>
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
     </MainContent>
 </template>
@@ -202,7 +267,7 @@
 <script setup>
 import { CircleCheckBig, EllipsisVertical, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, X } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../store/taskStore.js';
@@ -211,8 +276,10 @@ import ModalGeneric from '../components/ModalGeneric.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
+import { useProject } from '../store/projectStore.js';
 
 const route = useRoute()
+const projectStore = useProject()
 const isAddingColumn = ref(false)
 const newColumnTitle = ref('')
 const draggedColumn = ref(null)
@@ -224,8 +291,12 @@ const openModal = ref(false)
 const openModalDelete = ref(false)
 const columnDeleteId = ref(null)
 
+const openShareModal = ref(false)
+
 const openTaskModal = ref(false)
 const isEditTaskDesc = ref(false)
+
+const isTabActive = ref('members')
 
 const columns = ref([
     {
@@ -238,6 +309,8 @@ const columns = ref([
         category: ''
     }
 ])
+
+const projectRoles = computed(() => projectStore.projectRoles)
 
 const columnInfo = reactive({
     id: null,
@@ -487,6 +560,10 @@ const showTaskDetail = async (taskId) => {
     }
 }
 
+const showShareModal = () => {
+    openShareModal.value = true
+}
+
 onMounted(async () => {
     const projectId = route.params?.id;
     project.id = projectId
@@ -516,6 +593,9 @@ onMounted(async () => {
     columns.value.forEach(col => {
         col.tasks.sort((a, b) => a.position - b.position)
     })
+
+    const projectRoleRes = await projectStore.getAllProjectRoles();
+    projectRoles.value = projectRoleRes.data?.data
 })
 
 watch(openModal, (newValue) => {

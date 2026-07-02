@@ -34,7 +34,7 @@
                         }}
                     </p>
                     <div class="relative self-end">
-                        <Settings @click="toggleMenuSetting(project.id)" class="w-4 h-4"></Settings>
+                        <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4"></Settings>
                         <div v-if="activeMenuId === project.id"
                             class="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
                             <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">

@@ -4,6 +4,7 @@ import axiosInstance from '../axios/axios';
 
 export const useProject = defineStore('project', () => {
     const projects = ref([])
+    const projectRoles = ref([])
 
     const fetchProjects = async () => {
         try {
@@ -24,9 +25,20 @@ export const useProject = defineStore('project', () => {
         }
     }
 
+    const getAllProjectRoles = async () => {
+        try {
+            const res = await axiosInstance.get('/projects/roles')
+            return res.data
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         projects,
         fetchProjects,
-        createProject
+        createProject,
+        projectRoles,
+        getAllProjectRoles
     }
 })
