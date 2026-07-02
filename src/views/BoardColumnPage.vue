@@ -223,7 +223,7 @@
                         </label>
                         <select type="text" id="projectKey"
                             class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-                            <option v-for="pr in projectRoles" :value="pr.id">{{ pr }}</option>
+                            <option v-for="pr in projectRoles" :value="pr.id">{{ pr.name }}</option>
                         </select>
                     </div>
                     <div class="w-1/3 mt-6">
@@ -233,31 +233,39 @@
             </div>
             <div class="border-b border-slate-200 mt-5">
                 <div class="flex items-center gap-6">
-                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer">
+                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer"
+                        :class="[isTabActive === 'members' ? 'border-b-2 border-slate-700' : '']"
+                        @click="isTabActive = 'members'">
                         <span class="font-medium text-[16px]">Board members</span>
                     </button>
-                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer">
+                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer"
+                        :class="[isTabActive === 'requests' ? 'border-b-2 border-slate-700' : '']"
+                        @click="isTabActive = 'requests'">
                         <span class="font-medium text-[16px]">Join requests</span>
                     </button>
                 </div>
             </div>
-            <div class="flex mt-4 justify-between px-4">
+            <div v-if="isTabActive === 'members'" class="flex mt-4 justify-between px-4"
+                v-for="member in memberOfProject" :key="member.id">
                 <div class="flex gap-5 justify-between">
                     <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
                         alt="" class="rounded-full w-12">
                     <div class="flex flex-col">
-                        <span class="font-medium">nlam32428@gmail.com</span>
-                        <span>Admin</span>
+                        <span class="font-medium">{{ member.user.email }}</span>
+                        <span>{{ member.role.name }}</span>
                     </div>
                 </div>
                 <div>
-                    <select type="text" id="projectKey"
+                    <select type="text" id="projectKey" v-model="member.role.code"
                         class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         <option value="MANAGER">Manager</option>
                         <option value="MEMBER">Member</option>
                         <option value="VIEWER">Viewer</option>
                     </select>
                 </div>
+            </div>
+            <div v-else>
+                <span>No request</span>
             </div>
         </ModalGeneric>
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
@@ -310,6 +318,8 @@ const columns = ref([
     }
 ])
 
+const memberOfProject = ref(null)
+
 const projectRoles = computed(() => projectStore.projectRoles)
 
 const columnInfo = reactive({
@@ -324,7 +334,7 @@ const toastInfo = reactive({
     type: 'success'
 })
 
-const taskDetail = ref(null)
+const taskDetail = ref([])
 
 const columnStore = useColumnStore()
 const taskStore = useTaskStore()
@@ -594,8 +604,10 @@ onMounted(async () => {
         col.tasks.sort((a, b) => a.position - b.position)
     })
 
-    const projectRoleRes = await projectStore.getAllProjectRoles();
-    projectRoles.value = projectRoleRes.data?.data
+    await projectStore.getAllProjectRoles();
+
+    const memberRes = await projectStore.getAllMemberByProjectId(projectId)
+    memberOfProject.value = memberRes?.data?.items
 })
 
 watch(openModal, (newValue) => {
