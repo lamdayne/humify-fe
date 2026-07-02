@@ -33,10 +33,30 @@ export const useColumnStore = defineStore('column', () => {
         }
     }
 
+    const updateColumn = async (columnId, columnInfo) => {
+        try {
+            const res = await axiosInstance.put(`/columns/${columnId}`, columnInfo)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteColumn = async (columnId) => {
+        try {
+            const res = await axiosInstance.delete(`/columns/${columnId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         columns,
         fetchColumnsByProjectId,
         createColumn,
-        reorderColumn
+        reorderColumn,
+        updateColumn,
+        deleteColumn
     }
 })
