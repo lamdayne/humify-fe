@@ -44,12 +44,42 @@ export const useProject = defineStore('project', () => {
         }
     }
 
+    const updateProjectMemberRole = async (projectId, userId, roleCode) => {
+        try {
+            const res = await axiosInstance.put(`/projects/${projectId}/members/${userId}/role`, roleCode)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const approveRequest = async (projectId, userId) => {
+        try {
+            const res = await axiosInstance.post(`/projects/${projectId}/members/${userId}/approve`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const createInviteMember = async (projectId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/projects/${projectId}/invitations`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         projects,
         fetchProjects,
         createProject,
         projectRoles,
         getAllProjectRoles,
-        getAllMemberByProjectId
+        getAllMemberByProjectId,
+        updateProjectMemberRole,
+        approveRequest,
+        createInviteMember
     }
 })
