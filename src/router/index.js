@@ -15,7 +15,11 @@ import EmployeeFormPage from "../views/EmployeeFormPage.vue";
 import ResetPasswordPage from "../views/ResetPasswordPage.vue";
 import VerifyCompanyPage from "../views/VerifyCompanyPage.vue";
 import SetPasswordPage from "../views/SetPasswordPage.vue";
+import InvitePage from "../views/InvitePage.vue";
+import GoogleCallbackPage from "../views/GoogleCallbackPage.vue";
 import { useAuthStore } from "../store/authStore.js";
+import ProjectPage from "../views/ProjectPage.vue";
+import BoardColumnPage from "../views/BoardColumnPage.vue";
 const routes = [
     {
         path: '/',
@@ -122,6 +126,32 @@ const routes = [
         path: '/set-password',
         component: SetPasswordPage,
         name: 'SetPassword'
+    },
+    {
+        path: '/invite',
+        component: InvitePage,
+        name: 'Invite'
+    },
+    {
+        path: '/auth/google/callback',
+        component: GoogleCallbackPage,
+        name: 'GoogleCallback'
+    },
+    {
+        path: '/project',
+        component: ProjectPage,
+        name: 'Project',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/project/:id',
+        component: BoardColumnPage,
+        name: 'BoardColumn',
+        meta: {
+            requiresAuth: true
+        }
     }
 ]
 
