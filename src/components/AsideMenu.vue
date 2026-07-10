@@ -92,13 +92,15 @@ const menus = [
         label: 'Role',
         icon: UserLock,
         name: 'Roles',
-        permission: 'ROLE'
+        permission: 'ROLE',
+        isSystemAdmin: true
     },
     {
         label: 'Permission',
         icon: ShieldCogCorner,
         name: 'Permissions',
-        permission: 'PERMISSION'
+        permission: 'PERMISSION',
+        isSystemAdmin: true
     },
     {
         label: 'Project',
@@ -112,6 +114,7 @@ const visibleMenus = computed(() => {
     return menus.filter(item => {
         if (!item.permission) return true
         if (authStore.isSystemAdmin) return true
+        if (item?.isSystemAdmin) return authStore.isSystemAdmin
         return authStore.canView(item.permission)
     })
 })

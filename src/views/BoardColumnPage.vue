@@ -199,8 +199,7 @@
                             <MessageSquareText class="w-5"></MessageSquareText>
                             <span class="font-medium">Comments and activity</span>
                         </div>
-                        <input type="text" class="text-lg p-1.5 bg-slate-200 rounded-lg"
-                            placeholder="Write a comment...">
+                        <input type="text" class="p-1.5 bg-slate-200 rounded-lg" placeholder="Write a comment...">
                     </div>
                 </div>
             </div>
@@ -708,7 +707,7 @@ const inviteWithEmail = async () => {
             return
         }
         const payload = {
-            email: null,
+            email: emailInvite.value,
             projectRoleId: selectedRoleEmailInvite.value
         }
         const res = await projectStore.createInviteMember(project.id, payload)
