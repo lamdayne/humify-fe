@@ -388,7 +388,7 @@ const loadDepartments = async () => {
       pageSize.value
     );
     const data = res.data.data;
-    departments.value = data || [];
+    departments.value = data?.items || [];
     totalItems.value = data.length;
     totalPages.value = Math.ceil(data.length / pageSize.value);
   } catch (error) {
