@@ -137,7 +137,7 @@
                         <StatusBadge :type="'INACTIVE'" :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
                         <input type="text" class="flex-1 min-w-0 text-xl font-medium" :value="taskDetail.title">
                     </div>
-                    <div class="grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
+                    <div class="relative grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
                         <!-- <SecondaryButton :content="'Add'">
                             <template #icon>
                                 <Plus></Plus>
@@ -154,12 +154,31 @@
                                 <Paperclip class="w-4"></Paperclip>
                             </template>
                         </SecondaryButton>
+                        <SecondaryButton :content="'Member'" v-if="!taskDetail.assignee" @click="toggleShowMenuPopup">
+                            <template #icon>
+                                <UserPlus class="w-5"></UserPlus>
+                            </template>
+                        </SecondaryButton>
+                        <div v-if="showMemberPopup"
+                            class="absolute right-0 top-10 w-70 bg-white shadow-lg p-3 rounded-lg border border-slate-200 z-50">
+                            <h1 class="text-center">Member</h1>
+                            <input type="text" class="w-full p-2 border-2 border-slate-200 outline-none rounded-lg"
+                                placeholder="Search members">
+                            <div class="w-full h-30 overflow-auto mt-5 scrollbar-none">
+                                <div v-for="member in memberOfProject"
+                                    class="flex gap-2 mt-2 items-center hover:bg-slate-100 cursor-pointer p-1">
+                                    <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
+                                        alt="" class="w-10 rounded-full">
+                                    <span>{{ member.user.email || member.user.fullName }}</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <span class="mt-5 ml-5 font-medium">Members</span>
-                    <div class="flex ml-5 gap-2">
+                    <span v-if="taskDetail.assignee" class="mt-5 ml-5 font-medium">Members</span>
+                    <div v-if="taskDetail.assignee" class="flex ml-5 gap-2">
                         <div class="w-12 cursor-pointer">
                             <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                                alt="" class="rounded-full">
+                                alt="" :title="taskDetail.assignee?.email" class="rounded-full">
                         </div>
                         <button class="p-2.5 border-2 border-slate-300 rounded-full cursor-pointer">
                             <Plus></Plus>
@@ -199,8 +218,7 @@
                             <MessageSquareText class="w-5"></MessageSquareText>
                             <span class="font-medium">Comments and activity</span>
                         </div>
-                        <input type="text" class="text-lg p-1.5 bg-slate-200 rounded-lg"
-                            placeholder="Write a comment...">
+                        <input type="text" class="p-1.5 bg-slate-200 rounded-lg" placeholder="Write a comment...">
                     </div>
                 </div>
             </div>
@@ -307,7 +325,7 @@
 </template>
 
 <script setup>
-import { CircleCheckBig, EllipsisVertical, Link2, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, X } from '@lucide/vue';
+import { CircleCheckBig, EllipsisVertical, Link2, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
 import { computed, onMounted, reactive, ref, watch } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
@@ -345,6 +363,8 @@ const selectedRoleLinkInvite = ref(null)
 const publicLinkInvite = ref(null)
 const selectedRoleEmailInvite = ref(null)
 const emailInvite = ref(null)
+
+const showMemberPopup = ref(false)
 
 const columns = ref([
     {
@@ -708,7 +728,7 @@ const inviteWithEmail = async () => {
             return
         }
         const payload = {
-            email: null,
+            email: emailInvite.value,
             projectRoleId: selectedRoleEmailInvite.value
         }
         const res = await projectStore.createInviteMember(project.id, payload)
@@ -727,6 +747,10 @@ const inviteWithEmail = async () => {
 const copyLinkInvite = () => {
     navigator.clipboard.writeText(publicLinkInvite.value)
     showToastMessage('Copy link invite success')
+}
+
+const toggleShowMenuPopup = () => {
+    showMemberPopup.value = !showMemberPopup.value
 }
 
 watch(openModal, (newValue) => {

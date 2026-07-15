@@ -20,6 +20,8 @@ import GoogleCallbackPage from "../views/GoogleCallbackPage.vue";
 import { useAuthStore } from "../store/authStore.js";
 import ProjectPage from "../views/ProjectPage.vue";
 import BoardColumnPage from "../views/BoardColumnPage.vue";
+import LeaveType from "../views/LeaveType.vue";
+
 const routes = [
     {
         path: '/',
@@ -149,6 +151,14 @@ const routes = [
         path: '/project/:id',
         component: BoardColumnPage,
         name: 'BoardColumn',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/leave-types',
+        component: LeaveType,
+        name: 'LeaveTypes',
         meta: {
             requiresAuth: true
         }
