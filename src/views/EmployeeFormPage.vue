@@ -281,7 +281,7 @@
                     <p class="text-xs text-slate-400 font-light leading-relaxed mb-4">
                         Please select one or more security roles to assign to this user. This determines their system access level.
                     </p>
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-[300px] overflow-y-auto p-1">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-75 overflow-y-auto p-1">
                         <label v-for="role in roleStore.roles" :key="role.id"
                             class="flex items-center gap-3 text-sm text-slate-700 cursor-pointer select-none group border border-slate-200/80 rounded-xl p-3.5 bg-white hover:border-slate-300 transition-colors">
                             <input type="checkbox" :value="role.id" v-model="form.roleIds"
