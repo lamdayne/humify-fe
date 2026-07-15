@@ -34,20 +34,30 @@
                         }}
                     </p>
                     <div class="relative self-end">
-                        <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4"></Settings>
+                        <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4 cursor-pointer">
+                        </Settings>
+
+                        <!-- Click outside overlay -->
+                        <div v-if="activeMenuId === project.id" @click.stop.prevent="activeMenuId = null"
+                            class="fixed inset-0 z-40 cursor-default"></div>
+
                         <div v-if="activeMenuId === project.id"
                             class="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
-                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
+                            <button @click.stop.prevent="openUpdateModal(project); activeMenuId = null"
+                                class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
                                 Update
                             </button>
-                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
-                                Setting
+                            <button @click.stop.prevent="openConfirmDeleteModal(project.id); activeMenuId = null"
+                                class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer text-red-500">
+                                Delete
                             </button>
                         </div>
                     </div>
                 </router-link>
             </div>
         </div>
+
+        <!-- Modal create project -->
         <ModalGeneric v-model="isModalOpen" :title="'Create new project'">
             <div class="space-y-6">
                 <div class="">
@@ -77,10 +87,64 @@
             <template #footer>
                 <div class="flex gap-2">
                     <SecondaryButton @click="isModalOpen = false" :content="'Cancel'"></SecondaryButton>
-                    <PrimaryButton @click="handleCreateProject" :content="'Create'"></PrimaryButton>
+                    <PrimaryButton @click="handleCreateProject" :content="'Create'">
+                    </PrimaryButton>
                 </div>
             </template>
         </ModalGeneric>
+
+        <!-- Modal update project -->
+        <ModalGeneric v-model="updateProjectInfo.isUpdate" :title="'Update project'">
+            <div class="space-y-6">
+                <div class="">
+                    <label for="projectName"
+                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Project Name
+                    </label>
+                    <input type="text" id="projectName" placeholder="Ecommerce" v-model="updateProjectInfo.name"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                </div>
+                <div>
+                    <label for="description"
+                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Status</label>
+                    <select type="text" id="projectKey" v-model="updateProjectInfo.status"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                        <option value="ACTIVE">ACTIVE</option>
+                        <option value="COMPLETED">COMPLETED</option>
+                        <option value="ARCHIVED">ARCHIVED</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="description"
+                        class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
+                    <textarea id="description" rows="4" placeholder="Briefly describe the key responsibilities..."
+                        v-model="updateProjectInfo.description"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"></textarea>
+                </div>
+            </div>
+            <template #footer>
+                <div class="flex gap-2">
+                    <SecondaryButton @click="isModalOpen = false" :content="'Cancel'"></SecondaryButton>
+                    <PrimaryButton @click="handleUpdateProject" :content="'Update'"></PrimaryButton>
+                </div>
+            </template>
+        </ModalGeneric>
+
+        <!-- Confirm Delete Modal -->
+        <ModalGeneric v-model="deleteProjectInfo.isModalOpen" title="Confirm Delete">
+            Do you want to delete?
+            <template #footer>
+                <div class="flex gap-2">
+                    <SecondaryButton @click="deleteProjectInfo.isModalOpen = false" :content="'Cancel'">
+                    </SecondaryButton>
+                    <button @click="handleDeleteProject"
+                        class="w-full h-9 px-3 bg-red-500 text-white font-medium rounded-lg hover:opacity-80 transition-all flex items-center justify-center cursor-pointer gap-xs">
+                        Delete
+                    </button>
+                </div>
+            </template>
+        </ModalGeneric>
+
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
     </MainContent>
 </template>
@@ -101,6 +165,18 @@ const isModalOpen = ref(false)
 const isLoading = ref(false)
 const toastOpen = ref(false)
 const activeMenuId = ref(null)
+const deleteProjectInfo = ref({
+    isModalOpen: false,
+    projectId: null
+})
+
+const updateProjectInfo = ref({
+    isUpdate: false,
+    productId: null,
+    name: null,
+    description: null,
+    status: null,
+})
 
 const toastInfo = reactive({
     message: null,
@@ -169,6 +245,13 @@ const clearForm = () => {
     projectValue.name = null
     projectValue.key = null
     projectValue.description = null
+    updateProjectInfo.value.isUpdate = false
+    updateProjectInfo.value.productId = null
+    updateProjectInfo.value.name = null
+    updateProjectInfo.value.description = null
+    updateProjectInfo.value.status = null
+    deleteProjectInfo.value.isModalOpen = false
+    deleteProjectInfo.value.projectId = null
 }
 
 const showToastMessage = (message, type = 'success') => {
@@ -198,8 +281,77 @@ const toggleMenuSetting = (id) => {
     activeMenuId.value = activeMenuId.value === id ? null : id
 }
 
+const openUpdateModal = (project) => {
+    updateProjectInfo.value.isUpdate = true
+    updateProjectInfo.value.productId = project.id
+    updateProjectInfo.value.name = project.name
+    updateProjectInfo.value.description = project.description
+    updateProjectInfo.value.status = project.status
+}
+
+const handleUpdateProject = async () => {
+    try {
+        const payload = {
+            name: updateProjectInfo.value.name,
+            description: updateProjectInfo.value.description,
+            status: updateProjectInfo.value.status
+        }
+        const res = await projectStore.updateProject(updateProjectInfo.value.productId, payload)
+        if (res.success) {
+            showToastMessage(res.message, 'success')
+            const index = projects.value.findIndex(project => project.id === updateProjectInfo.value.productId)
+            if (index !== -1) {
+                projects.value[index] = res.data
+            }
+            updateProjectInfo.value.isUpdate = false
+        } else {
+            showToastMessage(res.message, 'failed')
+        }
+    } catch (e) {
+        const errorResponseData = e.response?.data
+        showToastMessage(errorResponseData.message, 'failed')
+    }
+}
+
+const openConfirmDeleteModal = (projectId) => {
+    deleteProjectInfo.value.isModalOpen = true
+    deleteProjectInfo.value.projectId = projectId
+}
+
+const handleDeleteProject = async () => {
+    try {
+        const res = await projectStore.deleteProject(deleteProjectInfo.value.projectId)
+        if (res.success) {
+            showToastMessage(res.message, 'success')
+            const index = projects.value.findIndex(project => project.id === deleteProjectInfo.value.projectId)
+            if (index !== -1) {
+                projects.value.splice(index, 1)
+            }
+            deleteProjectInfo.value.isModalOpen = false
+        } else {
+            showToastMessage(res.message, 'failed')
+        }
+    } catch (e) {
+        const errorResponseData = e.response?.data
+        showToastMessage(errorResponseData.message, 'failed')
+    }
+}
+
+
 watch(isModalOpen, (newValue) => {
     if (!newValue) {
+        clearForm()
+    }
+})
+
+watch(updateProjectInfo, (newValue) => {
+    if (!newValue.isUpdate) {
+        clearForm()
+    }
+})
+
+watch(deleteProjectInfo, (newValue) => {
+    if (!newValue.isModalOpen) {
         clearForm()
     }
 })
