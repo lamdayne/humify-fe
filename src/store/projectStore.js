@@ -71,6 +71,15 @@ export const useProject = defineStore('project', () => {
         }
     }
 
+    const updateProject = async (projectId, payload) => {
+        try {
+            const res = await axiosInstance.put(`/projects/${projectId}`, payload)
+            return res.data
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         projects,
         fetchProjects,
@@ -80,6 +89,7 @@ export const useProject = defineStore('project', () => {
         getAllMemberByProjectId,
         updateProjectMemberRole,
         approveRequest,
-        createInviteMember
+        createInviteMember,
+        updateProject
     }
 })

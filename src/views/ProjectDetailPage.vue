@@ -11,8 +11,6 @@
             </div>
         </div>
 
-
-
         <BoardColumnPage />
 
         <!-- Share Modal -->
