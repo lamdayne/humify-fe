@@ -80,6 +80,15 @@ export const useProject = defineStore('project', () => {
         }
     }
 
+    const deleteProject = async (projectId) => {
+        try {
+            const res = await axiosInstance.delete(`/projects/${projectId}`)
+            return res.data
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         projects,
         fetchProjects,
@@ -90,6 +99,7 @@ export const useProject = defineStore('project', () => {
         updateProjectMemberRole,
         approveRequest,
         createInviteMember,
-        updateProject
+        updateProject,
+        deleteProject
     }
 })

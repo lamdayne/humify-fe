@@ -124,7 +124,8 @@
                     <div class="flex gap-2 items-center">
                         <input type="checkbox" name="" id=""
                             class="opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer shrink-0">
-                        <StatusBadge :type="'INACTIVE'" :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
+                        <StatusBadge :type="taskDetail.completedAt ? 'ACTIVE' : 'INACTIVE'"
+                            :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
                         <input type="text" class="flex-1 min-w-0 text-xl font-medium" :value="taskDetail.title">
                     </div>
                     <div class="relative grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
@@ -153,13 +154,16 @@
                             class="absolute right-0 top-10 w-70 bg-white shadow-lg p-3 rounded-lg border border-slate-200 z-50">
                             <h1 class="text-center">Member</h1>
                             <input type="text" class="w-full p-2 border-2 border-slate-200 outline-none rounded-lg"
-                                placeholder="Search members">
+                                placeholder="Search members" v-model="searchMember">
                             <div class="w-full h-30 overflow-auto mt-5 scrollbar-none">
-                                <div v-for="member in memberOfProject"
+                                <div v-for="member in filteredMembers" :key="member.id"
                                     class="flex gap-2 mt-2 items-center hover:bg-slate-100 cursor-pointer p-1">
                                     <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
                                         alt="" class="w-10 rounded-full">
                                     <span>{{ member.user.email || member.user.fullName }}</span>
+                                </div>
+                                <div v-if="filteredMembers.length === 0" class="text-center mt-5 text-slate-400">
+                                    No member found
                                 </div>
                             </div>
                         </div>
@@ -219,7 +223,7 @@
 
 <script setup>
 import { CircleCheckBig, EllipsisVertical, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
-import { onMounted, reactive, ref, watch } from 'vue';
+import { onMounted, reactive, ref, watch, computed } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../store/taskStore.js';
@@ -247,6 +251,19 @@ const openTaskModal = ref(false)
 const isEditTaskDesc = ref(false)
 
 const showMemberPopup = ref(false)
+const searchMember = ref('')
+
+const filteredMembers = computed(() => {
+    if (!memberOfProject.value) return []
+    const keyword = searchMember.value.toLowerCase().trim()
+    if (!keyword) return memberOfProject.value
+
+    return memberOfProject.value.filter(member => {
+        const email = (member.user?.email || '').toLowerCase()
+        const fullName = (member.user?.fullName || '').toLowerCase()
+        return email.includes(keyword) || fullName.includes(keyword)
+    })
+})
 
 const columns = ref([
     {
@@ -567,6 +584,7 @@ watch(openModalDelete, (newValue) => {
 watch(openTaskModal, (newValue) => {
     if (!newValue) {
         isEditTaskDesc.value = false
+        showMemberPopup.value = false
     }
 })
 </script>

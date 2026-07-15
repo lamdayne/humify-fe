@@ -34,15 +34,22 @@
                         }}
                     </p>
                     <div class="relative self-end">
-                        <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4"></Settings>
+                        <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4 cursor-pointer">
+                        </Settings>
+
+                        <!-- Click outside overlay -->
+                        <div v-if="activeMenuId === project.id" @click.stop.prevent="activeMenuId = null"
+                            class="fixed inset-0 z-40 cursor-default"></div>
+
                         <div v-if="activeMenuId === project.id"
                             class="absolute right-0 mt-2 w-40 bg-white border border-slate-200 rounded-lg shadow-lg z-50">
-                            <button @click.stop.prevent="openUpdateModal(project)"
+                            <button @click.stop.prevent="openUpdateModal(project); activeMenuId = null"
                                 class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
                                 Update
                             </button>
-                            <button class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer">
-                                Setting
+                            <button @click.stop.prevent="openConfirmDeleteModal(project.id); activeMenuId = null"
+                                class="w-full text-left px-4 py-2 hover:bg-slate-100 cursor-pointer text-red-500">
+                                Delete
                             </button>
                         </div>
                     </div>
@@ -123,6 +130,21 @@
             </template>
         </ModalGeneric>
 
+        <!-- Confirm Delete Modal -->
+        <ModalGeneric v-model="deleteProjectInfo.isModalOpen" title="Confirm Delete">
+            Do you want to delete?
+            <template #footer>
+                <div class="flex gap-2">
+                    <SecondaryButton @click="deleteProjectInfo.isModalOpen = false" :content="'Cancel'">
+                    </SecondaryButton>
+                    <button @click="handleDeleteProject"
+                        class="w-full h-9 px-3 bg-red-500 text-white font-medium rounded-lg hover:opacity-80 transition-all flex items-center justify-center cursor-pointer gap-xs">
+                        Delete
+                    </button>
+                </div>
+            </template>
+        </ModalGeneric>
+
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
     </MainContent>
 </template>
@@ -143,6 +165,10 @@ const isModalOpen = ref(false)
 const isLoading = ref(false)
 const toastOpen = ref(false)
 const activeMenuId = ref(null)
+const deleteProjectInfo = ref({
+    isModalOpen: false,
+    projectId: null
+})
 
 const updateProjectInfo = ref({
     isUpdate: false,
@@ -224,6 +250,8 @@ const clearForm = () => {
     updateProjectInfo.value.name = null
     updateProjectInfo.value.description = null
     updateProjectInfo.value.status = null
+    deleteProjectInfo.value.isModalOpen = false
+    deleteProjectInfo.value.projectId = null
 }
 
 const showToastMessage = (message, type = 'success') => {
@@ -269,7 +297,6 @@ const handleUpdateProject = async () => {
             status: updateProjectInfo.value.status
         }
         const res = await projectStore.updateProject(updateProjectInfo.value.productId, payload)
-        console.log('res', res)
         if (res.success) {
             showToastMessage(res.message, 'success')
             const index = projects.value.findIndex(project => project.id === updateProjectInfo.value.productId)
@@ -286,6 +313,31 @@ const handleUpdateProject = async () => {
     }
 }
 
+const openConfirmDeleteModal = (projectId) => {
+    deleteProjectInfo.value.isModalOpen = true
+    deleteProjectInfo.value.projectId = projectId
+}
+
+const handleDeleteProject = async () => {
+    try {
+        const res = await projectStore.deleteProject(deleteProjectInfo.value.projectId)
+        if (res.success) {
+            showToastMessage(res.message, 'success')
+            const index = projects.value.findIndex(project => project.id === deleteProjectInfo.value.projectId)
+            if (index !== -1) {
+                projects.value.splice(index, 1)
+            }
+            deleteProjectInfo.value.isModalOpen = false
+        } else {
+            showToastMessage(res.message, 'failed')
+        }
+    } catch (e) {
+        const errorResponseData = e.response?.data
+        showToastMessage(errorResponseData.message, 'failed')
+    }
+}
+
+
 watch(isModalOpen, (newValue) => {
     if (!newValue) {
         clearForm()
@@ -294,6 +346,12 @@ watch(isModalOpen, (newValue) => {
 
 watch(updateProjectInfo, (newValue) => {
     if (!newValue.isUpdate) {
+        clearForm()
+    }
+})
+
+watch(deleteProjectInfo, (newValue) => {
+    if (!newValue.isModalOpen) {
         clearForm()
     }
 })
