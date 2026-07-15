@@ -21,7 +21,7 @@
             </div>
 
             <ProjectSkeleton v-if="isLoading"></ProjectSkeleton>
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
+            <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <router-link :to="`/project/${project.id}`" v-for="project in projects" :key="project.id"
                     class="bg-slate w-full flex flex-col justify-between h-35 rounded-xl border border-slate-200 shadow-xs p-4 cursor-pointer">
                     <div class="flex items-center justify-between">
