@@ -1,15 +1,5 @@
 <template>
-    <MainContent>
-        <div class="bg-gray-100 h-15 flex items-center justify-between">
-            <div></div>
-            <div class="mr-4">
-                <PrimaryButton content="Share" @click="showShareModal">
-                    <template #icon>
-                        <Plus></Plus>
-                    </template>
-                </PrimaryButton>
-            </div>
-        </div>
+    <div class="flex-1">
         <div class="flex items-start p-3 overflow-x-auto gap-3 hide-scrollbar">
             <div v-for="(col, index) in columns" :key="col.id" draggable="true" @dragover.prevent
                 @dragstart="onColumnDragStart(index)" @drop="onColumnDrop(index)"
@@ -223,111 +213,13 @@
                 </div>
             </div>
         </ModalGeneric>
-        <ModalGeneric v-model="openShareModal" width="700px">
-            <div class="flex gap-2">
-                <div class="w-2/3">
-                    <label for="projectName"
-                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        Email
-                    </label>
-                    <input type="email" id="projectName" placeholder="Email address" v-model="emailInvite"
-                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-                </div>
-                <div class="flex w-1/3 gap-2">
-                    <div class="w-2/3">
-                        <label for="projectKey"
-                            class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                            Role
-                        </label>
-                        <select type="text" id="projectKey" v-model="selectedRoleEmailInvite"
-                            class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-                            <option v-for="pr in projectRoles" :value="pr.id">{{ pr.name }}</option>
-                        </select>
-                    </div>
-                    <div class="w-1/3 mt-6">
-                        <button @click="inviteWithEmail"
-                            class="p-3 bg-slate-200 rounded-lg cursor-pointer">Share</button>
-                    </div>
-                </div>
-            </div>
-            <div class="flex mt-4 gap-3">
-                <span class="w-10 h-10 flex items-center justify-center bg-gray-200 rounded-lg">
-                    <Link2 class="w-5 h-5"></Link2>
-                </span>
-                <div class="flex justify-between w-full">
-                    <div class="flex flex-col">
-                        <span class="font-medium text-[16px]">Share this board with the link</span>
-                        <div class="flex gap-3">
-                            <span @click="createPublicLink" class="underline text-blue-800 cursor-pointer">
-                                Create link
-                            </span>
-                            <span @click="copyLinkInvite" v-if="publicLinkInvite"
-                                class="underline text-blue-800 cursor-pointer">Copy link</span>
-                        </div>
-                    </div>
-                    <div class="">
-                        <select type="text" id="projectKey" v-model="selectedRoleLinkInvite"
-                            class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-                            <option v-for="pr in projectRoles" :value="pr.id">{{ pr.name }}</option>
-                        </select>
-                    </div>
-                </div>
-            </div>
-            <div class="border-b border-slate-200 mt-5">
-                <div class="flex items-center gap-6">
-                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer"
-                        :class="[isTabActive === 'members' ? 'border-b-2 border-slate-700' : '']"
-                        @click="isTabActive = 'members'">
-                        <span class="font-medium text-[16px]">Board members</span>
-                    </button>
-                    <button class="relative flex items-center gap-2 pb-3 text-sm font-medium cursor-pointer"
-                        :class="[isTabActive === 'requests' ? 'border-b-2 border-slate-700' : '']"
-                        @click="isTabActive = 'requests'">
-                        <span class="font-medium text-[16px]">Join requests</span>
-                    </button>
-                </div>
-            </div>
-            <div v-if="isTabActive === 'members'" class="flex mt-4 justify-between px-4"
-                v-for="member in memberOfProject" :key="member.id">
-                <div class="flex gap-5 justify-between">
-                    <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                        alt="" class="rounded-full w-12">
-                    <div class="flex flex-col">
-                        <span class="font-medium">{{ member.user.email }}</span>
-                        <span>{{ member.role.name }}</span>
-                    </div>
-                </div>
-                <div>
-                    <select type="text" id="projectKey" v-model="member.role.name" @change="updateRoleMember(member)"
-                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
-                        <option value="MANAGER">Manager</option>
-                        <option value="MEMBER">Member</option>
-                        <option value="VIEWER">Viewer</option>
-                    </select>
-                </div>
-            </div>
-            <div v-else class="flex mt-4 justify-between px-4" v-for="memberPending in memberPendingApprove">
-                <div class="flex gap-5 justify-between">
-                    <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                        alt="" class="rounded-full w-12">
-                    <div class="flex flex-col">
-                        <span class="font-medium">{{ memberPending.user.email }}</span>
-                        <span>{{ memberPending.role.name }}</span>
-                    </div>
-                </div>
-                <div>
-                    <PrimaryButton @click="approveRequest(memberPending)" content="Approve"></PrimaryButton>
-                </div>
-            </div>
-        </ModalGeneric>
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
-    </MainContent>
+    </div>
 </template>
 
 <script setup>
-import { CircleCheckBig, EllipsisVertical, Link2, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
-import MainContent from '../components/MainContent.vue';
-import { computed, onMounted, reactive, ref, watch } from 'vue';
+import { CircleCheckBig, EllipsisVertical, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
+import { onMounted, reactive, ref, watch } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../store/taskStore.js';
@@ -351,18 +243,8 @@ const openModal = ref(false)
 const openModalDelete = ref(false)
 const columnDeleteId = ref(null)
 
-const openShareModal = ref(false)
-
 const openTaskModal = ref(false)
 const isEditTaskDesc = ref(false)
-
-const isTabActive = ref('members')
-const memberPendingApprove = ref(null)
-
-const selectedRoleLinkInvite = ref(null)
-const publicLinkInvite = ref(null)
-const selectedRoleEmailInvite = ref(null)
-const emailInvite = ref(null)
 
 const showMemberPopup = ref(false)
 
@@ -379,8 +261,6 @@ const columns = ref([
 ])
 
 const memberOfProject = ref(null)
-
-const projectRoles = computed(() => projectStore.projectRoles)
 
 const columnInfo = reactive({
     id: null,
@@ -630,9 +510,7 @@ const showTaskDetail = async (taskId) => {
     }
 }
 
-const showShareModal = () => {
-    openShareModal.value = true
-}
+// showShareModal removed
 
 onMounted(async () => {
     const projectId = route.params?.id;
@@ -664,90 +542,11 @@ onMounted(async () => {
         col.tasks.sort((a, b) => a.position - b.position)
     })
 
-    await projectStore.getAllProjectRoles();
-
     const memberRes = await projectStore.getAllMemberByProjectId(projectId)
     memberOfProject.value = memberRes?.data?.items.filter(member => member.status === 'ACTIVE')
-    memberPendingApprove.value = memberRes?.data?.items.filter(member => member.status !== 'ACTIVE')
 })
 
-const updateRoleMember = async (member) => {
-    try {
-        const payload = {
-            code: member.role.name
-        }
-        const res = await projectStore.updateProjectMemberRole(project.id, member.user.id, payload)
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-const approveRequest = async (member) => {
-    try {
-        const res = await projectStore.approveRequest(project.id, member.user.id)
-        const index = memberPendingApprove.value.findIndex(m => m.user.id === member.user.id)
-        if (index !== -1) {
-            memberPendingApprove.value.splice(index, 1)
-        }
-        memberOfProject.value.push(member)
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-const createPublicLink = async () => {
-    try {
-        const payload = {
-            email: null,
-            projectRoleId: selectedRoleLinkInvite.value
-        }
-        const res = await projectStore.createInviteMember(project.id, payload)
-        const data = res.data;
-        if (data.success) {
-            showToastMessage(data.message || 'Create link invite success')
-            publicLinkInvite.value = data?.data.inviteLink;
-        } else {
-            showToastMessage('Create link invite failed', 'failed')
-        }
-    } catch (e) {
-        console.log(e)
-        const resDataError = e.response.data;
-        showToastMessage(resDataError.message, 'failed')
-    }
-}
-
-const inviteWithEmail = async () => {
-    try {
-        if (!emailInvite.value || emailInvite.value.trim().length === 0) {
-            showToastMessage('Please input email', 'failed')
-            return
-        }
-
-        if (!selectedRoleEmailInvite.value) {
-            showToastMessage('Please selected role member', 'failed')
-            return
-        }
-        const payload = {
-            email: emailInvite.value,
-            projectRoleId: selectedRoleEmailInvite.value
-        }
-        const res = await projectStore.createInviteMember(project.id, payload)
-        const data = res.data;
-        if (data.success) {
-            showToastMessage(data.message || 'Create invite success')
-            emailInvite.value = null
-        } else {
-            showToastMessage('Create link invite failed', 'failed')
-        }
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-const copyLinkInvite = () => {
-    navigator.clipboard.writeText(publicLinkInvite.value)
-    showToastMessage('Copy link invite success')
-}
+// Invitation management methods removed
 
 const toggleShowMenuPopup = () => {
     showMemberPopup.value = !showMemberPopup.value

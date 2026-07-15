@@ -21,6 +21,7 @@ import { useAuthStore } from "../store/authStore.js";
 import ProjectPage from "../views/ProjectPage.vue";
 import BoardColumnPage from "../views/BoardColumnPage.vue";
 import LeaveType from "../views/LeaveType.vue";
+import ProjectDetailPage from "../views/ProjectDetailPage.vue";
 
 const routes = [
     {
@@ -149,8 +150,8 @@ const routes = [
     },
     {
         path: '/project/:id',
-        component: BoardColumnPage,
-        name: 'BoardColumn',
+        component: ProjectDetailPage,
+        name: 'ProjectDetail',
         meta: {
             requiresAuth: true
         }
