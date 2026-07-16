@@ -40,10 +40,20 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const assignTask = async (taskId, assigneeId) => {
+        try {
+            const res = await axiosInstance.put(`/tasks/${taskId}/assign`, { assigneeId })
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
         moveTask,
-        getTaskDetail
+        getTaskDetail,
+        assignTask
     }
 })

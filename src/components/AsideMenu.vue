@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { Building2, CalendarCheck, DoorOpen, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
+import { Building2, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -92,18 +92,26 @@ const menus = [
         label: 'Role',
         icon: UserLock,
         name: 'Roles',
-        permission: 'ROLE'
+        permission: 'ROLE',
+        isSystemAdmin: true
     },
     {
         label: 'Permission',
         icon: ShieldCogCorner,
         name: 'Permissions',
-        permission: 'PERMISSION'
+        permission: 'PERMISSION',
+        isSystemAdmin: true
     },
     {
         label: 'Project',
         icon: FolderKanban,
         name: 'Project',
+        permission: null
+    },
+    {
+        label: 'LeaveType',
+        icon: DoorClosed,
+        name: 'LeaveTypes',
         permission: null
     }
 ]
@@ -112,6 +120,7 @@ const visibleMenus = computed(() => {
     return menus.filter(item => {
         if (!item.permission) return true
         if (authStore.isSystemAdmin) return true
+        if (item?.isSystemAdmin) return authStore.isSystemAdmin
         return authStore.canView(item.permission)
     })
 })

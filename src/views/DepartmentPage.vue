@@ -119,8 +119,9 @@
           </table>
         </div>
       </div>
-      <PaginationSection v-model:currentPage="currentPage" :totalItems="totalItems" :totalPage="totalPages"
-        :pageSize="pageSize" itemLabel="departments" @changePage="handlePageChange">
+      <PaginationSection v-model:currentPage="pagination.pageNo" :total-items="pagination.totalElements"
+        :total-page="pagination.totalPages" :page-size="pagination.pageSize" item-label="departments"
+        @changePage="handlePageChange">
       </PaginationSection>
       <ModalGeneric v-model="isOpen" :title="'Add New Department'">
         <div class="space-y-6">
@@ -259,7 +260,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { ref, onMounted, reactive } from "vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import { Plus } from "@lucide/vue";
@@ -352,6 +353,13 @@ const selectedBranchId = ref(null);
 
 const loading = ref(false);
 
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalElements: 0,
+  totalPages: 1
+});
+
 const getBranchName = (branchId) => {
   const branch = branches.value.find(
     b => b.id === branchId
@@ -406,7 +414,13 @@ const handlePageChange = async (page) => {
 
 const loadBranches = async () => {
   try {
-    const res = await branchStore.fetchBranches(0, 100, "id:asc");
+    const res = await branchStore.fetchBranches(0, 10, "id:asc");
+    pagination.value = {
+      pageNo: res.data.pageNo,
+      pageSize: res.data.pageSize,
+      totalElements: res.data.totalElements,
+      totalPages: res.data.totalPages
+    };
     branches.value = branchStore.branches;
     if (branches.value.length > 0) {
       selectedBranchId.value = branches.value[0].id;
