@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { Building2, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -63,6 +63,12 @@ const menus = [
         icon: CalendarCheck,
         name: 'Attendance',
         permission: 'ATTENDANCE'
+    },
+    {
+        label: 'Payroll',
+        icon: HandCoins,
+        name: 'Payroll',
+        permission: 'PAYROLL'
     },
     {
         label: 'Branches',
@@ -112,6 +118,12 @@ const menus = [
         label: 'LeaveType',
         icon: DoorClosed,
         name: 'LeaveTypes',
+        permission: null
+    },
+    {
+        label: 'Payroll Admin',
+        icon: HandCoins,
+        name: 'PayrollAdmin',
         permission: null
     }
 ]
