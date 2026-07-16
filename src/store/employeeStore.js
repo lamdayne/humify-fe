@@ -15,8 +15,34 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
+    const createEmployee = async (employeeData) => {
+        try {
+            const res = await axiosInstance.post('/employees', employeeData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const importEmployees = async (file) => {
+        try {
+            const formData = new FormData()
+            formData.append('file', file)
+            const res = await axiosInstance.post('/employees/import/xlsx', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data'
+                }
+            })
+            return res.data.data
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
         employees,
-        fetchEmployees
+        fetchEmployees,
+        createEmployee,
+        importEmployees
     }
 })

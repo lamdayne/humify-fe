@@ -98,6 +98,39 @@ export const useAuthStore = defineStore('auth', () => {
         }
     }
 
+    const getSocialLoginUrl = async (type = 'google') => {
+        try {
+            const res = await axiosInstance.get('/auth/social-login', { params: { type } })
+            return res.data?.data?.loginUrl
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const socialLoginCallback = async (code, type = 'google', companyCode = null) => {
+        try {
+            const payload = { code }
+            if (companyCode) {
+                payload.companyCode = companyCode
+            }
+            const res = await axiosInstance.post(`/auth/social/callback`, payload, {
+                params: { type }
+            })
+
+            const { accessToken: at, refreshToken: rt } = res.data.data
+            accessToken.value = at
+            refreshToken.value = rt
+            localStorage.setItem('accessToken', at)
+            localStorage.setItem('refreshToken', rt)
+
+            await fetchMe()
+
+            return res
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
         login,
         isAuthenticated,
@@ -110,7 +143,9 @@ export const useAuthStore = defineStore('auth', () => {
         canView,
         user,
         verifyCompany,
-        resendVerifyCompany
+        resendVerifyCompany,
+        getSocialLoginUrl,
+        socialLoginCallback
     }
 }
 )

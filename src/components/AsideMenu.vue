@@ -8,9 +8,9 @@
         'lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
     ]">
-        <div class="mb-4">
-            <h1 class="text-[20px] uppercase text-center">Humfiy</h1>
-            <p class="text-center text-lg">Dashboard Management</p>
+        <div class="flex justify-center">
+            <img class="w-30" src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044819/logo_lgugm5.png"
+                alt="">
         </div>
         <nav class="flex-1">
             <div class="flex flex-col">
@@ -34,7 +34,7 @@
 </template>
 
 <script setup>
-import { Building2, CalendarCheck, DoorOpen, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
+import { Building2, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
 import { computed, onMounted } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -92,13 +92,27 @@ const menus = [
         label: 'Role',
         icon: UserLock,
         name: 'Roles',
-        permission: 'ROLE'
+        permission: 'ROLE',
+        isSystemAdmin: true
     },
     {
         label: 'Permission',
         icon: ShieldCogCorner,
         name: 'Permissions',
-        permission: 'PERMISSION'
+        permission: 'PERMISSION',
+        isSystemAdmin: true
+    },
+    {
+        label: 'Project',
+        icon: FolderKanban,
+        name: 'Project',
+        permission: null
+    },
+    {
+        label: 'LeaveType',
+        icon: DoorClosed,
+        name: 'LeaveTypes',
+        permission: null
     }
 ]
 
@@ -106,6 +120,7 @@ const visibleMenus = computed(() => {
     return menus.filter(item => {
         if (!item.permission) return true
         if (authStore.isSystemAdmin) return true
+        if (item?.isSystemAdmin) return authStore.isSystemAdmin
         return authStore.canView(item.permission)
     })
 })

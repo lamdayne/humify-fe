@@ -12,8 +12,17 @@ import RolePage from "../views/RolePage.vue";
 import PermissionPage from "../views/PermissionPage.vue";
 import ForgotPasswordPage from "../views/ForgotPasswordPage.vue";
 import EmployeeFormPage from "../views/EmployeeFormPage.vue";
+import ResetPasswordPage from "../views/ResetPasswordPage.vue";
 import VerifyCompanyPage from "../views/VerifyCompanyPage.vue";
+import SetPasswordPage from "../views/SetPasswordPage.vue";
+import InvitePage from "../views/InvitePage.vue";
+import GoogleCallbackPage from "../views/GoogleCallbackPage.vue";
 import { useAuthStore } from "../store/authStore.js";
+import ProjectPage from "../views/ProjectPage.vue";
+import BoardColumnPage from "../views/BoardColumnPage.vue";
+import LeaveType from "../views/LeaveType.vue";
+import ProjectDetailPage from "../views/ProjectDetailPage.vue";
+
 const routes = [
     {
         path: '/',
@@ -106,6 +115,51 @@ const routes = [
         path: '/employee/form',
         component: EmployeeFormPage,
         name: 'EmployeeForm',
+        meta: {
+            requiresAuth: true
+        }
+    }
+    ,
+    {
+        path: '/reset-password',
+        component: ResetPasswordPage,
+        name: 'ResetPassword'
+    },
+    {
+        path: '/set-password',
+        component: SetPasswordPage,
+        name: 'SetPassword'
+    },
+    {
+        path: '/invite',
+        component: InvitePage,
+        name: 'Invite'
+    },
+    {
+        path: '/auth/google/callback',
+        component: GoogleCallbackPage,
+        name: 'GoogleCallback'
+    },
+    {
+        path: '/project',
+        component: ProjectPage,
+        name: 'Project',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/project/:id',
+        component: ProjectDetailPage,
+        name: 'ProjectDetail',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/leave-types',
+        component: LeaveType,
+        name: 'LeaveTypes',
         meta: {
             requiresAuth: true
         }
