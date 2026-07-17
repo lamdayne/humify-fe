@@ -130,7 +130,6 @@
             </PaginationSection>
         </div>
 
-        <!-- Modal chi tiết nhân viên (Employee Detail Modal) -->
         <ModalGeneric v-model="showDetailModal" :title="'Employee Details'" width="640px">
             <div v-if="selectedEmployee" class="space-y-6">
 
@@ -147,15 +146,15 @@
                             <h4 class="text-lg font-semibold text-slate-950">{{ selectedEmployee.fullName }}</h4>
                             <StatusBadge :content="selectedEmployee.status"></StatusBadge>
                         </div>
-                        <p class="text-xs text-slate-400 font-light">Code: <span class="font-medium text-slate-600">{{
-                                selectedEmployee.employeeCode }}</span></p>
+                        <p class="text-xs text-slate-400 font-light">
+                            Code: <span class="font-medium text-slate-600">
+                                {{ selectedEmployee.employeeCode }}
+                            </span></p>
                     </div>
                 </div>
 
-                <!-- Grid thông tin chi tiết -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-5">
 
-                    <!-- Cột trái: Thông tin cá nhân -->
                     <div class="space-y-4">
                         <h5 class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Personal Information
                         </h5>
@@ -164,35 +163,39 @@
                             <div>
                                 <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Email
                                     Address</span>
-                                <span class="text-xs font-medium text-slate-800 break-all">{{ selectedEmployee.email ||
-                                    'N/A'
-                                    }}</span>
+                                <span class="text-xs font-medium text-slate-800 break-all">
+                                    {{ selectedEmployee.email || 'N/A' }}
+                                </span>
                             </div>
                             <div>
-                                <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Phone
-                                    Number</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.phone || 'N/A'
-                                    }}</span>
+                                <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">
+                                    Phone Number
+                                </span>
+                                <span class="text-xs font-medium text-slate-800">
+                                    {{ selectedEmployee.phone || 'N/A' }}
+                                </span>
                             </div>
                             <div>
-                                <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Date
-                                    of
-                                    Birth</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.dateOfBirth ||
-                                    'N/A'
-                                    }}</span>
+                                <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">
+                                    Date of Birth
+                                </span>
+                                <span class="text-xs font-medium text-slate-800">
+                                    {{ selectedEmployee.dateOfBirth || 'N/A' }}
+                                </span>
                             </div>
                             <div>
                                 <span
                                     class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Gender</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.gender || 'N/A'
-                                    }}</span>
+                                <span class="text-xs font-medium text-slate-800">
+                                    {{ selectedEmployee.gender || 'N/A' }}
+                                </span>
                             </div>
                             <div>
                                 <span
                                     class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Address</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.address || 'N/A'
-                                    }}</span>
+                                <span class="text-xs font-medium text-slate-800">
+                                    {{ selectedEmployee.address || 'N/A' }}
+                                </span>
                             </div>
                         </div>
                     </div>
@@ -206,23 +209,27 @@
                             <div>
                                 <span class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Start
                                     Date</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.startDate || 'N/A'
-                                    }}</span>
+                                <span class="text-xs font-medium text-slate-800">
+                                    {{ selectedEmployee.startDate || 'N/A' }}
+                                </span>
                             </div>
                             <div>
                                 <span
                                     class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Branch</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedBranchName }}</span>
+                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.branchName
+                                    }}</span>
                             </div>
                             <div>
                                 <span
                                     class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Department</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedDepartmentName }}</span>
+                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.departmentName
+                                    }}</span>
                             </div>
                             <div>
                                 <span
                                     class="block text-[10px] text-slate-400 font-light uppercase tracking-wider">Position</span>
-                                <span class="text-xs font-medium text-slate-800">{{ selectedPositionName }}</span>
+                                <span class="text-xs font-medium text-slate-800">{{ selectedEmployee.positionName
+                                    }}</span>
                             </div>
                         </div>
                     </div>
@@ -288,7 +295,7 @@
                     <div class="max-h-48 overflow-y-auto text-xs divide-y divide-red-100/40 font-light">
                         <div v-for="(err, idx) in importErrors" :key="idx" class="p-3 flex items-start gap-3">
                             <span class="px-1.5 py-0.5 bg-red-100 text-red-800 text-[10px] font-bold rounded">
-                                Row {{ err.row }} 
+                                Row {{ err.row }}
                             </span>
                             <div>
                                 <span class="font-semibold text-slate-800 block mb-0.5">Field: {{ err.field }}</span>
@@ -346,14 +353,9 @@ const employees = computed(() => employeeStore.employees)
 const isFirstLoading = ref(false)
 const isPageLoading = ref(false)
 
-// State cho modal xem chi tiết
 const showDetailModal = ref(false)
 const selectedEmployee = ref(null)
-const selectedBranchName = ref('')
-const selectedDepartmentName = ref('')
-const selectedPositionName = ref('')
 
-// Import Excel State
 const showImportModal = ref(false)
 const isImporting = ref(false)
 const isDragging = ref(false)
@@ -473,56 +475,14 @@ const getInitials = (name) => {
 
 const openDetailModal = async (employee) => {
     selectedEmployee.value = employee
-    selectedBranchName.value = 'Loading...'
-    selectedDepartmentName.value = 'Loading...'
-    selectedPositionName.value = 'Loading...'
     showDetailModal.value = true
-
-    try {
-        // Lấy tên Chi nhánh (Branch)
-        if (employee.branchId) {
-            if (branchStore.branches.length === 0) {
-                await branchStore.fetchBranches(0, 100)
-            }
-            const branch = branchStore.branches.find(b => b.id === employee.branchId)
-            selectedBranchName.value = branch ? branch.name : `Branch #${employee.branchId}`
-        } else {
-            selectedBranchName.value = 'N/A'
-        }
-
-        // Lấy tên Chức vụ (Position)
-        if (employee.positionId) {
-            if (positionStore.positions.length === 0) {
-                await positionStore.fetchPositions(0, 100)
-            }
-            const position = positionStore.positions.find(p => p.id === employee.positionId)
-            selectedPositionName.value = position ? position.name : `Position #${employee.positionId}`
-        } else {
-            selectedPositionName.value = 'N/A'
-        }
-
-        // Lấy tên Phòng ban (Department)
-        if (employee.branchId && employee.departmentId) {
-            const depRes = await departmentStore.getDepartmentsByBranch(employee.branchId, 0, 100)
-            const departmentsList = depRes?.data?.data?.items || []
-            const department = departmentsList.find(d => d.id === employee.departmentId)
-            selectedDepartmentName.value = department ? department.name : `Department #${employee.departmentId}`
-        } else {
-            selectedDepartmentName.value = 'N/A'
-        }
-    } catch (e) {
-        console.error("Lỗi khi tải metadata chi tiết nhân viên:", e)
-        selectedBranchName.value = employee.branchId ? `Branch #${employee.branchId}` : 'N/A'
-        selectedDepartmentName.value = employee.departmentId ? `Department #${employee.departmentId}` : 'N/A'
-        selectedPositionName.value = employee.positionId ? `Position #${employee.positionId}` : 'N/A'
-    }
 }
 
 onMounted(async () => {
     isFirstLoading.value = true
     try {
-        const res = await employeeStore.fetchEmployees(0, pagination.pageSize)
-        pagination.pageNo = res.data.pageNo + 1
+        const res = await employeeStore.fetchEmployees(1, pagination.pageSize)
+        pagination.pageNo = res.data.pageNo
         pagination.pageSize = res.data.pageSize
         pagination.totalItems = res.data.totalElements
         pagination.totalPages = res.data.totalPages
@@ -535,8 +495,8 @@ const handlePageChange = async (page) => {
     isPageLoading.value = true
     pagination.pageNo = page
     try {
-        const res = await employeeStore.fetchEmployees(page - 1, pagination.pageSize)
-        pagination.pageNo = res.data.pageNo + 1
+        const res = await employeeStore.fetchEmployees(page, pagination.pageSize)
+        pagination.pageNo = res.data.pageNo
         pagination.pageSize = res.data.pageSize
         pagination.totalItems = res.data.totalElements
         pagination.totalPages = res.data.totalPages

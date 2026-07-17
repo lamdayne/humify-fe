@@ -49,11 +49,31 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const updateTask = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.put(`/tasks/${taskId}`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const addAttachment = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/tasks/${taskId}/attachment`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
         moveTask,
         getTaskDetail,
-        assignTask
+        assignTask,
+        updateTask,
+        addAttachment
     }
 })
