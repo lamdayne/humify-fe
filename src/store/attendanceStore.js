@@ -100,21 +100,36 @@ export const useAttendanceStore = defineStore("attendance", () => {
         return res.data;
     };
 
+    // Lấy danh sách đơn nghỉ phép (Chung cho HR hoặc Lọc)
+    // Lấy danh sách đơn xin nghỉ phép (An toàn 100% với Backend)
     const fetchLeaveRequests = async (page = 0, size = 10, searchParams = []) => {
         let url = `/leave-requests?page=${page}&size=${size}`;
-        if (searchParams && searchParams.length > 0) {
-            searchParams.forEach(p => url += `&leaveRequest=${encodeURIComponent(p)}`);
+
+        // Chỉ đính kèm param leaveRequest khi thực sự có dữ liệu
+        if (searchParams && Array.isArray(searchParams) && searchParams.length > 0) {
+            searchParams.forEach(p => {
+                if (p) url += `&leaveRequest=${encodeURIComponent(p)}`;
+            });
         }
+
         const res = await axiosInstance.get(url);
         return res.data?.data || res.data;
     };
 
-    const approveLeaveRequest = async (id, approverNote = '') => {
+    // Hủy đơn nghỉ phép (GỌI ĐÚNG DELETE /leave-requests/{id})
+    const cancelLeaveRequest = async (id) => {
+        const res = await axiosInstance.delete(`/leave-requests/${id}`);
+        return res.data;
+    };
+
+    // HR Duyệt đơn nghỉ phép (PUT /leave-requests/{id}/approve)
+    const approveLeaveRequest = async (id, approverNote = 'Approved by HR') => {
         const res = await axiosInstance.put(`/leave-requests/${id}/approve`, { approverNote });
         return res.data;
     };
 
-    const rejectLeaveRequest = async (id, approverNote = '') => {
+    // HR Từ chối đơn nghỉ phép (PUT /leave-requests/{id}/reject)
+    const rejectLeaveRequest = async (id, approverNote = 'Rejected by HR') => {
         const res = await axiosInstance.put(`/leave-requests/${id}/reject`, { approverNote });
         return res.data;
     };
@@ -136,6 +151,7 @@ export const useAttendanceStore = defineStore("attendance", () => {
         fetchAllCorrectionsHR,
         approveCorrection,
         rejectCorrection,
+        cancelLeaveRequest,
         createLeaveRequest,
         fetchLeaveRequests,
         approveLeaveRequest,

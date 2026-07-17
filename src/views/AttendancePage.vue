@@ -66,7 +66,12 @@
             My Corrections
           </button>
 
-          <!-- CHỈ HR / ADMIN MỚI THẤY CÁC TAB NÀY -->
+          <button @click="activeTab = 'my-leaves'"
+                  :class="[activeTab === 'my-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+            My Leaves
+          </button>
+
+          <!-- TAB DÀNH CHO HR / ADMIN -->
           <template v-if="isHR">
             <button @click="activeTab = 'hr-attendance'"
                     :class="[activeTab === 'hr-attendance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
@@ -75,6 +80,10 @@
             <button @click="activeTab = 'hr-corrections'"
                     :class="[activeTab === 'hr-corrections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
               Corrections Approval
+            </button>
+            <button @click="activeTab = 'hr-leaves'"
+                    :class="[activeTab === 'hr-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+              Leave Approvals
             </button>
           </template>
         </div>
@@ -141,7 +150,46 @@
         </div>
       </div>
 
-      <!-- TAB 3: HR MANAGEMENT -->
+      <!-- TAB 3: MY LEAVES (CÁ NHÂN XEM VÀ HỦY ĐƠN) -->
+      <div v-if="activeTab === 'my-leaves'" class="space-y-6">
+        <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-left border-collapse">
+            <thead>
+            <tr class="bg-slate-50/70 border-b border-slate-200 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              <th class="py-4 px-6">Leave Type</th>
+              <th class="py-4 px-6">Duration</th>
+              <th class="py-4 px-6">Reason</th>
+              <th class="py-4 px-6 text-center">Status</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+            <tr v-if="myLeaves.length === 0"><td colspan="5" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
+            <tr v-else v-for="item in myLeaves" :key="item.id" class="hover:bg-slate-50/50">
+              <td class="py-4 px-6 font-medium text-slate-900">{{ item.leaveTypeName || 'Leave' }}</td>
+              <td class="py-4 px-6 text-xs text-slate-600">
+                {{ item.startDate }} → {{ item.endDate }} ({{ item.durationDays }} days)
+                <span v-if="item.sessionType && item.sessionType !== 'FULL_DAY'" class="ml-1 text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                  {{ item.sessionType }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">{{ item.reason }}</td>
+              <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
+              <td class="py-4 px-6 text-right">
+                <button v-if="item.status === 'PENDING' || item.status === 'APPROVED'"
+                        @click="handleCancelLeave(item.id)"
+                        class="px-3 py-1 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 rounded-lg text-xs font-semibold cursor-pointer transition-all">
+                  Cancel Request
+                </button>
+                <span v-else class="text-xs text-slate-400 italic">No action</span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- TAB 4: HR MANAGEMENT -->
       <div v-if="activeTab === 'hr-attendance' && isHR" class="space-y-6">
         <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-sm">
           <table class="w-full text-left border-collapse">
@@ -179,7 +227,7 @@
         </div>
       </div>
 
-      <!-- TAB 4: CORRECTIONS APPROVAL -->
+      <!-- TAB 5: CORRECTIONS APPROVAL -->
       <div v-if="activeTab === 'hr-corrections' && isHR" class="space-y-6">
         <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-sm">
           <table class="w-full text-left border-collapse">
@@ -222,6 +270,49 @@
         </div>
       </div>
 
+      <!-- TAB 6: LEAVE APPROVALS (HR DUYỆT ĐƠN NGHỈ PHÉP TOÀN CÔNG TY) -->
+      <div v-if="activeTab === 'hr-leaves' && isHR" class="space-y-6">
+        <div class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-sm">
+          <table class="w-full text-left border-collapse">
+            <thead>
+            <tr class="bg-slate-50/70 border-b border-slate-200 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              <th class="py-4 px-6">Employee</th>
+              <th class="py-4 px-6">Leave Type</th>
+              <th class="py-4 px-6">Duration</th>
+              <th class="py-4 px-6">Reason</th>
+              <th class="py-4 px-6 text-center">Status</th>
+              <th class="py-4 px-6 text-right">Actions</th>
+            </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
+            <tr v-if="isLoading"><td colspan="6" class="py-12 text-center text-slate-400">Loading leave requests...</td></tr>
+            <tr v-else-if="hrLeaves.length === 0"><td colspan="6" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
+            <tr v-else v-for="item in hrLeaves" :key="item.id" class="hover:bg-slate-50/50">
+              <td class="py-4 px-6 font-semibold text-slate-900">
+                {{ item.employeeName || 'Employee #' + item.employeeId }}
+              </td>
+              <td class="py-4 px-6 font-medium text-slate-900">{{ item.leaveTypeName }}</td>
+              <td class="py-4 px-6 text-xs text-slate-600">
+                {{ item.startDate }} → {{ item.endDate }} ({{ item.durationDays }} days)
+                <span v-if="item.sessionType && item.sessionType !== 'FULL_DAY'" class="ml-1 text-[10px] font-semibold text-amber-600 bg-amber-50 px-1.5 py-0.5 rounded border border-amber-200">
+                  {{ item.sessionType }}
+                </span>
+              </td>
+              <td class="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">{{ item.reason }}</td>
+              <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
+              <td class="py-4 px-6 text-right space-x-2">
+                <template v-if="item.status === 'PENDING'">
+                  <button @click="handleApproveLeave(item.id, 'APPROVED')" class="px-3 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-all">Approve</button>
+                  <button @click="handleApproveLeave(item.id, 'REJECTED')" class="px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-all">Reject</button>
+                </template>
+                <span v-else class="text-xs text-slate-400 italic">Processed</span>
+              </td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       <!-- MODAL 1: GIẢI TRÌNH CÔNG -->
       <ModalGeneric v-model="correctionModal.show" title="Request Attendance Correction" width="500px">
         <div class="space-y-4">
@@ -246,7 +337,7 @@
         </template>
       </ModalGeneric>
 
-      <!-- MODAL 2: XIN NGHỈ PHÉP -->
+      <!-- MODAL 2: XIN NGHỈ PHÉP (ĐÃ THÊM LỰA CHỌN CA NGHỈ HALF-DAY) -->
       <ModalGeneric v-model="leaveModal.show" title="Create Leave Request" width="500px">
         <div class="space-y-4">
           <div>
@@ -269,6 +360,16 @@
             </div>
           </div>
 
+          <!-- 🌟 LỰA CHỌN CA NGHỈ (HIỆN KHI CHỌN NGHỈ TRONG CÙNG 1 NGÀY) -->
+          <div v-if="isSingleDayLeave">
+            <label class="text-[10px] font-bold text-slate-400 uppercase">Session Type (Half-Day Support)</label>
+            <select v-model="leaveModal.sessionType" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1">
+              <option value="FULL_DAY">Full Day (1.0 day)</option>
+              <option value="MORNING">Morning Half-Day (0.5 day)</option>
+              <option value="AFTERNOON">Afternoon Half-Day (0.5 day)</option>
+            </select>
+          </div>
+
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Reason <span class="text-red-500">*</span></label>
             <textarea v-model="leaveModal.reason" rows="3" placeholder="Reason for leave..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1 resize-none"></textarea>
@@ -287,7 +388,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="leaveModal.show = false" />
-            <PrimaryButton content="Submit Leave Request" @click="submitLeaveRequest" />
+            <PrimaryButton content="Submit" @click="submitLeaveRequest" />
           </div>
         </template>
       </ModalGeneric>
@@ -325,6 +426,25 @@
         </template>
       </ModalGeneric>
 
+      <!-- MODAL XÁC NHẬN HỦY ĐƠN NGHỈ PHÉP (POPUP GIỮA MÀN HÌNH) -->
+      <ModalGeneric v-model="cancelLeaveModal.show" title="Cancel Leave Request" width="450px">
+        <div class="p-2 text-center space-y-3">
+          <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center mx-auto">
+            <AlertTriangle class="w-6 h-6" />
+          </div>
+          <h3 class="text-base font-semibold text-slate-900">Are you sure you want to cancel?</h3>
+        </div>
+        <template #footer>
+          <div class="flex gap-2 justify-end w-full">
+            <SecondaryButton content="Keep Request" @click="cancelLeaveModal.show = false" />
+            <button @click="confirmCancelLeave"
+                    class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all cursor-pointer">
+              Yes
+            </button>
+          </div>
+        </template>
+      </ModalGeneric>
+
     </div>
   </MainContent>
 </template>
@@ -341,7 +461,7 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { useAuthStore } from '../store/authStore';
 import { useLeaveTypeStore } from '../store/leaveTypeStore';
 import { storeToRefs } from 'pinia';
-import { Clock, LogIn, LogOut } from '@lucide/vue';
+import { Clock, LogIn, LogOut, AlertTriangle } from '@lucide/vue';
 
 const attendanceStore = useAttendanceStore();
 const authStore = useAuthStore();
@@ -355,10 +475,12 @@ const isSwiping = ref(false);
 
 const myAttendances = ref([]);
 const myCorrections = ref([]);
+const myLeaves = ref([]);
 const hrAttendances = ref([]);
 const hrCorrections = ref([]);
+const hrLeaves = ref([]);
 
-// 🌟 PHÂN QUYỀN HR / ADMIN CHUẨN XÁC
+// 🌟 PHÂN QUYỀN HR / ADMIN
 const isHR = computed(() => {
   if (authStore.isSystemAdmin) return true;
 
@@ -413,7 +535,8 @@ const leaveModal = reactive({
   startDate: '',
   endDate: '',
   reason: '',
-  attachmentUrl: ''
+  attachmentUrl: '',
+  sessionType: 'FULL_DAY' // 🌟 Mặc định là FULL_DAY
 });
 
 const correctionModal = reactive({
@@ -433,6 +556,11 @@ const manualModal = reactive({
   reason: ''
 });
 
+const cancelLeaveModal = reactive({
+  show: false,
+  requestId: null
+});
+
 const selectedLeaveType = computed(() => {
   if (!leaveTypes.value || !leaveModal.leaveTypeId) return null;
   return leaveTypes.value.find(t => t.id === leaveModal.leaveTypeId);
@@ -440,6 +568,11 @@ const selectedLeaveType = computed(() => {
 
 const isAttachmentRequired = computed(() => {
   return selectedLeaveType.value?.requiresAttachment === true;
+});
+
+// 🌟 BẮT ĐIỀU KIỆN NGHỈ TRONG CÙNG 1 NGÀY ĐỂ MỞ TÙY CHỌN HALF-DAY
+const isSingleDayLeave = computed(() => {
+  return leaveModal.startDate && leaveModal.endDate && leaveModal.startDate === leaveModal.endDate;
 });
 
 const formatTime = (isoString) => {
@@ -489,6 +622,15 @@ const loadMyCorrections = async () => {
   }
 };
 
+const loadMyLeaves = async () => {
+  try {
+    const res = await attendanceStore.fetchLeaveRequests(0, 20);
+    myLeaves.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+  } catch (err) {
+    console.error("Load my leaves error:", err);
+  }
+};
+
 const loadHRAttendances = async () => {
   if (!isHR.value) return;
   isLoading.value = true;
@@ -509,24 +651,61 @@ const loadHRCorrections = async () => {
     const fetchFn = attendanceStore.fetchHRCorrections || attendanceStore.fetchAllCorrectionsHR;
     if (typeof fetchFn === 'function') {
       const res = await fetchFn(0, 20);
-      if (res?.content) {
-        hrCorrections.value = res.content;
-      } else if (res?.items) {
-        hrCorrections.value = res.items;
-      } else if (res?.data?.items) {
-        hrCorrections.value = res.data.items;
-      } else if (Array.isArray(res?.data)) {
-        hrCorrections.value = res.data;
-      } else if (Array.isArray(res)) {
-        hrCorrections.value = res;
-      } else {
-        hrCorrections.value = [];
-      }
+      hrCorrections.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
     }
   } catch (err) {
     console.error("Load HR Corrections catch error:", err);
   } finally {
     isLoading.value = false;
+  }
+};
+
+const loadHRLeaves = async () => {
+  if (!isHR.value) return;
+  isLoading.value = true;
+  try {
+    const res = await attendanceStore.fetchLeaveRequests(0, 20);
+    hrLeaves.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+  } catch (err) {
+    console.error("Load HR Leaves error:", err);
+  } finally {
+    isLoading.value = false;
+  }
+};
+
+const handleCancelLeave = (id) => {
+  cancelLeaveModal.requestId = id;
+  cancelLeaveModal.show = true;
+};
+
+const confirmCancelLeave = async () => {
+  if (!cancelLeaveModal.requestId) return;
+
+  try {
+    await attendanceStore.cancelLeaveRequest(cancelLeaveModal.requestId);
+    triggerToast("Leave request cancelled successfully!", "success");
+
+    cancelLeaveModal.show = false;
+    cancelLeaveModal.requestId = null;
+
+    await loadMyLeaves();
+    if (isHR.value) await loadHRLeaves();
+  } catch (err) {
+    triggerToast(err.response?.data?.message || err.response?.data?.data || "Failed to cancel leave request.", "error");
+  }
+};
+
+const handleApproveLeave = async (id, status) => {
+  try {
+    if (status === 'APPROVED') {
+      await attendanceStore.approveLeaveRequest(id, 'Approved by HR');
+    } else {
+      await attendanceStore.rejectLeaveRequest(id, 'Rejected by HR');
+    }
+    triggerToast(`Leave request ${status.toLowerCase()} successfully!`, "success");
+    await loadHRLeaves();
+  } catch (err) {
+    triggerToast(err.response?.data?.message || "Action failed.", "error");
   }
 };
 
@@ -585,6 +764,7 @@ const openLeaveModal = async () => {
   }
 };
 
+// 🌟 XỬ LÝ NỘP ĐƠN NGHỈ PHÉP (TÍNH ĐÚNG SESSION TYPE HOÀN CHỈNH)
 const submitLeaveRequest = async () => {
   if (!leaveModal.leaveTypeId || !leaveModal.startDate || !leaveModal.endDate || !leaveModal.reason.trim()) {
     triggerToast('Please fill all required fields.', 'error');
@@ -596,6 +776,9 @@ const submitLeaveRequest = async () => {
     return;
   }
 
+  // Nếu nghỉ khác ngày nhau thì bắt buộc là FULL_DAY, nghỉ trong 1 ngày thì lấy theo lưạ chọn của user
+  const session = isSingleDayLeave.value ? leaveModal.sessionType : 'FULL_DAY';
+
   try {
     await attendanceStore.createLeaveRequest({
       leaveTypeId: leaveModal.leaveTypeId,
@@ -603,12 +786,16 @@ const submitLeaveRequest = async () => {
       endDate: leaveModal.endDate,
       reason: leaveModal.reason.trim(),
       attachmentUrl: leaveModal.attachmentUrl ? leaveModal.attachmentUrl.trim() : null,
-      sessionType: 'FULL_DAY'
+      sessionType: session
     });
+
     triggerToast('Leave request submitted successfully!', 'success');
     leaveModal.show = false;
     leaveModal.attachmentUrl = '';
     leaveModal.reason = '';
+    leaveModal.sessionType = 'FULL_DAY';
+
+    await loadMyLeaves();
   } catch (err) {
     triggerToast(err.response?.data?.message || 'Submit request failed.', 'error');
   }
@@ -645,21 +832,22 @@ const submitManualUpdate = async () => {
   }
 };
 
-// 🌟 THEO DÕI TAB CLICK ĐỂ TẢI DỮ LIỆU CHUẨN XÁC
+// 🌟 WATCHER THEO DÕI NÚT CHUYỂN TAB ĐỂ LOAD DỮ LIỆU ĐÚNG CHUẨN
 watch(activeTab, (newTab) => {
-  if (!isHR.value && (newTab === 'hr-attendance' || newTab === 'hr-corrections')) {
+  if (!isHR.value && (newTab === 'hr-attendance' || newTab === 'hr-corrections' || newTab === 'hr-leaves')) {
     activeTab.value = 'my-attendance';
     return;
   }
 
   if (newTab === 'my-attendance') loadMyAttendances();
   if (newTab === 'my-corrections') loadMyCorrections();
+  if (newTab === 'my-leaves') loadMyLeaves();
   if (newTab === 'hr-attendance' && isHR.value) loadHRAttendances();
   if (newTab === 'hr-corrections' && isHR.value) loadHRCorrections();
+  if (newTab === 'hr-leaves' && isHR.value) loadHRLeaves();
 });
 
 onMounted(() => {
-  // Đảm bảo chỉ gọi API cá nhân ban đầu
   activeTab.value = 'my-attendance';
   loadMyAttendances();
 });
