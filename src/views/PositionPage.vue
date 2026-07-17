@@ -108,8 +108,8 @@
       </div>
 
       <div class="mt-6">
-        <PaginationSection :current-page="currentPage + 1" :total-items="totalPositions" :total-page="totalPages"
-          :page-size="pageSize" :item-label="'positions'" @changePage="(page) => loadPositions(page - 1)" />
+        <PaginationSection :current-page="currentPage" :total-items="totalPositions" :total-page="totalPages"
+          :page-size="pageSize" :item-label="'positions'" @changePage="(page) => loadPositions(page)" />
       </div>
 
     </div>
@@ -215,7 +215,7 @@ const isDeleteModalOpen = ref(false);
 const positionIdToDelete = ref(null);
 const modalMode = ref('create'); // 'create', 'edit', 'view'
 
-const currentPage = ref(0);
+const currentPage = ref(1);
 const pageSize = ref(10);
 const totalPages = ref(1);
 
@@ -236,10 +236,10 @@ const showToast = (message, type = 'success') => {
   }, 3000);
 };
 
-const loadPositions = async (page = 0) => {
+const loadPositions = async (page = 1) => {
   try {
     const res = await positionStore.fetchPositions(page, pageSize.value);
-    currentPage.value = res.data.pageNo;
+    currentPage.value = res.data.pageNo; // backend trả về 1-based pageNo trực tiếp
     totalPages.value = res.data.totalPages;
   } catch (error) {
     console.error("Error loading positions:", error);
@@ -255,7 +255,7 @@ const closeDropdown = () => {
 };
 
 onMounted(async () => {
-  await loadPositions(0);
+  await loadPositions(1);
   window.addEventListener('click', closeDropdown);
 });
 

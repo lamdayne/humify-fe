@@ -126,7 +126,8 @@
                             class="opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer shrink-0">
                         <StatusBadge :type="taskDetail.completedAt ? 'ACTIVE' : 'INACTIVE'"
                             :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
-                        <input type="text" class="flex-1 min-w-0 text-xl font-medium" :value="taskDetail.title">
+                        <input type="text" class="flex-1 min-w-0 text-xl font-medium" v-model="taskDetail.title"
+                            @keydown.enter="handleUpdateTask(taskDetail); $event.target.blur()">
                     </div>
                     <div class="relative grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
                         <!-- <SecondaryButton :content="'Add'">
@@ -140,7 +141,8 @@
                             </template>
                         </SecondaryButton>
                         <input type="date" name="" class="border border-slate-300 px-2 rounded-lg">
-                        <SecondaryButton :content="'Attachment'">
+                        <input type="file" ref="fileInputRef" class="hidden" multiple @change="onFileSelected">
+                        <SecondaryButton :content="'Attachment'" @click="fileInputRef.click()">
                             <template #icon>
                                 <Paperclip class="w-4"></Paperclip>
                             </template>
@@ -192,13 +194,15 @@
                         </div>
                     </div>
                     <div class="flex flex-col ml-5 gap-3">
-                        <textarea :value="taskDetail.description ? taskDetail.description : 'No description for task'"
+                        <textarea v-model="taskDetail.description" placeholder="No description for task"
                             class="w-full rounded-lg focus:outline-2 p-2 resize-none" rows="5" name="" id=""
                             :class="[isEditTaskDesc ? 'border border-slate-200' : '']"
                             @focus="isEditTaskDesc = true"></textarea>
                         <div class="flex gap-3" v-if="isEditTaskDesc">
                             <div>
-                                <PrimaryButton content="Save"></PrimaryButton>
+                                <PrimaryButton content="Save"
+                                    @click="handleUpdateTask(taskDetail); isEditTaskDesc = false">
+                                </PrimaryButton>
                             </div>
                             <div>
                                 <SecondaryButton content="Cancel" @click="isEditTaskDesc = false"></SecondaryButton>
@@ -222,7 +226,7 @@
 </template>
 
 <script setup>
-import { CircleCheckBig, EllipsisVertical, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
+import { CircleCheckBig, EllipsisVertical, LoaderCircle, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
 import { onMounted, reactive, ref, watch, computed } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
@@ -233,6 +237,7 @@ import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import { useProject } from '../store/projectStore.js';
+import { useUploadStore } from '../store/uploadStore.js';
 
 const route = useRoute()
 const projectStore = useProject()
@@ -264,6 +269,10 @@ const filteredMembers = computed(() => {
         return email.includes(keyword) || fullName.includes(keyword)
     })
 })
+
+const fileInputRef = ref(null)
+const attachments = ref([])
+const uploadStore = useUploadStore()
 
 const columns = ref([
     {
@@ -563,7 +572,57 @@ onMounted(async () => {
     memberOfProject.value = memberRes?.data?.items.filter(member => member.status === 'ACTIVE')
 })
 
-// Invitation management methods removed
+const handleUpdateTask = async (item) => {
+
+    try {
+        const payload = {
+            title: item.title,
+            description: item.description,
+            priority: item.priority,
+            type: item.type,
+            points: item.points,
+            estimatedHours: item.estimatedHours,
+            dueDate: item.dueDate
+        }
+        const res = await taskStore.updateTask(item.id, payload);
+        const data = res.data?.data
+        const task = columns.value.find(col => col.id === data.columnId)?.tasks.find(task => task.id === data.id)
+        if (task) {
+            Object.assign(task, data)
+        }
+    } catch (e) {
+        console.error(e)
+    }
+}
+
+const onFileSelected = async (event) => {
+    const files = Array.from(event.target.files)
+    event.target.value = ''
+
+    if (!files.length) return
+
+    for (const file of files) {
+        const presignRes = await uploadStore.getPresignedUrl('tasks')
+        const presignData = presignRes.data?.data
+
+        const cloudinaryRes = await uploadStore.uploadToCloudinary(file, presignData)
+
+        const payload = {
+            fileName: cloudinaryRes.original_filename,
+            fileUrl: cloudinaryRes.secure_url,
+            fileSize: cloudinaryRes.bytes
+        }
+
+        const res = await taskStore.addAttachment(taskDetail.value.id, payload)
+        const data = res.data;
+        console.log(data)
+        if (data.success) {
+            showToastMessage(data?.message || 'Upload success', 'success')
+        } else {
+            showToastMessage('Upload failed', 'failed');
+        }
+    }
+}
 
 const toggleShowMenuPopup = () => {
     showMemberPopup.value = !showMemberPopup.value
