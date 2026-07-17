@@ -22,6 +22,9 @@ import ProjectPage from "../views/ProjectPage.vue";
 import BoardColumnPage from "../views/BoardColumnPage.vue";
 import LeaveType from "../views/LeaveType.vue";
 import ProjectDetailPage from "../views/ProjectDetailPage.vue";
+import PayrollPage from "../views/PayrollPage.vue";
+import PayslipPage from "../views/PayslipPage.vue";
+import PayrollAdminPage from "../views/PayrollAdminPage.vue";
 
 const routes = [
     {
@@ -160,6 +163,30 @@ const routes = [
         path: '/leave-types',
         component: LeaveType,
         name: 'LeaveTypes',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/pay-roll',
+        component: PayrollPage,
+        name: 'Payroll',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/payslip',
+        component: PayslipPage,
+        name: 'Payslip',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/payroll-admin',
+        component: PayrollAdminPage,
+        name: 'PayrollAdmin',
         meta: {
             requiresAuth: true
         }

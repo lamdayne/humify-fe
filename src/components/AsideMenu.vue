@@ -14,13 +14,35 @@
         </div>
         <nav class="flex-1">
             <div class="flex flex-col">
-                <router-link v-for="item in visibleMenus" :key="item.name" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
-                    isActive(item.name) ? 'border-r-2 border-primary' : '']">
-                    <span class="font-bold">
-                        <component :is="item.icon"></component>
-                    </span>
-                    <span class="font-body-md text-body-md">{{ item.label }}</span>
-                </router-link>
+                <template v-for="item in visibleMenus" :key="item.name">
+                    <router-link v-if="!item.children" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
+                        isActive(item.name) ? 'border-r-2 border-primary' : '']">
+                        <span class="font-bold">
+                            <component :is="item.icon"></component>
+                        </span>
+                        <span class="font-body-md text-body-md">{{ item.label }}</span>
+                    </router-link>
+                    <div v-else>
+                        <button @click="toggleMenu(item.name)" :class="['w-full flex items-center justify-between gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 cursor-pointer',
+                            isParentActive(item) ? 'border-r-2 border-primary' : '']">
+                            <span class="flex items-center gap-md">
+                                <span class="font-bold">
+                                    <component :is="item.icon"></component>
+                                </span>
+                                <span class="font-body-md text-body-md">{{ item.label }}</span>
+                                <ChevronDown class="w-4 h4 duration-75"></ChevronDown>
+                            </span>
+                        </button>
+                        <div v-show="openMenus.includes(item.name)" class="flex flex-col">
+                            <router-link v-for="child in visibleChildren(item)" :key="child.name"
+                                :to="{ name: child.name }" :class="['flex items-center gap-md pl-12 pr-xl py-sm font-body-md font-medium transition-colors opacity-80',
+                                    isActive(child.name) ? 'border-r-2 border-primary text-primary' : '']">
+                                <component v-if="child.icon" :is="child.icon" class="w-4 h-4"></component>
+                                <span>{{ child.label }}</span>
+                            </router-link>
+                        </div>
+                    </div>
+                </template>
                 <router-link v-if="open"
                     class="flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 text-red-500">
                     <span class="font-bold">
@@ -34,8 +56,8 @@
 </template>
 
 <script setup>
-import { Building2, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users } from '@lucide/vue';
-import { computed, onMounted } from 'vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown } from '@lucide/vue';
+import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
 
@@ -48,6 +70,8 @@ const props = defineProps({
         default: false
     }
 })
+
+const openMenus = ref([])
 
 defineEmits(['close'])
 
@@ -63,6 +87,12 @@ const menus = [
         icon: CalendarCheck,
         name: 'Attendance',
         permission: 'ATTENDANCE'
+    },
+    {
+        label: 'Payroll',
+        icon: HandCoins,
+        name: 'Payroll',
+        permission: 'PAYROLL'
     },
     {
         label: 'Branches',
@@ -113,17 +143,51 @@ const menus = [
         icon: DoorClosed,
         name: 'LeaveTypes',
         permission: null
+    },
+    {
+        label: 'Payroll Admin',
+        icon: HandCoins,
+        name: 'PayrollAdmin',
+        permission: null
     }
 ]
 
 const visibleMenus = computed(() => {
-    return menus.filter(item => {
-        if (!item.permission) return true
-        if (authStore.isSystemAdmin) return true
-        if (item?.isSystemAdmin) return authStore.isSystemAdmin
-        return authStore.canView(item.permission)
-    })
+    return menus
+        .filter(item => canSeeItem(item))
+        .map(item => {
+            if (!item.children) return item
+            const children = item.children.filter(child => canSeeItem(child))
+            return children.length ? { ...item, children } : null
+        })
 })
 
+const visibleChildren = (item) => item.children?.filter(child => canSeeItem(child));
+
+const canSeeItem = (item) => {
+    if (!item.permission) return true
+    if (authStore.isSystemAdmin) return true
+    if (item?.isSystemAdmin) return authStore.isSystemAdmin
+    return authStore.canView(item.permission)
+}
+
+const toggleMenu = (name) => {
+    if (openMenus.value.includes(name)) {
+        openMenus.value = openMenus.value.filter(menu => menu !== name)
+    } else {
+        openMenus.value.push(name)
+    }
+}
+
 const isActive = (name) => route.name?.toString().startsWith(name)
+
+const isParentActive = (item) => item.children?.some(child => isActive(child.name))
+
+watch(() => route.name, (name) => {
+    const parent = visibleMenus.value.find(menu => menu.children?.some(child => child.name === name))
+    if (parent && !openMenus.value.includes(parent.name)) {
+        openMenus.value.push(parent.name)
+    }
+}, { immediate: true })
+
 </script>

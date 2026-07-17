@@ -7,7 +7,7 @@ export const usePositionStore = defineStore('position', () => {
   const totalPositions = ref(0);
   const openVacancies = ref(0);
 
-  const fetchPositions = async (page = 0, size = 10, sorts = 'id:desc') => {
+  const fetchPositions = async (page = 1, size = 10, sorts = 'id:desc') => {
     try {
       const res = await axiosInstance.get(`/positions?page=${page}&size=${size}&sorts=${sorts}`);
       positions.value = res.data.data.items.map(item => ({
@@ -28,7 +28,7 @@ export const usePositionStore = defineStore('position', () => {
         name: positionData.name,
         description: positionData.description
       });
-      
+
       const newPos = res.data.data;
       positions.value.unshift({
         ...newPos,
@@ -36,7 +36,7 @@ export const usePositionStore = defineStore('position', () => {
       });
       totalPositions.value += 1;
       openVacancies.value += 1;
-      
+
       return { success: true, data: newPos };
     } catch (error) {
       console.error("Lỗi Store createPosition:", error);
