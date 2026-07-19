@@ -32,6 +32,10 @@
                         <div class="flex-1">
                             {{ task.title }}
                         </div>
+                        <button @click.stop="console.log('helo')"
+                            class="rounded-full hover:bg-slate-200 cursor-pointer">
+                            <Ellipsis></Ellipsis>
+                        </button>
                     </div>
                 </div>
                 <div class="mt-3">
@@ -120,7 +124,7 @@
         </ModalGeneric>
         <ModalGeneric v-model="openTaskModal" width="1100px">
             <div class="grid grid-cols-3 gap-4">
-                <div class="col-span-2 flex flex-col gap-2">
+                <div class="col-span-2 flex flex-col gap-2 max-h-[65vh] min-h-0 overflow-y-auto scrollbar-none">
                     <div class="flex gap-2 items-center">
                         <input type="checkbox" name="" id=""
                             class="opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer shrink-0">
@@ -193,7 +197,7 @@
                             </SecondaryButton>
                         </div>
                     </div>
-                    <div class="flex flex-col ml-5 gap-3">
+                    <div class="flex flex-col ml-5 mr-1 gap-3">
                         <textarea v-model="taskDetail.description" placeholder="No description for task"
                             class="w-full rounded-lg focus:outline-2 p-2 resize-none" rows="5" name="" id=""
                             :class="[isEditTaskDesc ? 'border border-slate-200' : '']"
@@ -209,8 +213,54 @@
                             </div>
                         </div>
                     </div>
+                    <div v-if="taskAttachments && taskAttachments.length > 0"
+                        class="flex flex-col ml-5 gap-3 mt-4 mb-2">
+                        <div class="flex gap-3">
+                            <Paperclip class="w-5"></Paperclip>
+                            <span class="text-[17px] font-medium">Attachment</span>
+                        </div>
+                        <div v-for="ta in taskAttachments" :key="ta.id"
+                            class="flex justify-between items-center w-full">
+                            <div class="flex gap-3 items-center">
+                                <div class="p-4 bg-slate-200 rounded-lg">
+                                    <File class=""></File>
+                                </div>
+                                <div class="flex flex-col gap-2 justify-center">
+                                    <span class="font-medium">{{ ta.fileName }}</span>
+                                    <span>{{ formatFileSize(ta.fileSize) }}</span>
+                                </div>
+                            </div>
+                            <div class="flex gap-3 items-center">
+                                <a :href="ta.fileUrl" target="_blank" rel="noopener noreferrer" class="cursor-pointer">
+                                    <ExternalLink class="w-5 h-5" />
+                                </a>
+                                <div class="relative">
+                                    <button @click="togglePopupAttachmentSelected(ta.id)"
+                                        class="p-1 border border-slate-300 rounded-lg cursor-pointer">
+                                        <Ellipsis></Ellipsis>
+                                    </button>
+                                    <div v-if="taskAttachmentFileSelected == ta.id"
+                                        class="absolute right-0 mt-1 w-40 bg-white shadow-xl rounded-lg border border-slate-200 z-50 py-1">
+                                        <button v-if="isImage(ta.fileUrl)" @click="handlePreviewImage(ta.fileUrl)"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 flex items-center gap-2 cursor-pointer">
+                                            Preview
+                                        </button>
+                                        <button @click="downloadFile(ta)"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 flex items-center gap-2 cursor-pointer">
+                                            Download
+                                        </button>
+                                        <button @click="deleteAttachment(ta.id)"
+                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 text-red-600 flex items-center gap-2 cursor-pointer">
+                                            Delete
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-span-1 border-l-2 border-slate-200 flex px-2">
+                <div
+                    class="col-span-1 border-l-2 border-slate-200 flex px-2 max-h-[65vh] min-h-0 overflow-y-auto scrollbar-none">
                     <div class="flex flex-col gap-3 w-full">
                         <div class="flex gap-3">
                             <MessageSquareText class="w-5"></MessageSquareText>
@@ -221,13 +271,18 @@
                 </div>
             </div>
         </ModalGeneric>
+        <ModalGeneric v-model="openPreviewImage" width="950px">
+            <div class="flex">
+                <img :src="previewImageUrl" alt="">
+            </div>
+        </ModalGeneric>
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
     </div>
 </template>
 
 <script setup>
-import { CircleCheckBig, EllipsisVertical, LoaderCircle, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
-import { onMounted, reactive, ref, watch, computed } from 'vue';
+import { CircleCheckBig, Ellipsis, EllipsisVertical, ExternalLink, File, LoaderCircle, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
+import { onMounted, reactive, ref, watch, computed, Teleport } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../store/taskStore.js';
@@ -257,6 +312,11 @@ const isEditTaskDesc = ref(false)
 
 const showMemberPopup = ref(false)
 const searchMember = ref('')
+
+const taskAttachments = ref([])
+const taskAttachmentFileSelected = ref(null)
+const previewImageUrl = ref('')
+const openPreviewImage = ref(false)
 
 const filteredMembers = computed(() => {
     if (!memberOfProject.value) return []
@@ -531,6 +591,7 @@ const showTaskDetail = async (taskId) => {
     try {
         const res = await taskStore.getTaskDetail(taskId)
         taskDetail.value = res.data?.data
+        await getTaskAttachment(taskId)
     } catch (e) {
         console.log(e)
     }
@@ -615,7 +676,7 @@ const onFileSelected = async (event) => {
 
         const res = await taskStore.addAttachment(taskDetail.value.id, payload)
         const data = res.data;
-        console.log(data)
+        taskAttachments.value.push(data?.data)
         if (data.success) {
             showToastMessage(data?.message || 'Upload success', 'success')
         } else {
@@ -626,6 +687,69 @@ const onFileSelected = async (event) => {
 
 const toggleShowMenuPopup = () => {
     showMemberPopup.value = !showMemberPopup.value
+}
+
+const getTaskAttachment = async (taskId) => {
+    try {
+        const res = await taskStore.getAttachment(taskId)
+        taskAttachments.value = res.data?.data
+    } catch (e) {
+        console.log(e)
+    }
+}
+
+const formatFileSize = (bytes) => {
+    if (bytes === 0) return '0 bytes'
+
+    const k = 1024
+    const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i))).toFixed(2) + ' ' + sizes[i]
+}
+
+const togglePopupAttachmentSelected = (taskId) => {
+    taskAttachmentFileSelected.value = taskAttachmentFileSelected.value ? null : taskId
+}
+
+const isImage = (url) => {
+    if (!url) return false
+
+    if (url.includes('/image/')) return true
+    if (url.includes('/raw/') || url.includes('/video/')) return false
+
+    return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
+}
+
+const downloadFile = (ta) => {
+    const link = document.createElement('a');
+    link.href = ta.fileUrl.replace('/upload/', '/upload/fl_attachment/');
+    link.download = ta.fileName || 'file';
+    link.click();
+}
+
+const handlePreviewImage = (url) => {
+    if (isImage(url)) {
+        previewImageUrl.value = url
+        openPreviewImage.value = true
+    }
+}
+
+const deleteAttachment = async (taskAttachmentId) => {
+    try {
+        const res = await taskStore.deleteAttachment(taskAttachmentId)
+        const data = res.data
+        if (data.success) {
+            const index = taskAttachments.value.findIndex(ta => ta.id === taskAttachmentId);
+            console.log(index)
+            taskAttachments.value.splice(index, 1)
+            showToastMessage(data.message || 'Delete success', 'success')
+        } else {
+            showToastMessage(data.message || "Delete failed", 'failed')
+        }
+    } catch (e) {
+        console.log(e)
+        showToastMessage('Server error', 'failed')
+    }
 }
 
 watch(openModal, (newValue) => {
@@ -644,6 +768,9 @@ watch(openTaskModal, (newValue) => {
     if (!newValue) {
         isEditTaskDesc.value = false
         showMemberPopup.value = false
+        taskAttachments.value = []
+        taskAttachmentFileSelected.value = null
+        previewImageUrl.value = ''
     }
 })
 </script>
