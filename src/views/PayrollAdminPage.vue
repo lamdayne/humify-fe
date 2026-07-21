@@ -1,6 +1,6 @@
 <template>
   <MainContent>
-    <div class="space-y-6">
+    <div class="space-y-6 p-6">
       <!-- Header -->
       <div class="bg-white rounded-2xl shadow-sm border border-gray-200 p-6 flex flex-col lg:flex-row lg:items-center lg:justify-between">
         <div>
