@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building } from '@lucide/vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -132,6 +132,12 @@ const menus = [
                 name: 'Positions',
                 permission: 'POSITION'
             },
+            {
+                label: 'Contract',
+                icon: FileText,
+                name: 'Contracts',
+                permission: null
+            }
         ]
     },
     {
