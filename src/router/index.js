@@ -25,6 +25,7 @@ import ProjectDetailPage from "../views/ProjectDetailPage.vue";
 import PayrollPage from "../views/PayrollPage.vue";
 import PayslipPage from "../views/PayslipPage.vue";
 import PayrollAdminPage from "../views/PayrollAdminPage.vue";
+import AccountPage from "../views/AccountPage.vue";
 
 const routes = [
     {
@@ -187,6 +188,14 @@ const routes = [
         path: '/payroll-admin',
         component: PayrollAdminPage,
         name: 'PayrollAdmin',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/account',
+        component: AccountPage,
+        name: 'AccountManager',
         meta: {
             requiresAuth: true
         }
