@@ -85,6 +85,15 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const deleteTask = async (taskId) => {
+        try {
+            const res = await axiosInstance.delete(`/tasks/${taskId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
@@ -94,6 +103,7 @@ export const useTaskStore = defineStore('tasks', () => {
         updateTask,
         addAttachment,
         getAttachment,
-        deleteAttachment
+        deleteAttachment,
+        deleteTask
     }
 })

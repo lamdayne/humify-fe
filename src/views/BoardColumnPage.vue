@@ -26,16 +26,17 @@
                     <div v-for="(task, i) in col.tasks" :key="task.id" draggable="true" @dragover.prevent.stop
                         @dragstart.stop="onTaskDragStart(col.id, i)" @drop.stop="onTaskDrop(col.id, i)"
                         @click="showTaskDetail(task.id)"
+                        @contextmenu.prevent.stop="showTaskIdPopup($event, task.id, col.id)"
                         class="group bg-white p-3 rounded-lg shadow-sm cursor-pointer border-2 border-transparent hover:border-slate-400 flex items-start gap-2">
                         <input type="checkbox" name="" id="" draggable="false"
                             class="mt-1 opacity-0 group-hover:opacity-100 checked:opacity-100 transition cursor-pointer">
                         <div class="flex-1">
                             {{ task.title }}
                         </div>
-                        <button @click.stop="console.log('helo')"
+                        <!-- <button @click.stop="console.log('helo')"
                             class="rounded-full hover:bg-slate-200 cursor-pointer">
                             <Ellipsis></Ellipsis>
-                        </button>
+                        </button> -->
                     </div>
                 </div>
                 <div class="mt-3">
@@ -79,6 +80,13 @@
                     </div>
                 </div>
             </div>
+        </div>
+        <div v-if="showPopupTask" ref="popupRef" class="fixed flex flex-col w-30 rounded-lg gap-2 text-white"
+            :style="{ top: `${taskY}px`, left: `${taskX}px` }">
+            <button @click.stop="handleDeleteTask"
+                class="p-2 shadow-lg border-slate-300 rounded-lg font-medium cursor-pointer bg-slate-100 text-red-500">
+                Delete
+            </button>
         </div>
         <ModalGeneric v-model="openModal" title="Update column info">
             <div class="space-y-6">
@@ -282,7 +290,7 @@
 
 <script setup>
 import { CircleCheckBig, Ellipsis, EllipsisVertical, ExternalLink, File, LoaderCircle, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
-import { onMounted, reactive, ref, watch, computed, Teleport } from 'vue';
+import { onMounted, reactive, ref, watch, computed, Teleport, onBeforeUnmount } from 'vue';
 import { useColumnStore } from '../store/columnStore.js'
 import { useRoute } from 'vue-router';
 import { useTaskStore } from '../store/taskStore.js';
@@ -317,6 +325,15 @@ const taskAttachments = ref([])
 const taskAttachmentFileSelected = ref(null)
 const previewImageUrl = ref('')
 const openPreviewImage = ref(false)
+
+const showPopupTask = ref(false)
+const popupTaskInfo = ref({
+    columnId: null,
+    taskId: null
+})
+const taskX = ref(null)
+const taskY = ref(null)
+const popupRef = ref(null)
 
 const filteredMembers = computed(() => {
     if (!memberOfProject.value) return []
@@ -597,8 +614,6 @@ const showTaskDetail = async (taskId) => {
     }
 }
 
-// showShareModal removed
-
 onMounted(async () => {
     const projectId = route.params?.id;
     project.id = projectId
@@ -631,6 +646,11 @@ onMounted(async () => {
 
     const memberRes = await projectStore.getAllMemberByProjectId(projectId)
     memberOfProject.value = memberRes?.data?.items.filter(member => member.status === 'ACTIVE')
+    document.addEventListener('click', handleClickOutside)
+})
+
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
 })
 
 const handleUpdateTask = async (item) => {
@@ -745,6 +765,48 @@ const deleteAttachment = async (taskAttachmentId) => {
             showToastMessage(data.message || 'Delete success', 'success')
         } else {
             showToastMessage(data.message || "Delete failed", 'failed')
+        }
+    } catch (e) {
+        console.log(e)
+        showToastMessage('Server error', 'failed')
+    }
+}
+
+const showTaskIdPopup = (event, taskId, colId) => {
+    taskX.value = event.clientX;
+    taskY.value = event.clientY;
+    showPopupTask.value = true
+    popupTaskInfo.value.columnId = colId
+    popupTaskInfo.value.taskId = taskId
+}
+
+const handleClickOutside = (e) => {
+    if (!popupRef.value) return
+    if (!popupRef.value.contains(e.target)) {
+        closePopupTask()
+    }
+}
+
+const closePopupTask = () => {
+    showPopupTask.value = false
+    popupTaskInfo.value.columnId = null
+    popupTaskInfo.value.taskId = null
+}
+
+const handleDeleteTask = async () => {
+    try {
+        const taskId = popupTaskInfo.value.taskId
+        const colId = popupTaskInfo.value.columnId
+        const res = await taskStore.deleteTask(taskId);
+        const data = res.data
+        if (data.success) {
+            const taskList = columns.value.find(col => col.id === colId).tasks
+            const index = taskList.findIndex(task => task.id === taskId)
+            taskList.splice(index, 1);
+            closePopupTask()
+            showToastMessage(data.message || 'Delete task success')
+        } else {
+            showToastMessage(data.message || 'Delete task failed', 'failed')
         }
     } catch (e) {
         console.log(e)
