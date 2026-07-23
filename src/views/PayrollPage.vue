@@ -20,44 +20,89 @@
      
 
       <!-- Table -->
-      <div class="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        <table class="w-full">
-          <thead class="bg-gray-50">
-          <tr>
-            <th class="text-left px-6 py-4">Pay Period</th>
-            <th class="text-left px-6 py-4">Work Days</th>
-            <th class="text-left px-6 py-4">Gross</th>
-            <th class="text-left px-6 py-4">Deductions</th>
-            <th class="text-left px-6 py-4">Net</th>
-            <th class="text-left px-6 py-4">Status</th>
-            <th class="text-right px-6 py-4">Details</th>
+      <div
+          class="bg-white border border-slate-200/90 rounded-xl overflow-hidden shadow-[0_1px_3px_rgba(0,0,0,0.02)]"
+      >
+        <table class="w-full text-left border-collapse">
+          <thead>
+          <tr class="bg-slate-50/70 border-b border-slate-200/80">
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Pay Period
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Work Days
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Gross Salary
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Deductions
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Net Salary
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest">
+              Status
+            </th>
+
+            <th class="py-4 px-6 text-[10px] font-semibold text-slate-400 uppercase tracking-widest text-right">
+              Action
+            </th>
           </tr>
           </thead>
 
-          <tbody>
+          <tbody class="divide-y divide-slate-100">
           <tr v-if="loading">
             <td colspan="7" class="px-6 py-6 text-center text-gray-400">Loading...</td>
           </tr>
           <tr v-else-if="payslips.length === 0">
             <td colspan="7" class="px-6 py-6 text-center text-gray-400">No payslips found</td>
           </tr>
-          <tr v-for="item in payslips" :key="item.id" class="border-t hover:bg-gray-50 cursor-pointer"
-              @click="openDetail(item)">
-            <td class="px-6 py-4">
-              <p class="font-medium">{{ item.payrollPeriodName }}</p>
-              <p class="text-xs text-gray-400">{{ item.month }}/{{ item.year }}</p>
+          <tr
+              v-for="item in payslips"
+              :key="item.id"
+              class="hover:bg-slate-50/40 transition-colors group cursor-pointer"
+              @click="openDetail(item)"
+          >
+            <td class="py-5 px-6">
+              <div class="font-bold text-slate-900 text-[15px] tracking-tight">
+                {{ item.payrollPeriodName }}
+              </div>
+
+              <div class="text-xs text-slate-400 mt-1">
+                {{ item.month }}/{{ item.year }}
+              </div>
             </td>
-            <td class="px-6 py-4">{{ item.actualWorkDays }}/{{ item.standardWorkDays }} days</td>
-            <td class="px-6 py-4">{{ formatCurrency(item.grossSalary) }}</td>
-            <td class="px-6 py-4 text-red-500">-{{ formatCurrency(item.totalDeductions) }}</td>
-            <td class="px-6 py-4 font-bold text-green-600">{{ formatCurrency(item.netSalary) }}</td>
-            <td class="px-6 py-4">
-              <span :class="statusBadgeClass(item.status)" class="px-3 py-1 rounded-full text-xs font-medium">
-                {{ statusLabel(item.status) }}
-              </span>
+            <td class="py-5 px-6 text-sm text-slate-600">
+              {{ item.actualWorkDays }}/{{ item.standardWorkDays }}
             </td>
-            <td class="px-6 py-4 text-right">
-              <button class="text-blue-600 hover:text-blue-700 font-medium" @click.stop="openDetail(item)">
+            <td class="py-5 px-6 text-sm text-slate-600">
+              {{ formatCurrency(item.grossSalary) }}
+            </td>
+            <td class="py-5 px-6 text-sm text-red-500">
+              -{{ formatCurrency(item.totalDeductions) }}
+            </td>
+            <td class="py-5 px-6 text-sm font-semibold text-green-600">
+              {{ formatCurrency(item.netSalary) }}
+            </td>
+            <td class="py-5 px-6 text-xs md:text-sm whitespace-nowrap">
+    <span
+        :class="statusBadgeClass(item.status)"
+        class="px-3 py-1 rounded-full text-xs font-medium"
+    >
+        {{ statusLabel(item.status) }}
+    </span>
+            </td>
+            <td class="py-5 px-6 text-right">
+              <button
+                  class="text-blue-600 hover:text-blue-700 font-medium transition-colors"
+                  @click.stop="openDetail(item)"
+              >
                 View
               </button>
             </td>
@@ -65,35 +110,23 @@
           </tbody>
         </table>
 
-        <!-- Pagination -->
-        <div class="flex justify-between items-center px-6 py-4 border-t">
-          <div class="text-sm text-gray-500">
-            Showing {{ payslips.length ? currentPage * pageSize + 1 : 0 }}-{{
-              Math.min((currentPage + 1) * pageSize, totalElements)
-            }} of {{ totalElements }}
-          </div>
-          <div class="flex gap-2">
-            <button :disabled="currentPage === 0" @click="goToPage(currentPage - 1)"
-                    class="px-3 py-1 border rounded disabled:opacity-40 disabled:cursor-not-allowed">
-              Previous
-            </button>
-            <button v-for="p in totalPages" :key="p" @click="goToPage(p - 1)"
-                    :class="currentPage === p - 1 ? 'bg-blue-600 text-white' : ''"
-                    class="px-3 py-1 border rounded">
-              {{ p }}
-            </button>
-            <button :disabled="currentPage >= totalPages - 1" @click="goToPage(currentPage + 1)"
-                    class="px-3 py-1 border rounded disabled:opacity-40 disabled:cursor-not-allowed">
-              Next
-            </button>
-          </div>
-        </div>
-      </div>
 
+
+      </div>
+      <!-- Pagination -->
+      <PaginationSection
+          v-model:currentPage="pagination.pageNo"
+          :total-items="pagination.totalElements"
+          :total-page="pagination.totalPages"
+          :page-size="pagination.pageSize"
+          item-label="payslips"
+          @changePage="handlePageChange"
+      />
       <!-- Detail Modal -->
+
       <div v-if="showDetail" @click.self="showDetail = false"
            class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto relative">
+        <div class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
           <!-- Header -->
           <div class="flex justify-between items-center border-b px-8 py-5">
             <div>
@@ -103,7 +136,11 @@
             <button @click="showDetail = false" class="text-gray-500 hover:text-red-500 text-2xl">✕</button>
           </div>
 
-          <div class="p-8 space-y-8">
+          <div
+              class="bg-white w-full max-w-3xl rounded-2xl shadow-2xl max-h-[90vh] overflow-y-auto hide-scrollbar relative"
+          >
+          <div class="flex-1 overflow-y-auto no-scrollbar p-8">
+
             <!-- Status -->
             <div class="flex items-center gap-4">
               <span :class="statusBadgeClass(detailPayslip.status)" class="px-3 py-1 rounded-full text-xs font-medium">
@@ -143,9 +180,39 @@
               <table class="w-full">
                 <tbody>
                 <tr>
-                  <td class="py-2 font-bold">Gross Salary</td>
+                  <td class="py-2 font-bold">Gross base</td>
                   <td class="py-2 text-right font-bold text-blue-600">
-                    {{ formatCurrency(detailPayslip.grossSalary) }}
+                    {{ formatCurrency(detailPayslip.baseSalary) }}
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td>Salary By Work Days</td>
+                  <td class="text-right">
+                    {{ formatCurrency(detailPayslip.salaryByWorkDays) }}
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td>Allowance</td>
+                  <td class="text-right">
+                    {{ formatCurrency(detailPayslip.totalAllowances) }}
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td>KPI Bonus</td>
+                  <td class="text-right">
+                    {{ formatCurrency(detailPayslip.bonusKpi) }}
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td>Project Bonus</td>
+                  <td class="text-right">
+                    {{ formatCurrency(detailPayslip.bonusProject) }}
+                  </td>
+                </tr>
+                <tr class="border-b">
+                  <td>Other Bonus</td>
+                  <td class="text-right">
+                    {{ formatCurrency(detailPayslip.otherBonuses) }}
                   </td>
                 </tr>
                 </tbody>
@@ -154,36 +221,36 @@
 
             <!-- Deductions breakdown -->
             <div>
-              <h3 class="font-semibold text-lg mb-4">Deductions</h3>
+              <h3 class="font-semibold text-lg font-bold mt-3">Deductions</h3>
               <table class="w-full">
                 <tbody>
                 <tr class="border-b">
-                  <td class="py-2">Social Insurance</td>
-                  <td class="py-2 text-right text-red-500">
+                  <td >Social Insurance</td>
+                  <td class="text-right text-red-500">
                     -{{ formatCurrency(detailPayslip.deductionSocialInsurance) }}
                   </td>
                 </tr>
                 <tr class="border-b">
-                  <td class="py-2">Health Insurance</td>
-                  <td class="py-2 text-right text-red-500">
+                  <td >Health Insurance</td>
+                  <td class="text-right text-red-500">
                     -{{ formatCurrency(detailPayslip.deductionHealthInsurance) }}
                   </td>
                 </tr>
                 <tr class="border-b">
-                  <td class="py-2">Unemployment Insurance</td>
-                  <td class="py-2 text-right text-red-500">
+                  <td >Unemployment Insurance</td>
+                  <td class=" text-right text-red-500">
                     -{{ formatCurrency(detailPayslip.deductionUnemploymentInsurance) }}
                   </td>
                 </tr>
                 <tr class="border-b">
-                  <td class="py-2">Personal Income Tax</td>
-                  <td class="py-2 text-right text-red-500">
+                  <td >Personal Income Tax</td>
+                  <td class="text-right text-red-500">
                     -{{ formatCurrency(detailPayslip.personalIncomeTax) }}
                   </td>
                 </tr>
                 <tr class="border-b">
-                  <td class="py-2">Other Deductions</td>
-                  <td class="py-2 text-right text-red-500">
+                  <td >Other Deductions</td>
+                  <td class=" text-right text-red-500">
                     -{{ formatCurrency(detailPayslip.otherDeductions) }}
                   </td>
                 </tr>
@@ -191,6 +258,12 @@
                   <td class="py-2 font-semibold">Total Deductions</td>
                   <td class="py-2 text-right font-semibold text-red-600">
                     -{{ formatCurrency(detailPayslip.totalDeductions) }}
+                  </td>
+                </tr>
+                <tr>
+                  <td class="py-2 font-bold">Gross Salary</td>
+                  <td class="py-2 text-right font-bold text-blue-600">
+                    {{ formatCurrency(detailPayslip.grossSalary) }}
                   </td>
                 </tr>
                 </tbody>
@@ -209,7 +282,9 @@
               If you have any questions about this payslip, please contact HR for clarification.
             </p>
           </div>
+          </div>
         </div>
+
       </div>
     </div>
   </MainContent>
@@ -219,6 +294,7 @@
 import { computed, ref, onMounted } from "vue";
 import MainContent from "../components/MainContent.vue";
 import { usePayrollStore } from "../store/payroll.js";
+import PaginationSection from "../components/PaginationSection.vue";
 
 const payrollStore = usePayrollStore();
 
@@ -234,10 +310,14 @@ const yearOptions = computed(() => {
 });
 
 // Pagination
-const currentPage = ref(0);
-const pageSize = ref(10);
-const totalElements = ref(0);
-const totalPages = ref(0);
+import { reactive } from "vue";
+
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalElements: 0,
+  totalPages: 0,
+});
 
 // Detail modal
 const showDetail = ref(false);
@@ -266,28 +346,34 @@ function formatDate(value) {
 const loadMyPayslips = async () => {
   try {
     loading.value = true;
+
     const response = await payrollStore.getMyPayslips({
       year: selectedYear.value,
-      page: currentPage.value,
-      size: pageSize.value,
+      page: pagination.pageNo - 1,
+      size: pagination.pageSize,
     });
 
-    payslips.value = response.data.data.items ?? [];
-    totalElements.value = response.data.data.totalElements ?? 0;
-    totalPages.value = response.data.data.totalPages ?? 0;
-  } catch (e) {
-    console.error(e);
-    alert("Failed to load payslips.");
+    const data = response.data.data;
+
+    payslips.value = data.items ?? [];
+
+    pagination.pageNo = data.pageNo + 1;
+    pagination.pageSize = data.pageSize;
+    pagination.totalPages = data.totalPages;
+    pagination.totalElements = data.totalElements;
   } finally {
     loading.value = false;
   }
 };
 
 const onFilterChange = async () => {
-  currentPage.value = 0;
+  pagination.pageNo = 1;
   await loadMyPayslips();
 };
-
+const handlePageChange = async (page) => {
+  pagination.pageNo = page;
+  await loadMyPayslips();
+};
 const goToPage = async (page) => {
   if (page < 0 || page >= totalPages.value) return;
   currentPage.value = page;
