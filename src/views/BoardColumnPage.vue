@@ -1,11 +1,15 @@
 <template>
     <div class="flex-1">
+        <!-- Kanban Columns Board -->
         <div class="flex items-start p-3 overflow-x-auto gap-3 hide-scrollbar">
+            <!-- Columns -->
             <div v-for="(col, index) in columns" :key="col.id" draggable="true" @dragover.prevent
                 @dragstart="onColumnDragStart(index)" @drop="onColumnDrop(index)"
                 class="w-60 shrink-0 bg-gray-300 p-3 rounded-xl space-y-2 flex flex-col max-h-[85vh]">
+
+                <!-- Column Header -->
                 <div class="font-bold flex justify-between relative">
-                    <span class="">{{ col.title }}</span>
+                    <span>{{ col.title.toUpperCase() }}</span>
                     <button @click="col.showMenu = !col.showMenu"
                         class="px-1 rounded-full hover:bg-slate-200 cursor-pointer">
                         <EllipsisVertical class="w-4"></EllipsisVertical>
@@ -21,23 +25,16 @@
                             class="w-full text-left px-3 py-2 hover:bg-red-100 text-red-600 cursor-pointer border-t border-gray-100 transition">Delete</button>
                     </div>
                 </div>
+
+                <!-- Task Cards List -->
                 <div class="space-y-2 flex-1 overflow-y-auto hide-scrollbar" @dragover.prevent
                     @drop.stop="onTaskDrop(col.id, col.tasks.length)">
-                    <div v-for="(task, i) in col.tasks" :key="task.id" draggable="true" @dragover.prevent.stop
-                        @dragstart.stop="onTaskDragStart(col.id, i)" @drop.stop="onTaskDrop(col.id, i)"
-                        @click="showTaskDetail(task.id)"
-                        class="group bg-white p-3 rounded-lg shadow-sm cursor-pointer border-2 border-transparent hover:border-slate-400 flex items-start gap-2">
-                        <input type="checkbox" name="" id="" draggable="false"
-                            class="mt-1 opacity-0 group-hover:opacity-100 checked:opacity-100 transition cursor-pointer">
-                        <div class="flex-1">
-                            {{ task.title }}
-                        </div>
-                        <button @click.stop="console.log('helo')"
-                            class="rounded-full hover:bg-slate-200 cursor-pointer">
-                            <Ellipsis></Ellipsis>
-                        </button>
-                    </div>
+                    <TaskCard v-for="(task, i) in col.tasks" :key="task.id" :task="task"
+                        @dragstart="onTaskDragStart(col.id, i)" @drop="onTaskDrop(col.id, i)"
+                        @click="showTaskDetail(task.id)" @contextmenu="showTaskIdPopup($event, task.id, col.id)" />
                 </div>
+
+                <!-- Add Card Form -->
                 <div class="mt-3">
                     <button v-if="!col.isAdding" @click="col.isAdding = true"
                         class="w-full text-left cursor-pointer hover:bg-slate-200 p-2 rounded-lg transition">
@@ -45,7 +42,7 @@
                     </button>
 
                     <div v-else>
-                        <textarea name="" id="" placeholder="Enter a title" v-model="col.newTask"
+                        <textarea placeholder="Enter a title" v-model="col.newTask"
                             class="bg-white rounded-lg w-full p-2 resize-none focus:outline-none"></textarea>
                         <div class="flex gap-2">
                             <button @click="addTask(col)" class="bg-slate-900 text-white px-3 py-1 rounded-lg">
@@ -58,6 +55,8 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Add Column Button/Form -->
             <div class="w-60 shrink-0">
                 <button v-if="!isAddingColumn" @click="isAddingColumn = true"
                     class="w-full bg-gray-300 p-3 rounded-xl flex items-center gap-2 cursor-pointer hover:bg-gray-400">
@@ -72,7 +71,6 @@
                         <button @click="addColumn" class="bg-slate-900 text-white px-3 py-1 rounded-lg">
                             Add column
                         </button>
-
                         <button @click="cancelColumn">
                             <X></X>
                         </button>
@@ -80,23 +78,30 @@
                 </div>
             </div>
         </div>
+
+        <!-- Task Delete Context Popup -->
+        <div v-if="showPopupTask" ref="popupRef" class="fixed flex flex-col w-30 rounded-lg gap-2 text-white"
+            :style="{ top: `${taskY}px`, left: `${taskX}px` }">
+            <button @click.stop="handleDeleteTask"
+                class="p-2 shadow-lg border-slate-300 rounded-lg font-medium cursor-pointer bg-slate-100 text-red-500">
+                Delete
+            </button>
+        </div>
+
+        <!-- Column Update Modal -->
         <ModalGeneric v-model="openModal" title="Update column info">
             <div class="space-y-6">
-                <div class="">
-                    <label for="projectName"
-                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        Column Name
-                    </label>
-                    <input type="text" id="projectName" placeholder="To do" v-model="columnInfo.title"
-                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Column
+                        Name</label>
+                    <input type="text" placeholder="To do" v-model="columnInfo.title"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm outline-none font-light">
                 </div>
-                <div class="">
-                    <label for="projectKey"
-                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
-                        Category
-                    </label>
-                    <select type="text" id="projectKey" v-model="columnInfo.category"
-                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                <div>
+                    <label
+                        class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Category</label>
+                    <select v-model="columnInfo.category"
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm outline-none font-light">
                         <option value="TO_DO">To do</option>
                         <option value="IN_PROGRESS">In progress</option>
                         <option value="DONE">Done</option>
@@ -105,265 +110,98 @@
             </div>
             <template #footer>
                 <div class="flex gap-2">
-                    <SecondaryButton @click="openModal = false" :content="'Cancel'"></SecondaryButton>
-                    <PrimaryButton @click="handleUpdateColumn(columnInfo.id)" :content="'Update'"></PrimaryButton>
+                    <SecondaryButton @click="openModal = false" content="Cancel"></SecondaryButton>
+                    <PrimaryButton @click="handleUpdateColumn(columnInfo.id)" content="Update"></PrimaryButton>
                 </div>
             </template>
         </ModalGeneric>
+
+        <!-- Column Delete Confirmation Modal -->
         <ModalGeneric v-model="openModalDelete" title="Confirm Delete">
-            Do you want to delete?
+            <div class="space-y-3">
+                <div>Do you want to delete?</div>
+                <div v-if="selectedDeleteColumn?.tasks && selectedDeleteColumn.tasks.length > 0"
+                    class="text-sm space-y-1">
+                    <div class="text-amber-600 font-medium">Select a target column to move existing tasks:</div>
+                    <select v-model="moveToColumnId" class="w-full border border-slate-300 rounded-md p-2 outline-none">
+                        <option v-for="targetCol in availableTargetColumns" :key="targetCol.id" :value="targetCol.id">
+                            {{ targetCol.title }}
+                        </option>
+                    </select>
+                </div>
+            </div>
             <template #footer>
                 <div class="flex gap-2">
-                    <SecondaryButton @click="openModalDelete = false" :content="'Cancel'"></SecondaryButton>
+                    <SecondaryButton @click="openModalDelete = false" content="Cancel"></SecondaryButton>
                     <button @click="deleteColumn"
-                        class="w-full h-9 px-3 bg-red-500 text-white font-medium rounded-lg hover:opacity-80 transition-all flex items-center justify-center cursor-pointer gap-xs">
+                        class="w-full h-9 px-3 bg-red-500 text-white font-medium rounded-lg hover:opacity-80 transition cursor-pointer">
                         Delete
                     </button>
                 </div>
             </template>
         </ModalGeneric>
-        <ModalGeneric v-model="openTaskModal" width="1100px">
-            <div class="grid grid-cols-3 gap-4">
-                <div class="col-span-2 flex flex-col gap-2 max-h-[65vh] min-h-0 overflow-y-auto scrollbar-none">
-                    <div class="flex gap-2 items-center">
-                        <input type="checkbox" name="" id=""
-                            class="opacity-0 hover:opacity-100 checked:opacity-100 transition cursor-pointer shrink-0">
-                        <StatusBadge :type="taskDetail.completedAt ? 'ACTIVE' : 'INACTIVE'"
-                            :content="taskDetail.taskKey" class="shrink-0"></StatusBadge>
-                        <input type="text" class="flex-1 min-w-0 text-xl font-medium" v-model="taskDetail.title"
-                            @keydown.enter="handleUpdateTask(taskDetail); $event.target.blur()">
-                    </div>
-                    <div class="relative grid grid-cols-2 md:grid-cols-5 lg:grid-cols-5 ml-5 mt-4 gap-2">
-                        <!-- <SecondaryButton :content="'Add'">
-                            <template #icon>
-                                <Plus></Plus>
-                            </template>
-                        </SecondaryButton> -->
-                        <SecondaryButton :content="'Checklist'">
-                            <template #icon>
-                                <CircleCheckBig class="w-4"></CircleCheckBig>
-                            </template>
-                        </SecondaryButton>
-                        <input type="date" name="" class="border border-slate-300 px-2 rounded-lg">
-                        <input type="file" ref="fileInputRef" class="hidden" multiple @change="onFileSelected">
-                        <SecondaryButton :content="'Attachment'" @click="fileInputRef.click()">
-                            <template #icon>
-                                <Paperclip class="w-4"></Paperclip>
-                            </template>
-                        </SecondaryButton>
-                        <SecondaryButton :content="'Member'" v-if="!taskDetail.assignee" @click="toggleShowMenuPopup">
-                            <template #icon>
-                                <UserPlus class="w-5"></UserPlus>
-                            </template>
-                        </SecondaryButton>
-                        <div v-if="showMemberPopup"
-                            class="absolute right-0 top-10 w-70 bg-white shadow-lg p-3 rounded-lg border border-slate-200 z-50">
-                            <h1 class="text-center">Member</h1>
-                            <input type="text" class="w-full p-2 border-2 border-slate-200 outline-none rounded-lg"
-                                placeholder="Search members" v-model="searchMember">
-                            <div class="w-full h-30 overflow-auto mt-5 scrollbar-none">
-                                <div v-for="member in filteredMembers" :key="member.id"
-                                    class="flex gap-2 mt-2 items-center hover:bg-slate-100 cursor-pointer p-1">
-                                    <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                                        alt="" class="w-10 rounded-full">
-                                    <span>{{ member.user.email || member.user.fullName }}</span>
-                                </div>
-                                <div v-if="filteredMembers.length === 0" class="text-center mt-5 text-slate-400">
-                                    No member found
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <span v-if="taskDetail.assignee" class="mt-5 ml-5 font-medium">Members</span>
-                    <div v-if="taskDetail.assignee" class="flex ml-5 gap-2">
-                        <div class="w-12 cursor-pointer">
-                            <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                                alt="" :title="taskDetail.assignee?.email" class="rounded-full">
-                        </div>
-                        <button class="p-2.5 border-2 border-slate-300 rounded-full cursor-pointer">
-                            <Plus></Plus>
-                        </button>
-                    </div>
-                    <div class="flex justify-between ml-5 mt-2">
-                        <div class="flex gap-4 items-center">
-                            <SquarePen class="w-5"></SquarePen>
-                            <span class="font-medium text-[17px]">Description</span>
-                        </div>
-                        <div v-if="!isEditTaskDesc" @click="isEditTaskDesc = true">
-                            <SecondaryButton content="Edit">
-                                <template #icon>
-                                    <Pencil class="w-4"></Pencil>
-                                </template>
-                            </SecondaryButton>
-                        </div>
-                    </div>
-                    <div class="flex flex-col ml-5 mr-1 gap-3">
-                        <textarea v-model="taskDetail.description" placeholder="No description for task"
-                            class="w-full rounded-lg focus:outline-2 p-2 resize-none" rows="5" name="" id=""
-                            :class="[isEditTaskDesc ? 'border border-slate-200' : '']"
-                            @focus="isEditTaskDesc = true"></textarea>
-                        <div class="flex gap-3" v-if="isEditTaskDesc">
-                            <div>
-                                <PrimaryButton content="Save"
-                                    @click="handleUpdateTask(taskDetail); isEditTaskDesc = false">
-                                </PrimaryButton>
-                            </div>
-                            <div>
-                                <SecondaryButton content="Cancel" @click="isEditTaskDesc = false"></SecondaryButton>
-                            </div>
-                        </div>
-                    </div>
-                    <div v-if="taskAttachments && taskAttachments.length > 0"
-                        class="flex flex-col ml-5 gap-3 mt-4 mb-2">
-                        <div class="flex gap-3">
-                            <Paperclip class="w-5"></Paperclip>
-                            <span class="text-[17px] font-medium">Attachment</span>
-                        </div>
-                        <div v-for="ta in taskAttachments" :key="ta.id"
-                            class="flex justify-between items-center w-full">
-                            <div class="flex gap-3 items-center">
-                                <div class="p-4 bg-slate-200 rounded-lg">
-                                    <File class=""></File>
-                                </div>
-                                <div class="flex flex-col gap-2 justify-center">
-                                    <span class="font-medium">{{ ta.fileName }}</span>
-                                    <span>{{ formatFileSize(ta.fileSize) }}</span>
-                                </div>
-                            </div>
-                            <div class="flex gap-3 items-center">
-                                <a :href="ta.fileUrl" target="_blank" rel="noopener noreferrer" class="cursor-pointer">
-                                    <ExternalLink class="w-5 h-5" />
-                                </a>
-                                <div class="relative">
-                                    <button @click="togglePopupAttachmentSelected(ta.id)"
-                                        class="p-1 border border-slate-300 rounded-lg cursor-pointer">
-                                        <Ellipsis></Ellipsis>
-                                    </button>
-                                    <div v-if="taskAttachmentFileSelected == ta.id"
-                                        class="absolute right-0 mt-1 w-40 bg-white shadow-xl rounded-lg border border-slate-200 z-50 py-1">
-                                        <button v-if="isImage(ta.fileUrl)" @click="handlePreviewImage(ta.fileUrl)"
-                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 flex items-center gap-2 cursor-pointer">
-                                            Preview
-                                        </button>
-                                        <button @click="downloadFile(ta)"
-                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 flex items-center gap-2 cursor-pointer">
-                                            Download
-                                        </button>
-                                        <button @click="deleteAttachment(ta.id)"
-                                            class="w-full text-left px-4 py-2 text-sm hover:bg-slate-100 text-red-600 flex items-center gap-2 cursor-pointer">
-                                            Delete
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div
-                    class="col-span-1 border-l-2 border-slate-200 flex px-2 max-h-[65vh] min-h-0 overflow-y-auto scrollbar-none">
-                    <div class="flex flex-col gap-3 w-full">
-                        <div class="flex gap-3">
-                            <MessageSquareText class="w-5"></MessageSquareText>
-                            <span class="font-medium">Comments and activity</span>
-                        </div>
-                        <input type="text" class="p-1.5 bg-slate-200 rounded-lg" placeholder="Write a comment...">
-                    </div>
-                </div>
-            </div>
-        </ModalGeneric>
-        <ModalGeneric v-model="openPreviewImage" width="950px">
-            <div class="flex">
-                <img :src="previewImageUrl" alt="">
-            </div>
-        </ModalGeneric>
+
+        <!-- Task Detail Modal Component -->
+        <TaskDetailModal v-model="openTaskModal" :taskId="selectedTaskId" :projectId="project.id"
+            :memberOfProject="memberOfProject" @task-updated="onTaskUpdated" />
+
+        <!-- Toast Message -->
         <ToastMessage :show="toastOpen" :message="toastInfo.message" :type="toastInfo.type"></ToastMessage>
     </div>
 </template>
 
 <script setup>
-import { CircleCheckBig, Ellipsis, EllipsisVertical, ExternalLink, File, LoaderCircle, MessageSquareText, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
-import { onMounted, reactive, ref, watch, computed, Teleport } from 'vue';
-import { useColumnStore } from '../store/columnStore.js'
+import { EllipsisVertical, Plus, X } from '@lucide/vue';
+import { onMounted, reactive, ref, computed, onBeforeUnmount, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { useColumnStore } from '../store/columnStore.js';
 import { useTaskStore } from '../store/taskStore.js';
-import StatusBadge from '../components/StatusBadge.vue';
+import { useProject } from '../store/projectStore.js';
+import { useSprintStore } from '../store/sprintStore.js';
+
 import ModalGeneric from '../components/ModalGeneric.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
-import { useProject } from '../store/projectStore.js';
-import { useUploadStore } from '../store/uploadStore.js';
+
+import TaskCard from '../components/board/TaskCard.vue';
+import TaskDetailModal from '../components/task/TaskDetailModal.vue';
 
 const route = useRoute()
 const projectStore = useProject()
+const columnStore = useColumnStore()
+const taskStore = useTaskStore()
+const sprintStore = useSprintStore()
+
 const isAddingColumn = ref(false)
 const newColumnTitle = ref('')
 const draggedColumn = ref(null)
 const draggedTask = ref(null)
-const project = reactive({
-    id: null
-})
+const project = reactive({ id: null })
+
 const openModal = ref(false)
 const openModalDelete = ref(false)
 const columnDeleteId = ref(null)
+const moveToColumnId = ref(null)
 
 const openTaskModal = ref(false)
-const isEditTaskDesc = ref(false)
+const selectedTaskId = ref(null)
 
-const showMemberPopup = ref(false)
-const searchMember = ref('')
+const showPopupTask = ref(false)
+const popupTaskInfo = ref({ columnId: null, taskId: null })
+const taskX = ref(null)
+const taskY = ref(null)
+const popupRef = ref(null)
 
-const taskAttachments = ref([])
-const taskAttachmentFileSelected = ref(null)
-const previewImageUrl = ref('')
-const openPreviewImage = ref(false)
-
-const filteredMembers = computed(() => {
-    if (!memberOfProject.value) return []
-    const keyword = searchMember.value.toLowerCase().trim()
-    if (!keyword) return memberOfProject.value
-
-    return memberOfProject.value.filter(member => {
-        const email = (member.user?.email || '').toLowerCase()
-        const fullName = (member.user?.fullName || '').toLowerCase()
-        return email.includes(keyword) || fullName.includes(keyword)
-    })
-})
-
-const fileInputRef = ref(null)
-const attachments = ref([])
-const uploadStore = useUploadStore()
-
-const columns = ref([
-    {
-        id: 1,
-        title: 'To do',
-        tasks: [],
-        isAdding: false,
-        newTask: '',
-        showMenu: false,
-        category: ''
-    }
-])
-
+const columns = ref([])
 const memberOfProject = ref(null)
-
-const columnInfo = reactive({
-    id: null,
-    title: '',
-    category: ''
-})
+const columnInfo = reactive({ id: null, title: '', category: '' })
 
 const toastOpen = ref(false)
-const toastInfo = reactive({
-    message: null,
-    type: 'success'
-})
+const toastInfo = reactive({ message: null, type: 'success' })
 
-const taskDetail = ref([])
-
-const columnStore = useColumnStore()
-const taskStore = useTaskStore()
+const selectedDeleteColumn = computed(() => columns.value.find(c => c.id === columnDeleteId.value))
+const availableTargetColumns = computed(() => columns.value.filter(c => c.id !== columnDeleteId.value))
 
 const showToastMessage = (message, type = 'success') => {
     toastInfo.message = message
@@ -373,6 +211,22 @@ const showToastMessage = (message, type = 'success') => {
         toastOpen.value = false
         toastInfo.message = ''
     }, 3000)
+}
+
+const showTaskDetail = (taskId) => {
+    selectedTaskId.value = taskId
+    openTaskModal.value = true
+}
+
+const onTaskUpdated = (updatedTask) => {
+    if (!updatedTask) return
+    const col = columns.value.find(c => c.id === updatedTask.columnId)
+    if (col) {
+        const task = col.tasks.find(t => t.id === updatedTask.id)
+        if (task) {
+            Object.assign(task, updatedTask)
+        }
+    }
 }
 
 const onColumnDragStart = (index) => {
@@ -386,11 +240,9 @@ const onColumnDrop = async (index) => {
         onTaskDrop(targetCol.id, targetCol.tasks.length)
         return
     }
-
     if (draggedColumn.value === null) return
     const from = draggedColumn.value
     const to = index
-
     if (from === to) {
         draggedColumn.value = null
         return
@@ -401,10 +253,7 @@ const onColumnDrop = async (index) => {
     draggedColumn.value = null
 
     const projectId = route.params?.id
-    const columnIds = {
-        columnIds: columns.value.map(c => c.id)
-    }
-    await columnStore.reorderColumn(projectId, columnIds)
+    await columnStore.reorderColumn(projectId, { columnIds: columns.value.map(c => c.id) })
 }
 
 const onTaskDragStart = (colId, index) => {
@@ -416,21 +265,17 @@ const onTaskDrop = async (targetColId, targetIndex) => {
     if (!draggedTask.value) return;
 
     const { colId: sourceColId, index: sourceIndex } = draggedTask.value;
-
     const sourceCol = columns.value.find(c => c.id === sourceColId);
     const targetCol = columns.value.find(c => c.id === targetColId);
 
     if (sourceCol && targetCol) {
         const [movedTask] = sourceCol.tasks.splice(sourceIndex, 1);
-
         if (sourceColId === targetColId && sourceIndex < targetIndex) {
             targetIndex--;
         }
-
         targetCol.tasks.splice(targetIndex, 0, movedTask);
 
         const tasks = targetCol.tasks;
-
         const beforeTask = tasks[targetIndex - 1] || null
         const afterTask = tasks[targetIndex + 1] || null
 
@@ -444,10 +289,9 @@ const onTaskDrop = async (targetColId, targetIndex) => {
         const res = await taskStore.moveTask(movedTask.id, payload)
         const updated = res.data?.data
         if (updated) {
-            Object.assign(moveTask, updated)
+            Object.assign(movedTask, updated)
         }
     }
-
     draggedTask.value = null;
 }
 
@@ -469,10 +313,7 @@ const addTask = async (col) => {
     }
 
     const res = await taskStore.createTask(project.id, taskInfo)
-    const taskData = res.data?.data
-
-    col.tasks.push({ ...taskData })
-
+    col.tasks.push({ ...res.data?.data })
     col.newTask = ''
     col.isAdding = false
 }
@@ -485,15 +326,10 @@ const cancelTask = (col) => {
 const addColumn = async () => {
     if (!newColumnTitle.value.trim()) return
 
-    const columnInfo = {
-        name: newColumnTitle.value,
-        category: 'IN_PROGRESS'
-    }
-
     const projectId = route.params?.id;
-    const res = await columnStore.createColumn(projectId, columnInfo)
-
+    const res = await columnStore.createColumn(projectId, { name: newColumnTitle.value, category: 'IN_PROGRESS' })
     const newCol = res.data?.data;
+
     columns.value.push({
         id: newCol.id,
         title: newColumnTitle.value,
@@ -514,29 +350,34 @@ const cancelColumn = () => {
 
 const deleteColumn = async () => {
     const columnId = columnDeleteId.value
-    const index = columns.value.findIndex(c => c.id === columnId);
-    if (index !== -1) {
-        columns.value.splice(index, 1);
-    }
+    const sourceCol = columns.value.find(c => c.id === columnId)
+    const hasTasks = sourceCol?.tasks && sourceCol.tasks.length > 0
+    const targetColId = moveToColumnId.value
 
     try {
-        const res = await columnStore.deleteColumn(columnId)
+        const res = await columnStore.deleteColumn(columnId, hasTasks ? targetColId : null)
         if (res.data?.success) {
+            if (sourceCol && hasTasks && targetColId) {
+                const targetCol = columns.value.find(c => c.id === targetColId)
+                if (targetCol) targetCol.tasks.push(...sourceCol.tasks)
+            }
+            const index = columns.value.findIndex(c => c.id === columnId)
+            if (index !== -1) columns.value.splice(index, 1)
             openModalDelete.value = false
-            showToastMessage(res.data?.message)
+            showToastMessage(res.data?.message || 'Delete column success')
         } else {
-            showToastMessage(res.data?.message, 'failed')
+            showToastMessage(res.data?.message || 'Delete column failed', 'failed')
         }
     } catch (e) {
-        const errorResponse = e.response
-        const errorResponseData = e.response?.data
-        showToastMessage(errorResponseData?.message || 'Delete failed', 'failed')
+        showToastMessage(e.response?.data?.message || 'Delete column failed', 'failed')
     }
 }
 
 const showConfirmDelete = (colId) => {
     openModalDelete.value = true
     columnDeleteId.value = colId
+    const otherCols = columns.value.filter(c => c.id !== colId)
+    moveToColumnId.value = otherCols.length > 0 ? otherCols[0].id : null
 }
 
 const editColumnInfo = (col) => {
@@ -548,13 +389,12 @@ const editColumnInfo = (col) => {
 }
 
 const handleUpdateColumn = async (colId) => {
-    if (!validateForm()) return
+    if (!columnInfo.title || !columnInfo.title.trim()) {
+        showToastMessage('Please input column name', 'failed')
+        return
+    }
     try {
-        const payload = {
-            name: columnInfo.title,
-            category: columnInfo.category
-        }
-        const res = await columnStore.updateColumn(colId, payload)
+        const res = await columnStore.updateColumn(colId, { name: columnInfo.title, category: columnInfo.category })
         if (res.data?.success) {
             openModal.value = false
             const currentCol = columns.value.find(col => col.id === colId)
@@ -565,43 +405,19 @@ const handleUpdateColumn = async (colId) => {
             showToastMessage(res.data?.message, 'failed')
         }
     } catch (e) {
-        const errorResponse = e.response
-        const errorResponseData = e.response?.data
-        showToastMessage(errorResponseData?.message || 'Update failed', 'failed')
+        showToastMessage(e.response?.data?.message || 'Update failed', 'failed')
     }
 }
-
-const validateForm = () => {
-    if (!columnInfo.title || columnInfo.title.trim().length === 0) {
-        showToastMessage('Please input column name', 'failed')
-        return false
-    }
-
-    return true
-}
-
-const clearForm = () => {
-    columnInfo.id = null
-    columnInfo.title = null
-    columnInfo.category = null
-}
-
-const showTaskDetail = async (taskId) => {
-    openTaskModal.value = true
-    try {
-        const res = await taskStore.getTaskDetail(taskId)
-        taskDetail.value = res.data?.data
-        await getTaskAttachment(taskId)
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-// showShareModal removed
 
 onMounted(async () => {
     const projectId = route.params?.id;
     project.id = projectId
+
+    // Fetch sprints to check if Scrum project
+    await sprintStore.fetchSprints(projectId)
+    const projectSprints = sprintStore.sprints
+    const activeSprint = projectSprints.find(s => s.status === 'ACTIVE')
+
     const res = await columnStore.fetchColumnsByProjectId(projectId)
     columns.value = res.data?.data.map((col) => ({
         id: col.id,
@@ -618,159 +434,84 @@ onMounted(async () => {
     const tasksCol = taskRes.data?.data?.items || []
 
     tasksCol.forEach(task => {
-        const col = columns.value.find((c => c.id === task.columnId))
-
-        if (col) {
-            col.tasks.push({ ...task })
+        if (!task.parentId) {
+            // Rule: If project has sprints, ONLY render tasks belonging to the ACTIVE sprint!
+            if (projectSprints.length > 0) {
+                if (activeSprint && task.sprintId === activeSprint.id) {
+                    const col = columns.value.find(c => c.id === task.columnId)
+                    if (col) col.tasks.push({ ...task })
+                }
+            } else {
+                // Continuous Kanban Mode (no sprints in project)
+                const col = columns.value.find(c => c.id === task.columnId)
+                if (col) col.tasks.push({ ...task })
+            }
         }
     })
 
-    columns.value.forEach(col => {
-        col.tasks.sort((a, b) => a.position - b.position)
-    })
+    columns.value.forEach(col => col.tasks.sort((a, b) => a.position - b.position))
 
     const memberRes = await projectStore.getAllMemberByProjectId(projectId)
     memberOfProject.value = memberRes?.data?.items.filter(member => member.status === 'ACTIVE')
+    document.addEventListener('click', handleClickOutside)
 })
 
-const handleUpdateTask = async (item) => {
+onBeforeUnmount(() => {
+    document.removeEventListener('click', handleClickOutside)
+})
 
+const showTaskIdPopup = (event, taskId, colId) => {
+    taskX.value = event.clientX;
+    taskY.value = event.clientY;
+    showPopupTask.value = true
+    popupTaskInfo.value.columnId = colId
+    popupTaskInfo.value.taskId = taskId
+}
+
+const handleClickOutside = (e) => {
+    if (showPopupTask.value && popupRef.value && !popupRef.value.contains(e.target)) {
+        closePopupTask()
+    }
+}
+
+const closePopupTask = () => {
+    showPopupTask.value = false
+    popupTaskInfo.value.columnId = null
+    popupTaskInfo.value.taskId = null
+}
+
+const handleDeleteTask = async () => {
     try {
-        const payload = {
-            title: item.title,
-            description: item.description,
-            priority: item.priority,
-            type: item.type,
-            points: item.points,
-            estimatedHours: item.estimatedHours,
-            dueDate: item.dueDate
-        }
-        const res = await taskStore.updateTask(item.id, payload);
-        const data = res.data?.data
-        const task = columns.value.find(col => col.id === data.columnId)?.tasks.find(task => task.id === data.id)
-        if (task) {
-            Object.assign(task, data)
-        }
-    } catch (e) {
-        console.error(e)
-    }
-}
-
-const onFileSelected = async (event) => {
-    const files = Array.from(event.target.files)
-    event.target.value = ''
-
-    if (!files.length) return
-
-    for (const file of files) {
-        const presignRes = await uploadStore.getPresignedUrl('tasks')
-        const presignData = presignRes.data?.data
-
-        const cloudinaryRes = await uploadStore.uploadToCloudinary(file, presignData)
-
-        const payload = {
-            fileName: cloudinaryRes.original_filename,
-            fileUrl: cloudinaryRes.secure_url,
-            fileSize: cloudinaryRes.bytes
-        }
-
-        const res = await taskStore.addAttachment(taskDetail.value.id, payload)
-        const data = res.data;
-        taskAttachments.value.push(data?.data)
-        if (data.success) {
-            showToastMessage(data?.message || 'Upload success', 'success')
-        } else {
-            showToastMessage('Upload failed', 'failed');
-        }
-    }
-}
-
-const toggleShowMenuPopup = () => {
-    showMemberPopup.value = !showMemberPopup.value
-}
-
-const getTaskAttachment = async (taskId) => {
-    try {
-        const res = await taskStore.getAttachment(taskId)
-        taskAttachments.value = res.data?.data
-    } catch (e) {
-        console.log(e)
-    }
-}
-
-const formatFileSize = (bytes) => {
-    if (bytes === 0) return '0 bytes'
-
-    const k = 1024
-    const sizes = ['bytes', 'KB', 'MB', 'GB', 'TB']
-    const i = Math.floor(Math.log(bytes) / Math.log(k))
-    return parseFloat((bytes / Math.pow(k, i))).toFixed(2) + ' ' + sizes[i]
-}
-
-const togglePopupAttachmentSelected = (taskId) => {
-    taskAttachmentFileSelected.value = taskAttachmentFileSelected.value ? null : taskId
-}
-
-const isImage = (url) => {
-    if (!url) return false
-
-    if (url.includes('/image/')) return true
-    if (url.includes('/raw/') || url.includes('/video/')) return false
-
-    return /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(url)
-}
-
-const downloadFile = (ta) => {
-    const link = document.createElement('a');
-    link.href = ta.fileUrl.replace('/upload/', '/upload/fl_attachment/');
-    link.download = ta.fileName || 'file';
-    link.click();
-}
-
-const handlePreviewImage = (url) => {
-    if (isImage(url)) {
-        previewImageUrl.value = url
-        openPreviewImage.value = true
-    }
-}
-
-const deleteAttachment = async (taskAttachmentId) => {
-    try {
-        const res = await taskStore.deleteAttachment(taskAttachmentId)
+        const taskId = popupTaskInfo.value.taskId
+        const colId = popupTaskInfo.value.columnId
+        const res = await taskStore.deleteTask(taskId);
         const data = res.data
         if (data.success) {
-            const index = taskAttachments.value.findIndex(ta => ta.id === taskAttachmentId);
-            console.log(index)
-            taskAttachments.value.splice(index, 1)
-            showToastMessage(data.message || 'Delete success', 'success')
+            const taskList = columns.value.find(col => col.id === colId).tasks
+            const index = taskList.findIndex(task => task.id === taskId)
+            taskList.splice(index, 1);
+            closePopupTask()
+            showToastMessage(data.message || 'Delete task success')
         } else {
-            showToastMessage(data.message || "Delete failed", 'failed')
+            showToastMessage(data.message || 'Delete task failed', 'failed')
         }
     } catch (e) {
-        console.log(e)
         showToastMessage('Server error', 'failed')
     }
 }
 
 watch(openModal, (newValue) => {
     if (!newValue) {
-        clearForm()
+        columnInfo.id = null
+        columnInfo.title = null
+        columnInfo.category = null
     }
 })
 
 watch(openModalDelete, (newValue) => {
     if (!newValue) {
         columnDeleteId.value = null
-    }
-})
-
-watch(openTaskModal, (newValue) => {
-    if (!newValue) {
-        isEditTaskDesc.value = false
-        showMemberPopup.value = false
-        taskAttachments.value = []
-        taskAttachmentFileSelected.value = null
-        previewImageUrl.value = ''
+        moveToColumnId.value = null
     }
 })
 </script>

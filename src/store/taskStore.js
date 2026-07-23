@@ -85,6 +85,42 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const getComments = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/comments`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const createComment = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/tasks/${taskId}/comments`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const getActivities = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/activities`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteTask = async (taskId) => {
+        try {
+            const res = await axiosInstance.delete(`/tasks/${taskId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
@@ -94,6 +130,10 @@ export const useTaskStore = defineStore('tasks', () => {
         updateTask,
         addAttachment,
         getAttachment,
-        deleteAttachment
+        deleteAttachment,
+        deleteTask,
+        getComments,
+        createComment,
+        getActivities
     }
 })
