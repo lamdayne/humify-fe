@@ -170,9 +170,18 @@ export const usePayrollStore = defineStore(
             }
 
         };
+// POST /payroll-periods
+        const createPayrollPeriod = async (payload) => {
+            try {
+                return await axiosInstance.post("/payroll-periods", payload);
+            } catch (error) {
+                console.error("Create payroll period error:", error);
+                throw error;
+            }
+        };
 
         return {
-
+            createPayrollPeriod,
             getPayrollPeriods,
             getPayslips,
             getMyPayslips,
