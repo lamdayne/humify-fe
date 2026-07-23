@@ -25,13 +25,11 @@
                 <router-link :to="`/project/${project.id}`" v-for="project in projects" :key="project.id"
                     class="bg-slate w-full flex flex-col justify-between h-35 rounded-xl border border-slate-200 shadow-xs p-4 cursor-pointer">
                     <div class="flex items-center justify-between">
-                        <h1 class="text-lg">{{ project.name }}</h1>
+                        <h1 class="text-lg font-semibold">{{ project.name }}</h1>
                         <StatusBadge :type="resolveStatusType(project.status)" :content="project.status"></StatusBadge>
                     </div>
-                    <p>
-                        {{ project.description?.length > 100 ? project.description?.substring(0, 100) + '...' :
-                            project.description
-                        }}
+                    <p class="text-xs text-slate-500 line-clamp-2">
+                        {{ project.description || 'No description provided.' }}
                     </p>
                     <div class="relative self-end">
                         <Settings @click.stop.prevent="toggleMenuSetting(project.id)" class="w-4 h-4 cursor-pointer">
@@ -59,8 +57,8 @@
 
         <!-- Modal create project -->
         <ModalGeneric v-model="isModalOpen" :title="'Create new project'">
-            <div class="space-y-6">
-                <div class="">
+            <div class="space-y-5">
+                <div>
                     <label for="projectName"
                         class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Project Name
@@ -68,7 +66,7 @@
                     <input type="text" id="projectName" placeholder="Ecommerce" v-model="projectValue.name"
                         class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                 </div>
-                <div class="">
+                <div>
                     <label for="projectKey"
                         class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
                         Project Key
@@ -76,19 +74,27 @@
                     <input type="text" id="projectKey" placeholder="ECM" v-model="projectValue.key"
                         class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                 </div>
+
+                <!-- Create Sprint Checkbox Option -->
+                <div class="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
+                    <input type="checkbox" id="createSprint" v-model="projectValue.createSprint" class="w-4 h-4 accent-slate-900 cursor-pointer">
+                    <label for="createSprint" class="text-xs font-medium text-slate-700 cursor-pointer select-none">
+                        Enable Sprint Management (Creates initial Sprint 1)
+                    </label>
+                </div>
+
                 <div>
                     <label for="description"
                         class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
-                    <textarea id="description" rows="4" placeholder="Briefly describe the key responsibilities..."
+                    <textarea id="description" rows="3" placeholder="Briefly describe the project..."
                         v-model="projectValue.description"
-                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"></textarea>
+                        class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
                 </div>
             </div>
             <template #footer>
                 <div class="flex gap-2">
                     <SecondaryButton @click="isModalOpen = false" :content="'Cancel'"></SecondaryButton>
-                    <PrimaryButton @click="handleCreateProject" :content="'Create'">
-                    </PrimaryButton>
+                    <PrimaryButton @click="handleCreateProject" :content="'Create'"></PrimaryButton>
                 </div>
             </template>
         </ModalGeneric>
@@ -150,7 +156,7 @@
 </template>
 
 <script setup>
-import { Plus, Settings } from '@lucide/vue';
+import { Columns3, Plus, RefreshCw, Settings } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
@@ -186,7 +192,8 @@ const toastInfo = reactive({
 const projectValue = reactive({
     name: null,
     key: null,
-    description: null
+    description: null,
+    createSprint: false
 })
 
 const projectStore = useProject();
@@ -216,9 +223,8 @@ const handleCreateProject = async () => {
             showToastMessage(res.message, 'failed')
         }
     } catch (e) {
-        const errorResponse = e.response
         const errorResponseData = e.response?.data
-        showToastMessage(errorResponseData.message, 'failed')
+        showToastMessage(errorResponseData?.message || 'Failed to create project', 'failed')
     }
 }
 
@@ -245,6 +251,7 @@ const clearForm = () => {
     projectValue.name = null
     projectValue.key = null
     projectValue.description = null
+    projectValue.createSprint = false
     updateProjectInfo.value.isUpdate = false
     updateProjectInfo.value.productId = null
     updateProjectInfo.value.name = null
