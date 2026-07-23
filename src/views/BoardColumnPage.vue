@@ -170,7 +170,15 @@
                             <input type="text" class="w-full p-2 border-2 border-slate-200 outline-none rounded-lg"
                                 placeholder="Search members" v-model="searchMember">
                             <div class="w-full h-30 overflow-auto mt-5 scrollbar-none">
+                                <div @click="assignTask(taskDetail.id, null)"
+                                    class="flex gap-2 mt-2 items-center hover:bg-slate-100 cursor-pointer p-1">
+                                    <span class="p-2 border border-slate-200 rounded-full">
+                                        <X></X>
+                                    </span>
+                                    <span>Un assigned</span>
+                                </div>
                                 <div v-for="member in filteredMembers" :key="member.id"
+                                    @click="assignTask(taskDetail.id, member.user.id)"
                                     class="flex gap-2 mt-2 items-center hover:bg-slate-100 cursor-pointer p-1">
                                     <img src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
                                         alt="" class="w-10 rounded-full">
@@ -807,6 +815,24 @@ const handleDeleteTask = async () => {
             showToastMessage(data.message || 'Delete task success')
         } else {
             showToastMessage(data.message || 'Delete task failed', 'failed')
+        }
+    } catch (e) {
+        console.log(e)
+        showToastMessage('Server error', 'failed')
+    }
+}
+
+const assignTask = async (taskId, assigneeId) => {
+    try {
+        const res = await taskStore.assignTask(taskId, assigneeId)
+        const data = res.data
+        if (data.success) {
+            if (taskDetail.value) {
+                taskDetail.value.assignee = data?.data.assignee
+            }
+            showToastMessage(data.message || 'Assign task success')
+        } else {
+            showToastMessage(data.message || 'Assign Task Failed', 'failed')
         }
     } catch (e) {
         console.log(e)
