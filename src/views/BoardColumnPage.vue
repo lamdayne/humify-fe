@@ -416,7 +416,10 @@ onMounted(async () => {
     // Fetch sprints to check if Scrum project
     await sprintStore.fetchSprints(projectId)
     const projectSprints = sprintStore.sprints
-    const activeSprint = projectSprints.find(s => s.status === 'ACTIVE')
+    // Collect IDs of ALL ACTIVE sprints (multiple sprints can be active simultaneously)
+    const activeSprintIds = new Set(
+        projectSprints.filter(s => s.status === 'ACTIVE').map(s => s.id)
+    )
 
     const res = await columnStore.fetchColumnsByProjectId(projectId)
     columns.value = res.data?.data.map((col) => ({
@@ -435,19 +438,20 @@ onMounted(async () => {
 
     tasksCol.forEach(task => {
         if (!task.parentId) {
-            // Rule: If project has sprints, ONLY render tasks belonging to the ACTIVE sprint!
             if (projectSprints.length > 0) {
-                if (activeSprint && task.sprintId === activeSprint.id) {
+                // Scrum mode: show task only if its sprint is ACTIVE
+                if (task.sprintId && activeSprintIds.has(task.sprintId)) {
                     const col = columns.value.find(c => c.id === task.columnId)
                     if (col) col.tasks.push({ ...task })
                 }
             } else {
-                // Continuous Kanban Mode (no sprints in project)
+                // Kanban mode: show all tasks
                 const col = columns.value.find(c => c.id === task.columnId)
                 if (col) col.tasks.push({ ...task })
             }
         }
     })
+
 
     columns.value.forEach(col => col.tasks.sort((a, b) => a.position - b.position))
 

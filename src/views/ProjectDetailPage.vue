@@ -11,7 +11,7 @@
                     <span>Board</span>
                 </button>
 
-                <button @click="activeMainTab = 'backlog'"
+                <button v-if="currentProject?.type === 'SCRUM'" @click="activeMainTab = 'backlog'"
                     class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
                     :class="[activeMainTab === 'backlog' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
                     <ListTodo class="w-4 h-4 text-purple-600" />
@@ -165,7 +165,7 @@ const projectStore = useProject();
 const sprintStore = useSprintStore();
 
 const activeMainTab = ref('board');
-const hasSprints = computed(() => sprintStore.sprints && sprintStore.sprints.length > 0);
+const currentProject = ref(null);
 const openShareModal = ref(false);
 const isTabActive = ref('members');
 const memberPendingApprove = ref([]);
@@ -202,20 +202,20 @@ const loadProjectData = async () => {
     const projectId = route.params?.id;
     if (!projectId) return;
 
-    await sprintStore.fetchSprints(projectId);
-    await projectStore.getAllProjectRoles();
+    const projectRes = await projectStore.getProjectById(projectId);
+    currentProject.value = projectRes;
 
+    if (currentProject.value?.type === 'SCRUM') {
+        await sprintStore.fetchSprints(projectId);
+        const hasActiveSprint = sprintStore.sprints.some(s => s.status === 'ACTIVE');
+        activeMainTab.value = hasActiveSprint ? 'board' : 'backlog';
+    }
+
+    await projectStore.getAllProjectRoles();
     const memberRes = await projectStore.getAllMemberByProjectId(projectId);
     const members = memberRes?.data?.items || [];
     memberOfProject.value = members.filter(member => member.status === 'ACTIVE');
     memberPendingApprove.value = members.filter(member => member.status !== 'ACTIVE');
-
-    if (sprintStore.sprints && sprintStore.sprints.length > 0) {
-        const hasActiveSprint = sprintStore.sprints.some(s => s.status === 'ACTIVE')
-        if (!hasActiveSprint) {
-            activeMainTab.value = 'backlog'
-        }
-    }
 };
 
 onMounted(async () => {
