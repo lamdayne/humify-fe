@@ -21,7 +21,7 @@
         <!-- Loading State -->
         <div v-if="isLoading" class="flex flex-col items-center justify-center py-20 text-slate-400 gap-2">
             <LoaderCircle class="w-8 h-8 animate-spin text-slate-700" />
-            <span class="text-xs font-medium">Loading backlog & sprints...</span>
+            <span class="text-xs font-medium">Loading sprints...</span>
         </div>
 
         <div v-else class="flex flex-col gap-6">
@@ -197,136 +197,8 @@
                 </div>
             </div>
 
-            <!-- Backlog Pool Section -->
-            <div class="bg-white rounded-xl border border-slate-200 shadow-xs overflow-visible">
-                <!-- Backlog Header -->
-                <div class="bg-slate-50 px-4 py-3 border-b border-slate-200 flex items-center justify-between">
-                    <div class="flex items-center gap-3">
-                        <input type="checkbox"
-                            :checked="isAllBacklogTasksSelected"
-                            @change="toggleSelectAllBacklogTasks"
-                            @click.stop
-                            class="w-4 h-4 accent-slate-800 cursor-pointer shrink-0"
-                            title="Select all tasks in backlog">
-                        <span class="font-bold text-slate-900 text-sm">Backlog</span>
-                        <span class="text-xs font-medium text-slate-500">
-                            ({{ backlogTasks.length }} work items)
-                        </span>
-                    </div>
-
-                    <div class="flex items-center text-xs font-bold gap-1">
-                        <span class="px-2 py-0.5 bg-slate-200 text-slate-700 rounded-md">
-                            {{ getBacklogStatusPoints('TO_DO') }}
-                        </span>
-                        <span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded-md">
-                            {{ getBacklogStatusPoints('IN_PROGRESS') }}
-                        </span>
-                        <span class="px-2 py-0.5 bg-green-100 text-green-700 rounded-md">
-                            {{ getBacklogStatusPoints('DONE') }}
-                        </span>
-                    </div>
-                </div>
-
-                <!-- Backlog Items List -->
-                <div class="divide-y divide-slate-100">
-                    <div v-for="task in backlogTasks" :key="task.id"
-                        @click="openDetail(task.id)"
-                        class="px-4 py-2.5 hover:bg-slate-50 transition cursor-pointer flex items-center justify-between gap-4 group">
-                        
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            <input type="checkbox"
-                                :checked="selectedTaskIds.includes(task.id)"
-                                @change="toggleTaskSelection(task.id)"
-                                @click.stop
-                                class="w-4 h-4 accent-slate-800 cursor-pointer shrink-0">
-                            <span class="text-xs font-mono font-medium text-slate-400 shrink-0">
-                                {{ task.taskKey || 'TASK' }}
-                            </span>
-                            <span class="text-xs font-medium text-slate-800 truncate">
-                                {{ task.title }}
-                            </span>
-                        </div>
-
-                        <div class="flex items-center gap-3 shrink-0 text-xs">
-                            <!-- Move to Sprint Dropdown -->
-                            <select v-if="sprints.length > 0" :value="task.sprintId || ''" @click.stop
-                                @change="handleMoveToSprint(task, $event.target.value)"
-                                class="bg-slate-100 border border-slate-200 rounded px-2 py-1 text-[11px] font-semibold outline-none cursor-pointer">
-                                <option value="">Backlog</option>
-                                <option v-for="s in sprints" :key="s.id" :value="s.id">{{ s.name }}</option>
-                            </select>
-
-                            <select :value="getColumnCategory(task.columnId)" @click.stop
-                                @change="handleStatusChange(task, $event.target.value)"
-                                class="bg-slate-100 hover:bg-slate-200 border border-slate-200 rounded px-2 py-1 text-[11px] font-semibold outline-none cursor-pointer">
-                                <option value="TO_DO">TO DO</option>
-                                <option value="IN_PROGRESS">IN PROGRESS</option>
-                                <option value="DONE">DONE</option>
-                            </select>
-
-                            <span class="px-2 py-0.5 bg-slate-100 text-slate-600 font-semibold text-[11px] rounded min-w-6 text-center">
-                                {{ task.points !== undefined && task.points !== null ? task.points : '-' }}
-                            </span>
-
-                            <!-- Assignee Avatar -->
-                            <div class="w-6 h-6 shrink-0" :title="task.assignee?.email || 'Unassigned'">
-                                <img v-if="task.assignee" src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044934/453178253_471506465671661_2781666950760530985_n_wqklyb.png"
-                                    alt="" class="w-full h-full rounded-full border border-slate-200">
-                                <span v-else class="w-full h-full rounded-full bg-slate-200 text-slate-500 text-[10px] font-bold flex items-center justify-center">
-                                    ?
-                                </span>
-                            </div>
-
-                            <!-- Task Options Menu (...) -->
-                            <div class="relative">
-                                <button @click.stop="task.showMenu = !task.showMenu"
-                                    class="p-1 rounded hover:bg-slate-200 text-slate-400 hover:text-slate-700 cursor-pointer transition">
-                                    <Ellipsis class="w-4 h-4" />
-                                </button>
-
-                                <div v-if="task.showMenu" @click.stop="task.showMenu = false" class="fixed inset-0 z-40 cursor-default"></div>
-                                <div v-if="task.showMenu"
-                                    class="absolute right-0 top-full mt-1 w-32 bg-white border border-slate-200 rounded-lg shadow-xl z-50 text-xs py-1">
-                                    <button @click.stop="openDetail(task.id); task.showMenu = false"
-                                        class="w-full text-left px-3 py-1.5 hover:bg-slate-100 font-medium cursor-pointer transition">
-                                        Task details
-                                    </button>
-                                    <button @click.stop="confirmDeleteSingleTask(task.id); task.showMenu = false"
-                                        class="w-full text-left px-3 py-1.5 hover:bg-red-50 text-red-600 font-medium cursor-pointer border-t border-slate-100 transition">
-                                        Delete task
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div v-if="backlogTasks.length === 0" class="py-8 text-center text-xs text-slate-400">
-                        Your backlog is empty.
-                    </div>
-
-                    <!-- Inline + Create Issue in Backlog -->
-                    <div class="p-3 bg-slate-50/50">
-                        <div v-if="isCreatingBacklog" class="flex gap-2">
-                            <input type="text" v-model="newIssueTitle" @keydown.enter="createIssueInBacklog"
-                                placeholder="What needs to be done?"
-                                class="flex-1 bg-white border border-slate-300 p-2 rounded-lg text-xs outline-none focus:border-slate-500">
-                            <button @click="createIssueInBacklog"
-                                class="bg-slate-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold cursor-pointer">
-                                Create
-                            </button>
-                            <button @click="isCreatingBacklog = false" class="text-slate-400 hover:text-slate-700">
-                                <X class="w-4 h-4" />
-                            </button>
-                        </div>
-                        <button v-else @click="isCreatingBacklog = true; newIssueTitle = ''"
-                            class="text-xs font-medium text-slate-500 hover:text-slate-900 inline-flex items-center gap-1 cursor-pointer">
-                            <Plus class="w-3.5 h-3.5" />
-                            <span>Create issue</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
         </div>
+
 
         <!-- Task Detail Modal -->
         <TaskDetailModal v-model="openTaskModal"
@@ -450,7 +322,10 @@ const activeCreatingSprintId = ref(null)
 const isCreatingBacklog = ref(false)
 const newIssueTitle = ref('')
 
-const sprints = computed(() => sprintStore.sprints)
+// Only show PLANNED and ACTIVE sprints — hide COMPLETED
+const sprints = computed(() =>
+    (sprintStore.sprints || []).filter(s => s.status === 'PLANNED' || s.status === 'ACTIVE')
+)
 
 const backlogTasks = computed(() => {
     let list = allTasks.value.filter(t => !t.sprintId)
@@ -527,7 +402,8 @@ onMounted(() => {
 
 const handleCreateSprint = async () => {
     try {
-        const nextNum = sprints.value.length + 1
+        // Use total sprints count (including COMPLETED) to avoid naming collision
+        const nextNum = (sprintStore.sprints || []).length + 1
         await sprintStore.createSprint(projectId.value, {
             name: `Sprint ${nextNum}`,
             goal: null

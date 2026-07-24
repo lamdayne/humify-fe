@@ -25,6 +25,15 @@ export const useProject = defineStore('project', () => {
         }
     }
 
+    const getProjectById = async (projectId) => {
+        try {
+            const res = await axiosInstance.get(`/projects/${projectId}`)
+            return res.data?.data
+        } catch (e) {
+            throw e
+        }
+    }
+
     const getAllProjectRoles = async () => {
         try {
             const res = await axiosInstance.get('/projects/roles')
@@ -93,6 +102,7 @@ export const useProject = defineStore('project', () => {
         projects,
         fetchProjects,
         createProject,
+        getProjectById,
         projectRoles,
         getAllProjectRoles,
         getAllMemberByProjectId,

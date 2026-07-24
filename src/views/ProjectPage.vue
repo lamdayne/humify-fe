@@ -75,12 +75,31 @@
                         class="w-full border border-slate-200 hover:border-slate-300 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                 </div>
 
-                <!-- Create Sprint Checkbox Option -->
-                <div class="flex items-center gap-2.5 p-3 bg-slate-50 border border-slate-200 rounded-xl cursor-pointer">
-                    <input type="checkbox" id="createSprint" v-model="projectValue.createSprint" class="w-4 h-4 accent-slate-900 cursor-pointer">
-                    <label for="createSprint" class="text-xs font-medium text-slate-700 cursor-pointer select-none">
-                        Enable Sprint Management (Creates initial Sprint 1)
+                <!-- Project Type Selector -->
+                <div>
+                    <label class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">
+                        Project Type
                     </label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label for="typeKanban"
+                            class="flex flex-col gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-all"
+                            :class="projectValue.type === 'KANBAN' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-slate-300'">
+                            <div class="flex items-center gap-2">
+                                <input type="radio" id="typeKanban" value="KANBAN" v-model="projectValue.type" class="accent-blue-600">
+                                <span class="text-xs font-bold text-slate-800">Kanban</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Continuous flow with columns. No sprints, no backlog.</p>
+                        </label>
+                        <label for="typeScrum"
+                            class="flex flex-col gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-all"
+                            :class="projectValue.type === 'SCRUM' ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-slate-300'">
+                            <div class="flex items-center gap-2">
+                                <input type="radio" id="typeScrum" value="SCRUM" v-model="projectValue.type" class="accent-purple-600">
+                                <span class="text-xs font-bold text-slate-800">Scrum</span>
+                            </div>
+                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Sprint-based workflow with Backlog. Best for iterative delivery.</p>
+                        </label>
+                    </div>
                 </div>
 
                 <div>
@@ -193,7 +212,7 @@ const projectValue = reactive({
     name: null,
     key: null,
     description: null,
-    createSprint: false
+    type: 'KANBAN'
 })
 
 const projectStore = useProject();
@@ -251,7 +270,7 @@ const clearForm = () => {
     projectValue.name = null
     projectValue.key = null
     projectValue.description = null
-    projectValue.createSprint = false
+    projectValue.type = 'KANBAN'
     updateProjectInfo.value.isUpdate = false
     updateProjectInfo.value.productId = null
     updateProjectInfo.value.name = null
