@@ -141,20 +141,6 @@ const menus = [
         ]
     },
     {
-        label: 'Role',
-        icon: UserLock,
-        name: 'Roles',
-        permission: 'ROLE',
-        isSystemAdmin: true
-    },
-    {
-        label: 'Permission',
-        icon: ShieldCogCorner,
-        name: 'Permissions',
-        permission: 'PERMISSION',
-        isSystemAdmin: true
-    },
-    {
         label: 'Project',
         icon: FolderKanban,
         name: 'Project',
@@ -182,7 +168,21 @@ const menus = [
                 icon: CircleUser,
                 name: 'AccountManager',
                 permission: null
-            }
+            },
+            {
+                label: 'Role',
+                icon: UserLock,
+                name: 'Roles',
+                permission: 'ROLE',
+                isSystemAdmin: false
+            },
+            {
+                label: 'Permission',
+                icon: ShieldCogCorner,
+                name: 'Permissions',
+                permission: 'PERMISSION',
+                isSystemAdmin: true
+            },
         ]
     }
 ]
