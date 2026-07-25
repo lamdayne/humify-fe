@@ -2,8 +2,15 @@
     <MainContent>
         <!-- Top Sub-Navigation Header Bar -->
         <div class="bg-slate-100 h-14 px-6 flex items-center justify-between border-b border-slate-200">
-            <!-- Left Tabs (Board & Backlog) -->
+            <!-- Left Tabs (Summary, Board & Backlog) -->
             <div class="flex items-center gap-1">
+                <button @click="activeMainTab = 'summary'"
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
+                    :class="[activeMainTab === 'summary' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
+                    <LayoutDashboard class="w-4 h-4 text-emerald-600" />
+                    <span>Summary</span>
+                </button>
+
                 <button @click="activeMainTab = 'board'"
                     class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
                     :class="[activeMainTab === 'board' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
@@ -30,7 +37,8 @@
         </div>
 
         <!-- Main Content View Switcher -->
-        <BoardColumnPage v-if="activeMainTab === 'board'" />
+        <ProjectSummaryTab v-if="activeMainTab === 'summary'" :project-id="currentProject?.id" @switchTab="activeMainTab = $event" />
+        <BoardColumnPage v-else-if="activeMainTab === 'board'" />
         <ProjectBacklogPage v-else-if="activeMainTab === 'backlog'" />
 
         <!-- Share Modal -->
@@ -149,7 +157,7 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { Columns3, ListTodo, Plus, Link2 } from '@lucide/vue';
+import { Columns3, ListTodo, Plus, Link2, LayoutDashboard } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
@@ -157,6 +165,7 @@ import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import BoardColumnPage from './BoardColumnPage.vue';
 import ProjectBacklogPage from './ProjectBacklogPage.vue';
+import ProjectSummaryTab from '../components/project/ProjectSummaryTab.vue';
 import { useProject } from '../store/projectStore.js';
 import { useSprintStore } from '../store/sprintStore.js';
 
@@ -164,7 +173,7 @@ const route = useRoute();
 const projectStore = useProject();
 const sprintStore = useSprintStore();
 
-const activeMainTab = ref('board');
+const activeMainTab = ref('summary');
 const currentProject = ref(null);
 const openShareModal = ref(false);
 const isTabActive = ref('members');
@@ -207,8 +216,6 @@ const loadProjectData = async () => {
 
     if (currentProject.value?.type === 'SCRUM') {
         await sprintStore.fetchSprints(projectId);
-        const hasActiveSprint = sprintStore.sprints.some(s => s.status === 'ACTIVE');
-        activeMainTab.value = hasActiveSprint ? 'board' : 'backlog';
     }
 
     await projectStore.getAllProjectRoles();
