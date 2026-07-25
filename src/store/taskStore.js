@@ -67,6 +67,96 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const getAttachment = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/attachments`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteAttachment = async (taskAttachmentId) => {
+        try {
+            const res = await axiosInstance.delete(`/attachments/${taskAttachmentId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const getComments = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/comments`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const createComment = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/tasks/${taskId}/comments`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const getActivities = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/activities`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteTask = async (taskId) => {
+        try {
+            const res = await axiosInstance.delete(`/tasks/${taskId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const getWorklogs = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/worklogs`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const createWorklog = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/tasks/${taskId}/worklogs`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const updateWorklog = async (worklogId, payload) => {
+        try {
+            const res = await axiosInstance.put(`/worklogs/${worklogId}`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteWorklog = async (worklogId) => {
+        try {
+            const res = await axiosInstance.delete(`/worklogs/${worklogId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
@@ -74,6 +164,16 @@ export const useTaskStore = defineStore('tasks', () => {
         getTaskDetail,
         assignTask,
         updateTask,
-        addAttachment
+        addAttachment,
+        getAttachment,
+        deleteAttachment,
+        deleteTask,
+        getComments,
+        createComment,
+        getActivities,
+        getWorklogs,
+        createWorklog,
+        updateWorklog,
+        deleteWorklog
     }
 })

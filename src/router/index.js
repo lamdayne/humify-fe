@@ -25,6 +25,10 @@ import ProjectDetailPage from "../views/ProjectDetailPage.vue";
 import PayrollPage from "../views/PayrollPage.vue";
 import PayslipPage from "../views/PayslipPage.vue";
 import PayrollAdminPage from "../views/PayrollAdminPage.vue";
+import AccountPage from "../views/AccountPage.vue";
+import ContractPage from "../views/ContractPage.vue";
+import ContractFormPage from "../views/ContractFormPage.vue";
+import ContractDetailPage from "../views/ContractDetailPage.vue";
 
 const routes = [
     {
@@ -190,6 +194,33 @@ const routes = [
         meta: {
             requiresAuth: true
         }
+    },
+    {
+        path: '/account',
+        component: AccountPage,
+        name: 'AccountManager',
+        meta: {
+            requiresAuth: true
+        }
+    }
+    ,
+    {
+        path: '/contracts',
+        component: ContractPage,
+        name: 'Contracts',
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/contracts/create',
+        component: ContractFormPage,
+        name: 'ContractCreate',
+        meta: { requiresAuth: true }
+    },
+    {
+        path: '/contracts/:id',
+        component: ContractDetailPage,
+        name: 'ContractDetail',
+        meta: { requiresAuth: true }
     }
 ]
 

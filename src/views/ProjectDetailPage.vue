@@ -1,8 +1,33 @@
 <template>
     <MainContent>
-        <div class="bg-gray-100 h-15 flex items-center justify-between border-b border-slate-200">
-            <div></div>
-            <div class="mr-4">
+        <!-- Top Sub-Navigation Header Bar -->
+        <div class="bg-slate-100 h-14 px-6 flex items-center justify-between border-b border-slate-200">
+            <!-- Left Tabs (Summary, Board & Backlog) -->
+            <div class="flex items-center gap-1">
+                <button @click="activeMainTab = 'summary'"
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
+                    :class="[activeMainTab === 'summary' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
+                    <LayoutDashboard class="w-4 h-4 text-emerald-600" />
+                    <span>Summary</span>
+                </button>
+
+                <button @click="activeMainTab = 'board'"
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
+                    :class="[activeMainTab === 'board' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
+                    <Columns3 class="w-4 h-4 text-blue-600" />
+                    <span>Board</span>
+                </button>
+
+                <button v-if="currentProject?.type === 'SCRUM'" @click="activeMainTab = 'backlog'"
+                    class="px-4 py-2 text-xs font-semibold rounded-lg transition flex items-center gap-2 cursor-pointer"
+                    :class="[activeMainTab === 'backlog' ? 'bg-white text-slate-900 shadow-xs font-bold' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60']">
+                    <ListTodo class="w-4 h-4 text-purple-600" />
+                    <span>Backlog</span>
+                </button>
+            </div>
+
+            <!-- Right Share Button -->
+            <div class="mr-2">
                 <PrimaryButton content="Share" @click="showShareModal">
                     <template #icon>
                         <Plus class="w-4 h-4"></Plus>
@@ -11,7 +36,10 @@
             </div>
         </div>
 
-        <BoardColumnPage />
+        <!-- Main Content View Switcher -->
+        <ProjectSummaryTab v-if="activeMainTab === 'summary'" :project-id="currentProject?.id" @switchTab="activeMainTab = $event" />
+        <BoardColumnPage v-else-if="activeMainTab === 'board'" />
+        <ProjectBacklogPage v-else-if="activeMainTab === 'backlog'" />
 
         <!-- Share Modal -->
         <ModalGeneric v-model="openShareModal" width="700px">
@@ -129,18 +157,24 @@
 <script setup>
 import { computed, onMounted, reactive, ref } from 'vue';
 import { useRoute } from 'vue-router';
-import { Plus, Link2 } from '@lucide/vue';
+import { Columns3, ListTodo, Plus, Link2, LayoutDashboard } from '@lucide/vue';
 import MainContent from '../components/MainContent.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import BoardColumnPage from './BoardColumnPage.vue';
+import ProjectBacklogPage from './ProjectBacklogPage.vue';
+import ProjectSummaryTab from '../components/project/ProjectSummaryTab.vue';
 import { useProject } from '../store/projectStore.js';
+import { useSprintStore } from '../store/sprintStore.js';
 
 const route = useRoute();
 const projectStore = useProject();
+const sprintStore = useSprintStore();
 
+const activeMainTab = ref('summary');
+const currentProject = ref(null);
 const openShareModal = ref(false);
 const isTabActive = ref('members');
 const memberPendingApprove = ref([]);
@@ -177,8 +211,14 @@ const loadProjectData = async () => {
     const projectId = route.params?.id;
     if (!projectId) return;
 
-    await projectStore.getAllProjectRoles();
+    const projectRes = await projectStore.getProjectById(projectId);
+    currentProject.value = projectRes;
 
+    if (currentProject.value?.type === 'SCRUM') {
+        await sprintStore.fetchSprints(projectId);
+    }
+
+    await projectStore.getAllProjectRoles();
     const memberRes = await projectStore.getAllMemberByProjectId(projectId);
     const members = memberRes?.data?.items || [];
     memberOfProject.value = members.filter(member => member.status === 'ACTIVE');

@@ -12,9 +12,9 @@
             <img class="w-30" src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044819/logo_lgugm5.png"
                 alt="">
         </div>
-        <nav class="flex-1">
+        <nav class="flex-1 overflow-auto scrollbar-none">
             <div class="flex flex-col">
-                <template v-for="item in visibleMenus" :key="item.name">
+                <template v-for="item in visibleMenus" :key="item.id || item.name">
                     <router-link v-if="!item.children" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
                         isActive(item.name) ? 'border-r-2 border-primary' : '']">
                         <span class="font-bold">
@@ -23,22 +23,23 @@
                         <span class="font-body-md text-body-md">{{ item.label }}</span>
                     </router-link>
                     <div v-else>
-                        <button @click="toggleMenu(item.name)" :class="['w-full flex items-center justify-between gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 cursor-pointer',
+                        <button @click="toggleMenu(item.id)" :class="['w-full flex items-center justify-between gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 cursor-pointer',
                             isParentActive(item) ? 'border-r-2 border-primary' : '']">
                             <span class="flex items-center gap-md">
                                 <span class="font-bold">
                                     <component :is="item.icon"></component>
                                 </span>
                                 <span class="font-body-md text-body-md">{{ item.label }}</span>
-                                <ChevronDown class="w-4 h4 duration-75"></ChevronDown>
                             </span>
+                            <ChevronDown class="w-4 h4 duration-75" :class="openMenus === item.id ? 'rotate-180' : ''">
+                            </ChevronDown>
                         </button>
-                        <div v-show="openMenus.includes(item.name)" class="flex flex-col">
+                        <div v-show="openMenus === item.id" class="flex flex-col">
                             <router-link v-for="child in visibleChildren(item)" :key="child.name"
                                 :to="{ name: child.name }" :class="['flex items-center gap-md pl-12 pr-xl py-sm font-body-md font-medium transition-colors opacity-80',
                                     isActive(child.name) ? 'border-r-2 border-primary text-primary' : '']">
-                                <component v-if="child.icon" :is="child.icon" class="w-4 h-4"></component>
-                                <span>{{ child.label }}</span>
+                                <component v-if="child.icon" :is="child.icon" class="w-5 h-5"></component>
+                                <span class="text-[16px]">{{ child.label }}</span>
                             </router-link>
                         </div>
                     </div>
@@ -56,7 +57,7 @@
 </template>
 
 <script setup>
-import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown } from '@lucide/vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -71,7 +72,7 @@ const props = defineProps({
     }
 })
 
-const openMenus = ref([])
+const openMenus = ref(null)
 
 defineEmits(['close'])
 
@@ -95,42 +96,49 @@ const menus = [
         permission: 'PAYROLL'
     },
     {
-        label: 'Branches',
-        icon: Building2,
+        id: 'organization',
+        label: 'Organization',
+        icon: Building,
         name: 'Branches',
-        permission: 'BRANCH'
+        children: [
+            {
+                label: 'Branches',
+                icon: Building2,
+                name: 'Branches',
+                permission: 'BRANCH'
+            },
+            {
+                label: 'Department',
+                icon: Network,
+                name: 'Departments',
+                permission: 'DEPARTMENT'
+            },
+        ]
     },
     {
-        label: 'Department',
-        icon: Network,
-        name: 'Departments',
-        permission: 'DEPARTMENT'
-    },
-    {
-        label: 'Positions',
-        icon: IdCardLanyard,
-        name: 'Positions',
-        permission: 'POSITION'
-    },
-    {
-        label: 'Employees',
+        id: 'people',
+        label: 'People',
         icon: Users,
-        name: 'Employees',
-        permission: 'EMPLOYEE'
-    },
-    {
-        label: 'Role',
-        icon: UserLock,
-        name: 'Roles',
-        permission: 'ROLE',
-        isSystemAdmin: true
-    },
-    {
-        label: 'Permission',
-        icon: ShieldCogCorner,
-        name: 'Permissions',
-        permission: 'PERMISSION',
-        isSystemAdmin: true
+        children: [
+            {
+                label: 'Employees',
+                icon: Users,
+                name: 'Employees',
+                permission: 'EMPLOYEE'
+            },
+            {
+                label: 'Positions',
+                icon: IdCardLanyard,
+                name: 'Positions',
+                permission: 'POSITION'
+            },
+            {
+                label: 'Contract',
+                icon: FileText,
+                name: 'Contracts',
+                permission: null
+            }
+        ]
     },
     {
         label: 'Project',
@@ -149,6 +157,33 @@ const menus = [
         icon: HandCoins,
         name: 'PayrollAdmin',
         permission: null
+    },
+    {
+        id: 'security',
+        label: 'Security',
+        icon: ShieldUser,
+        children: [
+            {
+                label: 'Account',
+                icon: CircleUser,
+                name: 'AccountManager',
+                permission: null
+            },
+            {
+                label: 'Role',
+                icon: UserLock,
+                name: 'Roles',
+                permission: 'ROLE',
+                isSystemAdmin: false
+            },
+            {
+                label: 'Permission',
+                icon: ShieldCogCorner,
+                name: 'Permissions',
+                permission: 'PERMISSION',
+                isSystemAdmin: true
+            },
+        ]
     }
 ]
 
@@ -171,12 +206,8 @@ const canSeeItem = (item) => {
     return authStore.canView(item.permission)
 }
 
-const toggleMenu = (name) => {
-    if (openMenus.value.includes(name)) {
-        openMenus.value = openMenus.value.filter(menu => menu !== name)
-    } else {
-        openMenus.value.push(name)
-    }
+const toggleMenu = (id) => {
+    openMenus.value = openMenus.value === id ? null : id
 }
 
 const isActive = (name) => route.name?.toString().startsWith(name)
@@ -184,9 +215,12 @@ const isActive = (name) => route.name?.toString().startsWith(name)
 const isParentActive = (item) => item.children?.some(child => isActive(child.name))
 
 watch(() => route.name, (name) => {
-    const parent = visibleMenus.value.find(menu => menu.children?.some(child => child.name === name))
-    if (parent && !openMenus.value.includes(parent.name)) {
-        openMenus.value.push(parent.name)
+    const parent = visibleMenus.value.find(menu =>
+        menu.children?.some(child => child.name === name)
+    )
+
+    if (parent) {
+        openMenus.value = parent.id
     }
 }, { immediate: true })
 
