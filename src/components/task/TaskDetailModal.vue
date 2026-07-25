@@ -161,31 +161,62 @@
                             @close="showMemberPopup = false"
                             @select-member="handleAssignTask" />
                     </div>
+
+                    <!-- Time Tracking Button -->
+                    <button @click="showTimeTrackingModal = true"
+                        class="inline-flex items-center gap-1.5 px-3 h-9 border border-slate-300 bg-white text-slate-700 font-medium text-xs rounded-lg hover:bg-slate-50 cursor-pointer transition"
+                        title="Log work time for this task">
+                        <Timer class="w-4 h-4 text-blue-600"></Timer>
+                        <span>Time tracking</span>
+                    </button>
                 </div>
 
-                <!-- Active Properties Display Bar (Including Due Date if present!) -->
-                <div v-if="taskDetail.priority || taskDetail.type || taskDetail.points || taskDetail.estimatedHours || taskDetail.dueDate"
+                <!-- Active Properties Display Bar (Using StatusBadge Component!) -->
+                <div v-if="taskDetail.priority || taskDetail.type || taskDetail.points || taskDetail.estimatedHours || taskDetail.loggedHours || taskDetail.dueDate"
                     class="flex ml-5 mt-3 gap-2 flex-wrap items-center text-xs">
-                    <!-- Due Date Badge in Detail View -->
-                    <span v-if="taskDetail.dueDate"
-                        class="px-2.5 py-1 rounded-md font-medium bg-blue-100 text-blue-800 flex items-center gap-1.5">
-                        <Calendar class="w-3.5 h-3.5 text-blue-600"></Calendar>
-                        <span>Due date: {{ formatDateLong(taskDetail.dueDate) }}</span>
-                    </span>
+                    <!-- Due Date Badge -->
+                    <StatusBadge v-if="taskDetail.dueDate"
+                        type="DUE_DATE"
+                        :content="`Due date: ${formatDateLong(taskDetail.dueDate)}`"
+                        class="cursor-pointer hover:opacity-85 transition"
+                        @click="showDatesPopup = true">
+                        <template #icon>
+                            <Calendar class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        </template>
+                    </StatusBadge>
 
-                    <span v-if="taskDetail.priority" class="px-2 py-1 rounded font-medium flex items-center gap-1.5"
-                        :class="getPriorityBadgeClass(taskDetail.priority)">
-                        <span>Priority: {{ taskDetail.priority }}</span>
-                    </span>
-                    <span v-if="taskDetail.type" class="px-2 py-1 rounded font-medium bg-purple-100 text-purple-700">
-                        Type: {{ taskDetail.type }}
-                    </span>
-                    <span v-if="taskDetail.points" class="px-2 py-1 rounded font-medium bg-slate-200 text-slate-700">
-                        {{ taskDetail.points }} Story Points
-                    </span>
-                    <span v-if="taskDetail.estimatedHours" class="px-2 py-1 rounded font-medium bg-amber-100 text-amber-800">
-                        {{ taskDetail.estimatedHours }}h Est.
-                    </span>
+                    <!-- Priority Badge -->
+                    <StatusBadge v-if="taskDetail.priority"
+                        :type="taskDetail.priority"
+                        :content="`Priority: ${taskDetail.priority}`"
+                        class="cursor-pointer hover:opacity-85 transition"
+                        @click="showPriorityPopup = true" />
+
+                    <!-- Type Badge -->
+                    <StatusBadge v-if="taskDetail.type"
+                        type="PURPLE"
+                        :content="`Type: ${taskDetail.type}`"
+                        class="cursor-pointer hover:opacity-85 transition"
+                        @click="showTypePopup = true" />
+
+                    <!-- Story Points Badge -->
+                    <StatusBadge v-if="taskDetail.points"
+                        type="POINTS"
+                        :content="`${taskDetail.points} Story Points`"
+                        class="cursor-pointer hover:opacity-85 transition"
+                        @click="showPointsPopup = true" />
+
+                    <!-- Time Logged Badge -->
+                    <StatusBadge v-if="taskDetail.loggedHours || taskDetail.estimatedHours"
+                        type="COMPLETED"
+                        :content="taskDetail.estimatedHours > 0 ? `${taskDetail.loggedHours || 0}H / ${taskDetail.estimatedHours}H LOGGED` : `${taskDetail.loggedHours || 0}H LOGGED`"
+                        class="cursor-pointer hover:opacity-85 transition"
+                        title="Click to manage time tracking"
+                        @click="showTimeTrackingModal = true">
+                        <template #icon>
+                            <Timer class="w-3.5 h-3.5 text-blue-600 shrink-0" />
+                        </template>
+                    </StatusBadge>
                 </div>
 
                 <!-- Assignee display -->
@@ -275,12 +306,20 @@
             <TaskActivitySidebar :comments="taskComments" :activities="taskActivities"
                 @add-comment="handleAddComment" />
         </div>
+
+        <!-- Jira-style Time Tracking Modal Popup -->
+        <TimeTrackingModal v-if="showTimeTrackingModal"
+            v-model="showTimeTrackingModal"
+            :task-id="taskId"
+            :estimated-hours="taskDetail.estimatedHours || 0"
+            :logged-hours="taskDetail.loggedHours || 0"
+            @worklogSaved="fetchDetail(taskId); emit('task-updated')" />
     </ModalGeneric>
 </template>
 
 <script setup>
 import { ref, computed, watch } from 'vue';
-import { Calendar, CircleCheckBig, Ellipsis, ExternalLink, File, LoaderCircle, Paperclip, Pencil, Plus, SquarePen, UserPlus, X } from '@lucide/vue';
+import { Calendar, CircleCheckBig, Ellipsis, ExternalLink, File, LoaderCircle, Paperclip, Pencil, Plus, SquarePen, UserPlus, X, Timer } from '@lucide/vue';
 import { useTaskStore } from '../../store/taskStore.js';
 import { useUploadStore } from '../../store/uploadStore.js';
 
@@ -292,8 +331,11 @@ import SecondaryButton from '../SecondaryButton.vue';
 import AddCardMenuPopup from './popups/AddCardMenuPopup.vue';
 import DatesPopup from './popups/DatesPopup.vue';
 import MemberAssignPopup from './popups/MemberAssignPopup.vue';
+import TimeTrackingModal from './popups/TimeTrackingModal.vue';
 import TaskChecklistSection from './TaskChecklistSection.vue';
 import TaskActivitySidebar from './TaskActivitySidebar.vue';
+
+const showTimeTrackingModal = ref(false);
 
 const props = defineProps({
     modelValue: { type: Boolean, default: false },

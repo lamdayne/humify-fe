@@ -121,6 +121,42 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const getWorklogs = async (taskId) => {
+        try {
+            const res = await axiosInstance.get(`/tasks/${taskId}/worklogs`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const createWorklog = async (taskId, payload) => {
+        try {
+            const res = await axiosInstance.post(`/tasks/${taskId}/worklogs`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const updateWorklog = async (worklogId, payload) => {
+        try {
+            const res = await axiosInstance.put(`/worklogs/${worklogId}`, payload)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
+    const deleteWorklog = async (worklogId) => {
+        try {
+            const res = await axiosInstance.delete(`/worklogs/${worklogId}`)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
@@ -134,6 +170,10 @@ export const useTaskStore = defineStore('tasks', () => {
         deleteTask,
         getComments,
         createComment,
-        getActivities
+        getActivities,
+        getWorklogs,
+        createWorklog,
+        updateWorklog,
+        deleteWorklog
     }
 })
