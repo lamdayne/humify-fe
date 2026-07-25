@@ -17,7 +17,7 @@
         <button @click="goToCreate"
                 class="bg-black hover:bg-slate-800 text-white px-5 py-2.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-2 shadow-sm transition-all cursor-pointer">
           <Plus class="w-4 h-4" />
-          <span>+ New Contract</span>
+          <span>New Contract</span>
         </button>
       </div>
 
