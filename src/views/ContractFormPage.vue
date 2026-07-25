@@ -16,15 +16,74 @@
           <h3 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest border-b border-slate-100 pb-2">1. Identity & Core Info</h3>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Employee Selection <span class="text-red-500">*</span></label>
 
-              <select v-model.number="form.employeeId" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black bg-slate-50">
-                <option :value="null" disabled>Select employee...</option>
-                <option v-for="e in employees" :key="e.id || e.employeeCode" :value="e.id">
-                  {{ e.fullName }} ({{ e.employeeCode }})
-                </option>
-              </select>
+            <!-- CUSTOM EMPLOYEE SELECTOR (INFINITE SCROLL + SEARCH) -->
+            <div class="relative">
+              <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">
+                Employee Selection <span class="text-red-500">*</span>
+              </label>
+
+              <!-- Ô hiển thị / trigger mở dropdown -->
+              <div
+                  @click="toggleEmployeeDropdown"
+                  class="w-full border border-slate-200 rounded-lg p-2.5 text-xs bg-slate-50 flex items-center justify-between cursor-pointer hover:border-slate-400 transition-colors"
+              >
+                <span :class="selectedEmployeeText ? 'text-slate-900 font-medium' : 'text-slate-400'">
+                  {{ selectedEmployeeText || 'Select employee...' }}
+                </span>
+                <ChevronDown class="w-4 h-4 text-slate-400 transition-transform" :class="{ 'rotate-180': isDropdownOpen }" />
+              </div>
+
+              <!-- Menu Thả Xuống -->
+              <div
+                  v-if="isDropdownOpen"
+                  class="absolute left-0 right-0 top-full mt-1 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden flex flex-col"
+              >
+                <!-- Ô Tìm kiếm tên / mã NV -->
+                <div class="p-2 border-b border-slate-100 bg-slate-50">
+                  <div class="relative">
+                    <Search class="w-3.5 h-3.5 text-slate-400 absolute left-2.5 top-2.5" />
+                    <input
+                        type="text"
+                        v-model="searchKeyword"
+                        @input="onSearchInput"
+                        placeholder="Type to search..."
+                        class="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:border-black"
+                    />
+                  </div>
+                </div>
+
+                <!-- Danh sách nhân viên có bắt sự kiện Scroll -->
+                <div
+                    ref="dropdownListRef"
+                    @scroll="handleScroll"
+                    class="max-h-56 overflow-y-auto divide-y divide-slate-50"
+                >
+                  <div
+                      v-for="e in employees"
+                      :key="e.id"
+                      @click="selectEmployee(e)"
+                      class="p-2.5 text-xs hover:bg-slate-100 cursor-pointer flex items-center justify-between transition-colors"
+                      :class="{ 'bg-slate-50 font-semibold text-blue-600': form.employeeId === e.id }"
+                  >
+                    <span>{{ e.fullName }}</span>
+                    <span class="font-mono text-[10px] text-slate-400 bg-slate-100 px-1.5 py-0.5 rounded">
+                      {{ e.employeeCode }}
+                    </span>
+                  </div>
+
+                  <!-- Trạng thái Loading khi cuộn xuống cuối -->
+                  <div v-if="isLoadingMore" class="p-3 text-center text-xs text-slate-400 flex items-center justify-center gap-2">
+                    <LoaderCircle class="w-4 h-4 animate-spin text-slate-600" />
+                    <span>Loading more...</span>
+                  </div>
+
+                  <!-- Khi không tìm thấy kết quả -->
+                  <div v-if="employees.length === 0 && !isLoadingMore" class="p-4 text-center text-xs text-slate-400">
+                    No employees found.
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div>
@@ -103,7 +162,6 @@
           </div>
         </div>
 
-
         <!-- FOOTER ACTIONS -->
         <div class="flex items-center justify-between border-t border-slate-100 pt-6">
           <span class="text-xs text-slate-400 font-light">Ensure all mandatory fields (*) are populated accurately.</span>
@@ -119,7 +177,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue';
+import { ref, reactive, onMounted, onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import MainContent from '../components/MainContent.vue';
 import PrimaryButton from '../components/PrimaryButton.vue';
@@ -127,13 +185,25 @@ import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import { useContractStore } from '../store/contractStore';
 import { useEmployeeStore } from '../store/employeeStore';
+import { ChevronDown, Search, LoaderCircle } from '@lucide/vue';
 
 const router = useRouter();
 const contractStore = useContractStore();
 const employeeStore = useEmployeeStore();
 
 const isSubmitting = ref(false);
+
+// State Quản lý Infinite Scroll Nhập viên
 const employees = ref([]);
+const isDropdownOpen = ref(false);
+const searchKeyword = ref('');
+const currentPage = ref(1); // Page 1-based (Store sẽ trừ 1 khi gọi API)
+const pageSize = 20; // Mỗi lần load 20 nhân viên
+const hasMoreEmployees = ref(true);
+const isLoadingMore = ref(false);
+const selectedEmployeeText = ref('');
+const dropdownListRef = ref(null);
+let searchDebounceTimeout = null;
 
 const toast = reactive({ show: false, message: '', type: 'success' });
 const triggerToast = (msg, type = 'success') => {
@@ -157,16 +227,98 @@ const form = reactive({
   fileUrl: ''
 });
 
-onMounted(async () => {
+// Hàm Fetch Danh sách Nhân viên theo Trang & Từ khoá
+const fetchEmployeesPage = async (page = 1, isNewSearch = false) => {
+  if (isLoadingMore.value) return;
+  if (!isNewSearch && !hasMoreEmployees.value) return;
+
+  isLoadingMore.value = true;
   try {
-    const res = await employeeStore.fetchEmployees(0, 100);
-    employees.value = res?.data?.items || employeeStore.employees || [];
+    const res = await employeeStore.fetchEmployees(page, pageSize);
+    const newItems = res?.data?.items || [];
+    const totalPages = res?.data?.totalPages || 1;
+
+    // Filter theo từ khoá nếu có tìm kiếm
+    let filteredItems = newItems;
+    if (searchKeyword.value.trim()) {
+      const q = searchKeyword.value.toLowerCase().trim();
+      filteredItems = newItems.filter(e =>
+          e.fullName?.toLowerCase().includes(q) ||
+          e.employeeCode?.toLowerCase().includes(q)
+      );
+    }
+
+    if (isNewSearch) {
+      employees.value = filteredItems;
+    } else {
+      employees.value = [...employees.value, ...filteredItems];
+    }
+
+    hasMoreEmployees.value = page < totalPages;
+    currentPage.value = page;
   } catch (e) {
-    console.error("Load employees error:", e);
+    console.error("Load employees page error:", e);
+  } finally {
+    isLoadingMore.value = false;
   }
+};
+
+// Xử lý sự kiện Scroll trong Menu Thả xuống
+const handleScroll = (e) => {
+  const el = e.target;
+  // Bắt điểm chạm đáy (cách đáy dưới 10px)
+  if (el.scrollTop + el.clientHeight >= el.scrollHeight - 10) {
+    if (hasMoreEmployees.value && !isLoadingMore.value) {
+      fetchEmployeesPage(currentPage.value + 1, false);
+    }
+  }
+};
+
+// Toggle Bật/Tắt Dropdown
+const toggleEmployeeDropdown = () => {
+  isDropdownOpen.value = !isDropdownOpen.value;
+};
+
+// Chọn Nhân viên
+const selectEmployee = (emp) => {
+  form.employeeId = emp.id;
+  selectedEmployeeText.value = `${emp.fullName} (${emp.employeeCode})`;
+  isDropdownOpen.value = false;
+};
+
+// Tìm kiếm có Debounce
+const onSearchInput = () => {
+  clearTimeout(searchDebounceTimeout);
+  searchDebounceTimeout = setTimeout(() => {
+    currentPage.value = 1;
+    hasMoreEmployees.value = true;
+    fetchEmployeesPage(1, true);
+  }, 300);
+};
+
+// Đóng dropdown khi click ra ngoài
+const handleClickOutside = (e) => {
+  const target = e.target;
+  if (isDropdownOpen.value && !target.closest('.relative')) {
+    isDropdownOpen.value = false;
+  }
+};
+
+onMounted(() => {
+  fetchEmployeesPage(1, true);
+  document.addEventListener('click', handleClickOutside);
+});
+
+onBeforeUnmount(() => {
+  document.removeEventListener('click', handleClickOutside);
 });
 
 const handleSubmit = async () => {
+  if (!form.employeeId) {
+    triggerToast('Please select an employee.', 'error');
+    return;
+  }
+
   isSubmitting.value = true;
   try {
     await contractStore.createContract({ ...form });
