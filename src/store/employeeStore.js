@@ -39,10 +39,30 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
+    const updateEmployee = async (id, employeeData) => {
+        try {
+            const res = await axiosInstance.put(`/employees/${id}`, employeeData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const deleteEmployee = async (id) => {
+        try {
+            const res = await axiosInstance.delete(`/employees/${id}`)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
         employees,
         fetchEmployees,
         createEmployee,
+        updateEmployee,
+        deleteEmployee,
         importEmployees
     }
 })

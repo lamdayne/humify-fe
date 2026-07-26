@@ -108,9 +108,27 @@
                                     </td>
 
                                     <td class="py-5 px-6 text-right">
-                                        <div class="flex gap-1 justify-end w-full">
-                                            <SecondaryButton :content="'View'" @click="openDetailModal(employee)" />
-                                            <PrimaryButton :content="'Edit'" />
+                                        <div class="flex items-center justify-end gap-1.5 w-full">
+                                            <!-- View Details Button (Eye Icon) -->
+                                            <button @click="openDetailModal(employee)"
+                                                title="View Details"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-2xs cursor-pointer">
+                                                <Eye class="w-4 h-4" />
+                                            </button>
+
+                                            <!-- Edit Employee Button (Pencil Icon) -->
+                                            <button @click="openEditModal(employee)"
+                                                title="Edit Employee"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition-all shadow-2xs cursor-pointer">
+                                                <Pencil class="w-4 h-4" />
+                                            </button>
+
+                                            <!-- Delete Employee Button (Trash2 Icon) -->
+                                            <button @click="openDeleteModal(employee)"
+                                                title="Delete Employee"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-2xs cursor-pointer">
+                                                <Trash2 class="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -320,11 +338,99 @@
                 </div>
             </template>
         </ModalGeneric>
+
+        <!-- Edit Employee Modal -->
+        <ModalGeneric v-model="showEditModal" title="Edit Employee Information" width="560px">
+            <form @submit.prevent="handleUpdateEmployee" class="space-y-4 text-xs text-slate-700">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Full Name <span class="text-red-500">*</span></label>
+                        <input v-model="editForm.fullName" type="text" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Email <span class="text-red-500">*</span></label>
+                        <input v-model="editForm.email" type="email" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Gender <span class="text-red-500">*</span></label>
+                        <select v-model="editForm.gender" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs">
+                            <option value="MALE">MALE</option>
+                            <option value="FEMALE">FEMALE</option>
+                            <option value="OTHER">OTHER</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Phone Number</label>
+                        <input v-model="editForm.phone" type="text" placeholder="e.g. 0987654321"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Date of Birth</label>
+                        <input v-model="editForm.dateOfBirth" type="date"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Start Date</label>
+                        <input v-model="editForm.startDate" type="date"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">Address</label>
+                    <input v-model="editForm.address" type="text" placeholder="e.g. Hanoi, Vietnam"
+                        class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
+                    <button type="button" @click="showEditModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="isUpdating"
+                        class="px-4 h-9 bg-black text-white font-bold rounded-lg hover:bg-slate-900 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                        <LoaderCircle v-if="isUpdating" class="animate-spin w-4 h-4" />
+                        <span>{{ isUpdating ? 'Saving...' : 'Save Changes' }}</span>
+                    </button>
+                </div>
+            </form>
+        </ModalGeneric>
+
+        <!-- Delete Employee Confirmation Modal -->
+        <ModalGeneric v-model="showDeleteModal" title="Delete Employee" width="440px">
+            <div class="space-y-4 text-xs text-slate-700">
+                <p>Are you sure you want to delete employee <strong class="text-slate-900">{{ employeeToDelete?.fullName }}</strong> (Code: {{ employeeToDelete?.employeeCode }})?</p>
+                <p class="text-rose-600 font-medium bg-rose-50 border border-rose-200 p-3 rounded-lg">
+                    Warning: This action cannot be undone. All data related to this employee will be permanently removed.
+                </p>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" @click="showDeleteModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="button" @click="confirmDeleteEmployee" :disabled="isDeleting"
+                        class="px-4 h-9 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                        <LoaderCircle v-if="isDeleting" class="animate-spin w-4 h-4" />
+                        <span>{{ isDeleting ? 'Deleting...' : 'Delete Employee' }}</span>
+                    </button>
+                </div>
+            </div>
+        </ModalGeneric>
     </MainContent>
 </template>
 
 <script setup>
-import { ChevronLeft, Circle, Eye, LoaderCircle, Plus, X, Upload, FileSpreadsheet, AlertCircle } from "@lucide/vue";
+import { ChevronLeft, Circle, Eye, Pencil, Trash2, LoaderCircle, Plus, X, Upload, FileSpreadsheet, AlertCircle } from "@lucide/vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
@@ -476,6 +582,71 @@ const getInitials = (name) => {
 const openDetailModal = async (employee) => {
     selectedEmployee.value = employee
     showDetailModal.value = true
+}
+
+// --- Edit & Delete Employee Handlers ---
+const showEditModal = ref(false)
+const isUpdating = ref(false)
+const editingEmployeeId = ref(null)
+const editForm = reactive({
+    fullName: '',
+    email: '',
+    gender: 'MALE',
+    phone: '',
+    dateOfBirth: '',
+    startDate: '',
+    address: ''
+})
+
+const openEditModal = (emp) => {
+    editingEmployeeId.value = emp.id
+    editForm.fullName = emp.fullName || ''
+    editForm.email = emp.email || ''
+    editForm.gender = emp.gender || 'MALE'
+    editForm.phone = emp.phone || ''
+    editForm.dateOfBirth = emp.dateOfBirth || ''
+    editForm.startDate = emp.startDate || ''
+    editForm.address = emp.address || ''
+    showEditModal.value = true
+}
+
+const handleUpdateEmployee = async () => {
+    if (!editingEmployeeId.value) return
+    isUpdating.value = true
+    try {
+        await employeeStore.updateEmployee(editingEmployeeId.value, editForm)
+        showToast('Employee updated successfully', 'success')
+        showEditModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        showToast(e.response?.data?.message || 'Failed to update employee', 'error')
+    } finally {
+        isUpdating.value = false
+    }
+}
+
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const employeeToDelete = ref(null)
+
+const openDeleteModal = (emp) => {
+    employeeToDelete.value = emp
+    showDeleteModal.value = true
+}
+
+const confirmDeleteEmployee = async () => {
+    if (!employeeToDelete.value) return
+    isDeleting.value = true
+    try {
+        await employeeStore.deleteEmployee(employeeToDelete.value.id)
+        showToast('Employee deleted successfully', 'success')
+        showDeleteModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        showToast(e.response?.data?.message || 'Failed to delete employee', 'error')
+    } finally {
+        isDeleting.value = false
+    }
 }
 
 onMounted(async () => {
