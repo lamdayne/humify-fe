@@ -98,7 +98,7 @@
                                 <span class="text-2xl font-extrabold text-slate-900 leading-none">
                                     {{ summaryData?.statusOverview?.totalWorkItems || 0 }}
                                 </span>
-                                <span class="text-[11px] text-slate-500 truncate max-w-[100px] mt-1 font-medium">
+                                <span class="text-[11px] text-slate-500 truncate max-w-25 mt-1 font-medium">
                                     Total work items
                                 </span>
                             </div>
@@ -110,7 +110,7 @@
                                 class="flex items-center gap-2.5 text-xs text-slate-700">
                                 <span class="w-3 h-3 rounded-xs shrink-0"
                                     :style="{ backgroundColor: getStatusColor(st.category, idx) }"></span>
-                                <span class="font-medium truncate max-w-[120px]">{{ st.name }}:</span>
+                                <span class="font-medium truncate max-w-30">{{ st.name }}:</span>
                                 <span class="font-bold text-slate-900">{{ st.count }}</span>
                             </div>
                         </div>
@@ -118,14 +118,17 @@
                 </div>
 
                 <!-- Employee Performance & KPI Widget (Premium Modern Minimalist Style) -->
-                <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
+                <div
+                    class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between">
                             <h3 class="text-base font-bold text-slate-900 tracking-tight flex items-center gap-2">
                                 <TrendingUp class="w-4.5 h-4.5 text-blue-600" />
                                 <span>Employee performance & KPI</span>
                             </h3>
-                            <button @click="showPerformanceModal = true" class="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer" title="Expand performance">
+                            <button @click="showPerformanceModal = true"
+                                class="text-slate-400 hover:text-slate-600 transition p-1 cursor-pointer"
+                                title="Expand performance">
                                 <Maximize2 class="w-4 h-4" />
                             </button>
                         </div>
@@ -135,7 +138,7 @@
                     </div>
 
                     <!-- Member Performance List -->
-                    <div class="flex-1 overflow-y-auto max-h-[230px] space-y-3.5 pr-1 hide-scrollbar">
+                    <div class="flex-1 overflow-y-auto max-h-57.5 space-y-3.5 pr-1 hide-scrollbar">
                         <div v-if="!memberPerformanceList || memberPerformanceList.length === 0"
                             class="py-10 text-center text-xs text-slate-400 font-light">
                             No member performance data recorded yet.
@@ -146,10 +149,12 @@
                             <!-- Header Info & Modern Score Pill -->
                             <div class="flex items-center justify-between">
                                 <div class="flex items-center gap-3 truncate">
-                                    <div v-if="m.avatar" class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                                    <div v-if="m.avatar"
+                                        class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200">
                                         <img :src="m.avatar" alt="" class="w-full h-full object-cover" />
                                     </div>
-                                    <div v-else class="w-9 h-9 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                                    <div v-else
+                                        class="w-9 h-9 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
                                         {{ getInitials(m.userName) }}
                                     </div>
                                     <div class="truncate">
@@ -161,34 +166,46 @@
                                 </div>
 
                                 <!-- Sleek Minimalist Badge Pill with Status Dot -->
-                                <div class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200/80 text-slate-800 shrink-0 flex items-center gap-1.5 shadow-2xs">
-                                    <span class="w-2 h-2 rounded-full shrink-0 animate-pulse" :class="getScoreDotClass(m.overallScore)"></span>
+                                <div
+                                    class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200/80 text-slate-800 shrink-0 flex items-center gap-1.5 shadow-2xs">
+                                    <span class="w-2 h-2 rounded-full shrink-0 animate-pulse"
+                                        :class="getScoreDotClass(m.overallScore)"></span>
                                     <span class="font-extrabold text-slate-900">{{ m.overallScore }}%</span>
-                                    <span class="text-slate-400 font-normal">· {{ getScoreLabel(m.overallScore) }}</span>
+                                    <span class="text-slate-400 font-normal">· {{ getScoreLabel(m.overallScore)
+                                        }}</span>
                                 </div>
                             </div>
 
                             <!-- Premium Gradient Progress Bar -->
                             <div class="w-full bg-slate-200/60 h-2 rounded-full overflow-hidden shadow-inner">
-                                <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full rounded-full transition-all duration-700 shadow-xs"
+                                <div class="bg-linear-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full rounded-full transition-all duration-700 shadow-xs"
                                     :style="{ width: `${m.completionRate}%` }"></div>
                             </div>
 
                             <!-- 3 Minimalist Stat Cards Grid -->
                             <div class="grid grid-cols-3 gap-2 pt-1">
-                                <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Completed</span>
-                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.completedTasks }}/{{ m.totalTasks }} tasks</span>
+                                <div
+                                    class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
+                                    <span
+                                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Completed</span>
+                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.completedTasks
+                                        }}/{{ m.totalTasks }} tasks</span>
                                 </div>
 
-                                <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Logged</span>
-                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.loggedHoursSum }}h / {{ m.estimatedHoursSum }}h</span>
+                                <div
+                                    class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
+                                    <span
+                                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Logged</span>
+                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.loggedHoursSum
+                                        }}h / {{ m.estimatedHoursSum }}h</span>
                                 </div>
 
-                                <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
-                                    <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">On-Time</span>
-                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.onTimeRate }}%</span>
+                                <div
+                                    class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
+                                    <span
+                                        class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">On-Time</span>
+                                    <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.onTimeRate
+                                        }}%</span>
                                 </div>
                             </div>
                         </div>
@@ -343,7 +360,7 @@
                     </div>
 
                     <!-- Timeline Content -->
-                    <div class="flex-1 overflow-y-auto max-h-[220px] space-y-4 hide-scrollbar">
+                    <div class="flex-1 overflow-y-auto max-h-55 space-y-4 hide-scrollbar">
                         <div v-if="!recentActivities || recentActivities.length === 0"
                             class="py-10 text-center text-xs text-slate-400">
                             No recent activity found.
@@ -440,7 +457,9 @@
 
         <!-- Employee Performance Expanded Modal -->
         <ModalGeneric v-model="showPerformanceModal" title="Employee performance & KPI" width="720px">
-            <p class="text-xs text-slate-500 -mt-3 mb-4">Track productivity, time efficiency & task completion rate across the team.</p>
+            <p class="text-xs text-slate-500 -mt-3 mb-4">Track productivity, time efficiency & task completion rate
+                across the
+                team.</p>
             <div class="max-h-[65vh] overflow-y-auto pr-2 space-y-3.5 hide-scrollbar">
                 <div v-if="!memberPerformanceList || memberPerformanceList.length === 0"
                     class="py-10 text-center text-xs text-slate-400 font-light">
@@ -452,10 +471,12 @@
                     <!-- Header Info & Modern Score Pill -->
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 truncate">
-                            <div v-if="m.avatar" class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200">
+                            <div v-if="m.avatar"
+                                class="w-9 h-9 rounded-full overflow-hidden shrink-0 border border-slate-200">
                                 <img :src="m.avatar" alt="" class="w-full h-full object-cover" />
                             </div>
-                            <div v-else class="w-9 h-9 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
+                            <div v-else
+                                class="w-9 h-9 rounded-full bg-slate-900 text-white text-xs font-bold flex items-center justify-center shrink-0 shadow-xs">
                                 {{ getInitials(m.userName) }}
                             </div>
                             <div class="truncate">
@@ -467,8 +488,10 @@
                         </div>
 
                         <!-- Sleek Minimalist Badge Pill with Status Dot -->
-                        <div class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200/80 text-slate-800 shrink-0 flex items-center gap-1.5 shadow-2xs">
-                            <span class="w-2 h-2 rounded-full shrink-0 animate-pulse" :class="getScoreDotClass(m.overallScore)"></span>
+                        <div
+                            class="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-slate-200/80 text-slate-800 shrink-0 flex items-center gap-1.5 shadow-2xs">
+                            <span class="w-2 h-2 rounded-full shrink-0 animate-pulse"
+                                :class="getScoreDotClass(m.overallScore)"></span>
                             <span class="font-extrabold text-slate-900">{{ m.overallScore }}%</span>
                             <span class="text-slate-400 font-normal">· {{ getScoreLabel(m.overallScore) }}</span>
                         </div>
@@ -476,7 +499,7 @@
 
                     <!-- Premium Gradient Progress Bar -->
                     <div class="w-full bg-slate-200/60 h-2 rounded-full overflow-hidden shadow-inner">
-                        <div class="bg-gradient-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full rounded-full transition-all duration-700 shadow-xs"
+                        <div class="bg-linear-to-r from-blue-600 via-indigo-600 to-emerald-500 h-full rounded-full transition-all duration-700 shadow-xs"
                             :style="{ width: `${m.completionRate}%` }"></div>
                     </div>
 
@@ -484,12 +507,14 @@
                     <div class="grid grid-cols-3 gap-2 pt-1">
                         <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Completed</span>
-                            <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.completedTasks }}/{{ m.totalTasks }} tasks</span>
+                            <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.completedTasks }}/{{
+                                m.totalTasks }} tasks</span>
                         </div>
 
                         <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
                             <span class="text-[9px] font-bold text-slate-400 uppercase tracking-wider">Logged</span>
-                            <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.loggedHoursSum }}h / {{ m.estimatedHoursSum }}h</span>
+                            <span class="text-xs font-bold text-slate-800 mt-0.5 truncate">{{ m.loggedHoursSum }}h / {{
+                                m.estimatedHoursSum }}h</span>
                         </div>
 
                         <div class="bg-white border border-slate-200/60 rounded-lg p-2 flex flex-col justify-center">
