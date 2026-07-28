@@ -66,7 +66,7 @@
           </button>
         </div>
 
-        <!-- SEARCH INPUT (Chặn triệt để Autofill bằng readonly) -->
+        <!-- SEARCH INPUT -->
         <div class="relative w-full sm:w-72">
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
           <input v-model="searchQuery"
@@ -88,7 +88,6 @@
             <thead>
             <tr class="bg-slate-50/80 border-b border-slate-200 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
               <th class="py-4 px-6">USER</th>
-              <th class="py-4 px-6">LINKED EMPLOYEE</th>
               <th class="py-4 px-6">ROLES</th>
               <th class="py-4 px-6 text-center">STATUS</th>
               <th class="py-4 px-6 text-right">ACTIONS</th>
@@ -96,13 +95,13 @@
             </thead>
             <tbody class="divide-y divide-slate-100 text-xs text-slate-700">
             <tr v-if="isLoading">
-              <td colspan="5" class="py-12 text-center text-slate-400">
+              <td colspan="4" class="py-12 text-center text-slate-400">
                 <LoaderCircle class="w-6 h-6 animate-spin mx-auto mb-2 text-slate-600" />
                 Loading accounts...
               </td>
             </tr>
             <tr v-else-if="filteredUsers.length === 0">
-              <td colspan="5" class="py-12 text-center text-slate-400">No user accounts found.</td>
+              <td colspan="4" class="py-12 text-center text-slate-400">No user accounts found.</td>
             </tr>
             <tr v-else v-for="user in filteredUsers" :key="user.id || user.email" class="hover:bg-slate-50/60 transition-colors group">
 
@@ -117,15 +116,6 @@
                     <div class="text-[10px] text-slate-400">Created: {{ formatDate(user.createdAt) }}</div>
                   </div>
                 </div>
-              </td>
-
-              <!-- LINKED EMPLOYEE -->
-              <td class="py-4 px-6 font-medium">
-                  <span v-if="user.employee" class="text-blue-600 font-mono text-[11px] flex items-center gap-1 hover:underline cursor-pointer">
-                    {{ user.employee.employeeCode || ('EMP-' + user.employee.id) }}
-                    <ExternalLink class="w-3 h-3" />
-                  </span>
-                <span v-else class="text-slate-400 italic">Not Linked</span>
               </td>
 
               <!-- ROLES -->
@@ -187,16 +177,6 @@
           </div>
 
           <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Link Employee (Optional)</label>
-            <select v-model="createForm.employeeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black bg-slate-50">
-              <option :value="null">-- Not Linked --</option>
-              <option v-for="emp in employeeList" :key="emp.id" :value="emp.id">
-                {{ emp.fullName }} ({{ emp.employeeCode }})
-              </option>
-            </select>
-          </div>
-
-          <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Assign Roles <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
               <label v-for="role in roleList" :key="role.id" class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
@@ -210,7 +190,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="createModal.show = false" />
-            <PrimaryButton content="Create Account" @click="handleCreateUser" :disabled="isSubmitting" />
+            <PrimaryButton content="Create" @click="handleCreateUser" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>
@@ -236,7 +216,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="roleModal.show = false" />
-            <PrimaryButton content="Save Roles" @click="handleSaveRole" :disabled="isSubmitting" />
+            <PrimaryButton content="Save" @click="handleSaveRole" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>
@@ -272,7 +252,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="passwordModal.show = false" />
-            <PrimaryButton content="Update Password" @click="handleSavePassword" :disabled="isSubmitting" />
+            <PrimaryButton content="Update" @click="handleSavePassword" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>
@@ -293,7 +273,7 @@ import ModalGeneric from '../components/ModalGeneric.vue';
 import { useUserStore } from '../store/userStore';
 import { useRoleStore } from '../store/roleStore';
 import { useEmployeeStore } from '../store/employeeStore';
-import { Users, UserCheck, Search, Shield, KeyRound, ExternalLink, LoaderCircle } from '@lucide/vue';
+import { Users, UserCheck, Search, Shield, KeyRound, LoaderCircle } from '@lucide/vue';
 
 const userStore = useUserStore();
 const roleStore = useRoleStore();
@@ -303,7 +283,7 @@ const isLoading = ref(false);
 const isSubmitting = ref(false);
 const searchQuery = ref('');
 const statusFilter = ref('ALL');
-const isSearchReadonly = ref(true); // Ngăn trình duyệt tự động fill tài khoản vào thanh tìm kiếm
+const isSearchReadonly = ref(true);
 
 const roleList = ref([]);
 const employeeList = ref([]);

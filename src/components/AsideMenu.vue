@@ -158,6 +158,12 @@ const menus = [
         name: 'PayrollAdmin',
         permission: null
     },
+  {
+    label: 'My Profile',
+    icon: CircleUser,
+    name: 'Profile',
+    permission: null
+  },
     {
         id: 'security',
         label: 'Security',

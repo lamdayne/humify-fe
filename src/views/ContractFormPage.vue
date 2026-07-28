@@ -57,7 +57,7 @@
                 <div
                     ref="dropdownListRef"
                     @scroll="handleScroll"
-                    class="max-h-56 overflow-y-auto divide-y divide-slate-50"
+                    class="max-h-56 overflow-y-auto hide-scrollbar divide-y divide-slate-50"
                 >
                   <div
                       v-for="e in employees"
