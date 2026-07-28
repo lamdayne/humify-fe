@@ -5,10 +5,10 @@
             <div class="fixed inset-0 bg-[#09090b]/40 backdrop-blur-sm transition-opacity duration-300"
                 @click="closeOnBackdrop && $emit('update:modelValue', false)" />
 
-            <div class="bg-white border border-slate-200 rounded-xl relative z-1000 overflow-hidden shadow-xl flex flex-col my-8"
+            <div class="bg-white border border-slate-200 rounded-xl relative z-1000 overflow-visible shadow-xl flex flex-col my-8"
                 :style="{ width: '100%', maxWidth: width, minWidth: '280px' }">
                 <!-- Header -->
-                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white">
+                <div class="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-white rounded-t-xl">
                     <h2 class="text-[17px] font-semibold text-slate-900 tracking-tight">{{ title }}</h2>
                     <button @click="$emit('update:modelValue', false)"
                         class="text-slate-400 hover:text-black p-1 rounded-md transition-colors">
@@ -26,7 +26,7 @@
 
                 <!-- Footer -->
                 <div v-if="$slots.footer"
-                    class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white">
+                    class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 bg-white rounded-b-xl">
                     <slot name="footer" />
                 </div>
             </div>

@@ -223,8 +223,8 @@
               </div>
 
               <div class="text-[11px] text-slate-400 space-y-1 font-mono pt-2 border-t border-slate-100">
-                <div class="flex justify-between"><span>Issue Date:</span> <span class="text-slate-700 font-semibold">{{ cert.issuedDate || 'N/A' }}</span></div>
-                <div class="flex justify-between"><span>Expiry Date:</span> <span class="text-slate-700 font-semibold">{{ cert.expiredDate || 'No Expiry' }}</span></div>
+                <div class="flex justify-between"><span>Issue Date:</span> <span class="text-slate-700 font-semibold">{{ cert.issuedDate ? formatDate(cert.issuedDate) : 'N/A' }}</span></div>
+                <div class="flex justify-between"><span>Expiry Date:</span> <span class="text-slate-700 font-semibold">{{ cert.expiredDate ? formatDate(cert.expiredDate) : 'No Expiry' }}</span></div>
               </div>
             </div>
 
@@ -251,44 +251,84 @@
         </div>
       </div>
 
-      <!-- TAB 4: WORK EXPERIENCE -->
+      <!-- TAB 4: WORK EXPERIENCE (LinkedIn Style Timeline) -->
       <div v-else-if="activeTab === 'experience'" class="space-y-6">
         <div class="flex items-center justify-between">
           <div>
             <h2 class="text-lg font-bold text-slate-900">Work Experience</h2>
-            <p class="text-xs text-slate-400">Career progression and employment history.</p>
+            <p class="text-xs text-slate-400">Career progression and professional history.</p>
           </div>
           <button @click="openAddExpModal" class="bg-black hover:bg-slate-800 text-white px-4 py-2 rounded-xl text-xs font-semibold flex items-center gap-2 shadow-xs cursor-pointer">
             <Plus class="w-4 h-4" /> Add Experience
           </button>
         </div>
 
-        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-xs relative">
+        <div class="bg-white border border-slate-200/80 rounded-2xl p-6 md:p-8 shadow-xs">
           <div v-if="experiences.length === 0" class="py-12 text-center text-slate-400 text-xs">
-            No work experience entries recorded.
+            No work experience entries recorded yet.
           </div>
 
-          <div v-else class="space-y-8 relative before:absolute before:inset-0 before:left-3.5 before:w-0.5 before:bg-slate-200">
-            <div v-for="exp in experiences" :key="exp.id" class="relative pl-10 flex items-start justify-between gap-4">
-              <div class="absolute left-2 top-1.5 w-3.5 h-3.5 rounded-full bg-blue-600 border-2 border-white shadow-xs -translate-x-1/2"></div>
-
-              <div class="space-y-1 flex-1">
-                <div class="flex items-center justify-between">
-                  <h4 class="text-sm font-bold text-slate-900">{{ exp.position }}</h4>
-                  <span class="text-[11px] font-mono font-semibold text-slate-400">{{ exp.startDate }} — {{ exp.endDate || 'Present' }}</span>
-                </div>
-                <div class="text-xs font-semibold text-blue-600">{{ exp.companyName }}</div>
-                <p v-if="exp.description" class="text-xs text-slate-600 font-light pt-2 leading-relaxed">{{ exp.description }}</p>
-                <p v-if="exp.reasonForLeaving" class="text-[11px] text-slate-400 italic pt-1">Reason for leaving: {{ exp.reasonForLeaving }}</p>
+          <div v-else class="relative space-y-8 before:absolute before:top-3 before:bottom-3 before:left-5 before:w-0.5 before:bg-slate-200/80">
+            <div
+              v-for="exp in experiences"
+              :key="exp.id"
+              class="relative pl-14 flex items-start justify-between gap-4 group"
+            >
+              <!-- Timeline node logo/icon -->
+              <div class="absolute left-0 top-0.5 w-10 h-10 rounded-xl bg-slate-900 text-white flex items-center justify-center font-bold text-sm shadow-xs border-2 border-white group-hover:bg-blue-600 transition-all duration-200">
+                <Building2 class="w-5 h-5" />
               </div>
 
-              <div class="flex items-center gap-1">
-                <button @click="openEditExpModal(exp)" class="text-slate-400 hover:text-blue-600 p-1.5 cursor-pointer">
-                  <Pencil class="w-4 h-4" />
-                </button>
-                <button @click="handleDeleteExp(exp.id)" class="text-slate-400 hover:text-red-600 p-1.5 cursor-pointer">
-                  <Trash2 class="w-4 h-4" />
-                </button>
+              <!-- Content details -->
+              <div class="space-y-1.5 flex-1 min-w-0">
+                <div class="flex items-start justify-between gap-4">
+                  <div>
+                    <h3 class="text-base font-bold text-slate-900 leading-snug group-hover:text-blue-600 transition-colors">
+                      {{ exp.position }}
+                    </h3>
+                    <div class="text-xs font-semibold text-slate-700 mt-0.5">
+                      {{ exp.companyName }}
+                    </div>
+                  </div>
+
+                  <!-- Actions -->
+                  <div class="flex items-center gap-1 opacity-80 group-hover:opacity-100 transition-opacity">
+                    <button
+                      @click="openEditExpModal(exp)"
+                      class="p-1.5 rounded-lg text-slate-400 hover:text-blue-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Edit Experience"
+                    >
+                      <Pencil class="w-4 h-4" />
+                    </button>
+                    <button
+                      @click="handleDeleteExp(exp.id)"
+                      class="p-1.5 rounded-lg text-slate-400 hover:text-red-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                      title="Delete Experience"
+                    >
+                      <Trash2 class="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+
+                <!-- Dates & Calculated Duration -->
+                <div class="text-xs text-slate-500 font-normal flex items-center gap-2 flex-wrap">
+                  <span>{{ formatDate(exp.startDate) }} — {{ exp.endDate ? formatDate(exp.endDate) : 'Present' }}</span>
+                  <span v-if="calculateDuration(exp.startDate, exp.endDate)" class="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 text-slate-600 text-[11px] font-medium border border-slate-200/60">
+                    <Clock class="w-3 h-3 text-slate-400" />
+                    {{ calculateDuration(exp.startDate, exp.endDate) }}
+                  </span>
+                </div>
+
+                <!-- Description -->
+                <div v-if="exp.description" class="text-xs text-slate-600 font-normal leading-relaxed pt-1.5 whitespace-pre-line">
+                  {{ exp.description }}
+                </div>
+
+                <!-- Reason for leaving -->
+                <div v-if="exp.reasonForLeaving" class="text-[11px] text-slate-400 italic pt-1 flex items-center gap-1 border-t border-slate-100/80 mt-2">
+                  <span>Reason for leaving:</span>
+                  <span class="text-slate-500 font-medium">{{ exp.reasonForLeaving }}</span>
+                </div>
               </div>
             </div>
           </div>
@@ -356,11 +396,11 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Issue Date</label>
-              <input type="date" v-model="certForm.issuedDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <DateTimePicker v-model="certForm.issuedDate" dateOnly placeholder="Select Issue Date" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Expiry Date</label>
-              <input type="date" v-model="certForm.expiredDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <DateTimePicker v-model="certForm.expiredDate" dateOnly placeholder="Select Expiry Date" />
             </div>
           </div>
 
@@ -398,11 +438,11 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Start Date <span class="text-red-500">*</span></label>
-              <input type="date" v-model="expForm.startDate" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <DateTimePicker v-model="expForm.startDate" dateOnly placeholder="Select Start Date" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">End Date</label>
-              <input type="date" v-model="expForm.endDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <DateTimePicker v-model="expForm.endDate" dateOnly placeholder="Select End Date" />
             </div>
           </div>
 
@@ -453,11 +493,12 @@ import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
+import DateTimePicker from '../components/DateTimePicker.vue';
 import { useProfileStore } from '../store/profileStore';
 import { useAuthStore } from '../store/authStore';
 import { useUserStore } from '../store/userStore';
 import { useUploadStore } from '../store/uploadStore';
-import { User, GraduationCap, Award, Plus, Trash2, ExternalLink, Pencil } from '@lucide/vue';
+import { User, GraduationCap, Award, Plus, Trash2, ExternalLink, Pencil, Briefcase, Building2, Calendar, Clock } from '@lucide/vue';
 
 const profileStore = useProfileStore();
 const authStore = useAuthStore();
@@ -556,7 +597,29 @@ const getInitials = (name) => {
 
 const formatDate = (isoStr) => {
   if (!isoStr) return 'N/A';
-  return new Date(isoStr).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const cleanStr = typeof isoStr === 'string' && isoStr.includes('T') ? isoStr.split('T')[0] : isoStr;
+  const d = new Date(cleanStr);
+  if (isNaN(d.getTime())) return isoStr;
+  return d.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+};
+
+const calculateDuration = (startDateStr, endDateStr) => {
+  if (!startDateStr) return '';
+  const start = new Date(startDateStr.includes('T') ? startDateStr.split('T')[0] : startDateStr);
+  const end = endDateStr ? new Date(endDateStr.includes('T') ? endDateStr.split('T')[0] : endDateStr) : new Date();
+  if (isNaN(start.getTime()) || isNaN(end.getTime())) return '';
+
+  let months = (end.getFullYear() - start.getFullYear()) * 12 + (end.getMonth() - start.getMonth());
+  if (months < 1) months = 1;
+
+  const years = Math.floor(months / 12);
+  const remainingMonths = months % 12;
+
+  const parts = [];
+  if (years > 0) parts.push(`${years} yr${years > 1 ? 's' : ''}`);
+  if (remainingMonths > 0) parts.push(`${remainingMonths} mo${remainingMonths > 1 ? 's' : ''}`);
+
+  return parts.join(' ');
 };
 
 // --- PERSONAL PROFILE & AVATAR ---

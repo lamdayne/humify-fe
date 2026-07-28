@@ -177,16 +177,6 @@
           </div>
 
           <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Link Employee (Optional)</label>
-            <select v-model="createForm.employeeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black bg-slate-50">
-              <option :value="null">-- Not Linked --</option>
-              <option v-for="emp in employeeList" :key="emp.id" :value="emp.id">
-                {{ emp.fullName }} ({{ emp.employeeCode }})
-              </option>
-            </select>
-          </div>
-
-          <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Assign Roles <span class="text-red-500">*</span></label>
             <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto border border-slate-200 rounded-lg p-3 bg-slate-50">
               <label v-for="role in roleList" :key="role.id" class="flex items-center gap-2 text-xs text-slate-700 cursor-pointer">
@@ -200,7 +190,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="createModal.show = false" />
-            <PrimaryButton content="Create Account" @click="handleCreateUser" :disabled="isSubmitting" />
+            <PrimaryButton content="Create" @click="handleCreateUser" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>
@@ -226,7 +216,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="roleModal.show = false" />
-            <PrimaryButton content="Save Roles" @click="handleSaveRole" :disabled="isSubmitting" />
+            <PrimaryButton content="Save" @click="handleSaveRole" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>
@@ -262,7 +252,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="passwordModal.show = false" />
-            <PrimaryButton content="Update Password" @click="handleSavePassword" :disabled="isSubmitting" />
+            <PrimaryButton content="Update" @click="handleSavePassword" :disabled="isSubmitting" />
           </div>
         </template>
       </ModalGeneric>

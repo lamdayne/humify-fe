@@ -5,24 +5,25 @@
         @click="toggleOpen"
     >
       <span :class="displayValue ? 'text-slate-800' : 'text-slate-400'">
-        {{ displayValue || placeholder }}
+        {{ displayValue || effectivePlaceholder }}
       </span>
       <Calendar class="w-4 h-4 text-slate-400" />
     </div>
 
     <div
         v-if="open"
-        class="absolute z-50 mt-1 bg-white border border-slate-200 rounded-lg shadow-lg p-3 flex gap-3"
-        style="width: 340px;"
+        class="absolute z-50 bg-white border border-slate-200 rounded-lg shadow-lg p-3 flex gap-3 right-0 sm:right-auto"
+        :class="isTop ? 'bottom-full mb-1' : 'top-full mt-1'"
+        :style="{ width: dateOnly ? '260px' : '340px' }"
     >
       <!-- Calendar -->
       <div class="flex-1">
         <div class="flex items-center justify-between mb-2">
-          <button type="button" class="p-1 hover:bg-slate-100 rounded" @click="prevMonth">
+          <button type="button" class="p-1 hover:bg-slate-100 rounded cursor-pointer" @click="prevMonth">
             <ChevronLeft class="w-4 h-4" />
           </button>
           <span class="text-xs font-bold text-slate-700">{{ monthLabel }}</span>
-          <button type="button" class="p-1 hover:bg-slate-100 rounded" @click="nextMonth">
+          <button type="button" class="p-1 hover:bg-slate-100 rounded cursor-pointer" @click="nextMonth">
             <ChevronRight class="w-4 h-4" />
           </button>
         </div>
@@ -36,7 +37,7 @@
               v-for="(cell, idx) in calendarCells"
               :key="idx"
               type="button"
-              class="h-7 w-7 rounded-full flex items-center justify-center"
+              class="h-7 w-7 rounded-full flex items-center justify-center cursor-pointer"
               :class="cellClass(cell)"
               @click="selectDay(cell)"
           >
@@ -45,13 +46,13 @@
         </div>
 
         <div class="flex justify-between mt-2 text-[11px]">
-          <button type="button" class="text-blue-600 hover:underline" @click="clearValue">Clear</button>
-          <button type="button" class="text-blue-600 hover:underline" @click="goToday">Today</button>
+          <button type="button" class="text-blue-600 hover:underline cursor-pointer" @click="clearValue">Clear</button>
+          <button type="button" class="text-blue-600 hover:underline cursor-pointer" @click="goToday">Today</button>
         </div>
       </div>
 
       <!-- Time -->
-      <div class="w-24 border-l border-slate-100 pl-3 flex flex-col items-center gap-2">
+      <div v-if="!dateOnly" class="w-24 border-l border-slate-100 pl-3 flex flex-col items-center gap-2">
         <div class="flex items-center gap-1">
           <select v-model.number="hour12" class="border border-slate-200 rounded text-xs p-1 w-12 text-center">
             <option v-for="h in 12" :key="h" :value="h">{{ String(h).padStart(2, '0') }}</option>
@@ -65,13 +66,13 @@
         <div class="flex gap-1">
           <button
               type="button"
-              class="px-2 py-1 rounded text-xs font-bold"
+              class="px-2 py-1 rounded text-xs font-bold cursor-pointer"
               :class="meridiem === 'AM' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'"
               @click="meridiem = 'AM'"
           >AM</button>
           <button
               type="button"
-              class="px-2 py-1 rounded text-xs font-bold"
+              class="px-2 py-1 rounded text-xs font-bold cursor-pointer"
               :class="meridiem === 'PM' ? 'bg-blue-600 text-white' : 'bg-slate-100 text-slate-500'"
               @click="meridiem = 'PM'"
           >PM</button>
@@ -79,7 +80,7 @@
 
         <button
             type="button"
-            class="mt-auto w-full bg-black text-white text-[11px] font-bold rounded-lg py-1.5"
+            class="mt-auto w-full bg-black text-white text-[11px] font-bold rounded-lg py-1.5 cursor-pointer"
             @click="applyAndClose"
         >
           Apply
@@ -93,16 +94,22 @@
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { Calendar, ChevronLeft, ChevronRight } from '@lucide/vue';
 
-// v-model value follows the same "YYYY-MM-DDTHH:mm" format as native <input type="datetime-local">
-// so no other code (submit payloads, backend) needs to change.
 const props = defineProps({
   modelValue: { type: String, default: '' },
-  placeholder: { type: String, default: 'dd/mm/yyyy hh:mm AM' }
+  placeholder: { type: String, default: '' },
+  dateOnly: { type: Boolean, default: false },
+  placement: { type: String, default: 'auto' } // 'top' | 'bottom' | 'auto'
 });
 const emit = defineEmits(['update:modelValue']);
 
 const rootRef = ref(null);
 const open = ref(false);
+const isTop = ref(false);
+
+const effectivePlaceholder = computed(() => {
+  if (props.placeholder) return props.placeholder;
+  return props.dateOnly ? 'dd/mm/yyyy' : 'dd/mm/yyyy hh:mm AM';
+});
 
 const weekdayLabels = ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
 const monthNames = [
@@ -113,8 +120,9 @@ const monthNames = [
 const parseValue = (val) => {
   if (!val) return null;
   const [datePart, timePart] = val.split('T');
-  const [y, m, d] = datePart.split('-').map(Number);
+  const [y, m, d] = (datePart || '').split('-').map(Number);
   const [hh, mm] = (timePart || '00:00').split(':').map(Number);
+  if (!y || !m || !d) return null;
   return new Date(y, m - 1, d, hh, mm);
 };
 
@@ -185,10 +193,25 @@ const cellClass = (cell) => {
   return 'text-slate-700 hover:bg-slate-100';
 };
 
+const pad = (n) => String(n).padStart(2, '0');
+
+const applyAndClose = () => {
+  if (!selectedDate.value) { open.value = false; return; }
+  const d = selectedDate.value;
+  const value = props.dateOnly
+    ? `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+    : `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(hour24.value)}:${pad(minute.value)}`;
+  emit('update:modelValue', value);
+  open.value = false;
+};
+
 const selectDay = (cell) => {
   selectedDate.value = new Date(cell.year, cell.month, cell.day);
   viewYear.value = selectedDate.value.getFullYear();
   viewMonth.value = selectedDate.value.getMonth();
+  if (props.dateOnly) {
+    applyAndClose();
+  }
 };
 
 const prevMonth = () => {
@@ -207,6 +230,9 @@ const goToday = () => {
   selectedDate.value = t;
   hour24.value = t.getHours();
   minute.value = t.getMinutes();
+  if (props.dateOnly) {
+    applyAndClose();
+  }
 };
 
 const clearValue = () => {
@@ -215,24 +241,30 @@ const clearValue = () => {
   open.value = false;
 };
 
-const pad = (n) => String(n).padStart(2, '0');
-
 const displayValue = computed(() => {
   if (!selectedDate.value) return '';
   const d = selectedDate.value;
   const h12 = hour12.value;
+  if (props.dateOnly) {
+    return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()}`;
+  }
   return `${pad(d.getDate())}/${pad(d.getMonth() + 1)}/${d.getFullYear()} ${pad(h12)}:${pad(minute.value)} ${meridiem.value}`;
 });
 
-const applyAndClose = () => {
-  if (!selectedDate.value) { open.value = false; return; }
-  const d = selectedDate.value;
-  const value = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(hour24.value)}:${pad(minute.value)}`;
-  emit('update:modelValue', value);
-  open.value = false;
+const toggleOpen = () => {
+  if (!open.value && rootRef.value) {
+    if (props.placement === 'top') {
+      isTop.value = true;
+    } else if (props.placement === 'bottom') {
+      isTop.value = false;
+    } else {
+      const rect = rootRef.value.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      isTop.value = spaceBelow < 320;
+    }
+  }
+  open.value = !open.value;
 };
-
-const toggleOpen = () => { open.value = !open.value; };
 
 const handleClickOutside = (e) => {
   if (rootRef.value && !rootRef.value.contains(e.target)) open.value = false;
