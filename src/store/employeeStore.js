@@ -39,10 +39,50 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
+    const updateEmployee = async (id, employeeData) => {
+        try {
+            const res = await axiosInstance.put(`/employees/${id}`, employeeData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const deleteEmployee = async (id) => {
+        try {
+            const res = await axiosInstance.delete(`/employees/${id}`)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const transferEmployee = async (id, transferData) => {
+        try {
+            const res = await axiosInstance.put(`/employees/${id}/transfer`, transferData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const updateEmployeeStatus = async (id, status) => {
+        try {
+            const res = await axiosInstance.put(`/employees/${id}/status`, { status })
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
     return {
         employees,
         fetchEmployees,
         createEmployee,
-        importEmployees
+        updateEmployee,
+        deleteEmployee,
+        importEmployees,
+        transferEmployee,
+        updateEmployeeStatus
     }
 })
