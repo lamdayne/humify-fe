@@ -104,13 +104,40 @@
 
                                     <td
                                         class="py-5 px-6 text-xs md:text-sm text-slate-500 font-light whitespace-nowrap">
-                                        <StatusBadge :content="employee.status"></StatusBadge>
+                                        <button @click="openStatusModal(employee)" title="Click to change status" class="cursor-pointer hover:opacity-80 transition-opacity">
+                                            <StatusBadge :content="employee.status" :type="employee.status"></StatusBadge>
+                                        </button>
                                     </td>
 
                                     <td class="py-5 px-6 text-right">
-                                        <div class="flex gap-1 justify-end w-full">
-                                            <SecondaryButton :content="'View'" @click="openDetailModal(employee)" />
-                                            <PrimaryButton :content="'Edit'" />
+                                        <div class="flex items-center justify-end gap-1.5 w-full">
+                                            <!-- View Details Button (Eye Icon) -->
+                                            <button @click="openDetailModal(employee)"
+                                                title="View Details"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-blue-600 hover:bg-blue-50 hover:border-blue-200 transition-all shadow-2xs cursor-pointer">
+                                                <Eye class="w-4 h-4" />
+                                            </button>
+
+                                             <!-- Transfer Employee Button (ArrowLeftRight Icon) -->
+                                            <button @click="openTransferModal(employee)"
+                                                title="Transfer Employee & Position"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200 transition-all shadow-2xs cursor-pointer">
+                                                <ArrowLeftRight class="w-4 h-4" />
+                                            </button>
+
+                                            <!-- Edit Employee Button (Pencil Icon) -->
+                                            <button @click="openEditModal(employee)"
+                                                title="Edit Employee"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-amber-600 hover:bg-amber-50 hover:border-amber-200 transition-all shadow-2xs cursor-pointer">
+                                                <Pencil class="w-4 h-4" />
+                                            </button>
+
+                                            <!-- Delete Employee Button (Trash2 Icon) -->
+                                            <button @click="openDeleteModal(employee)"
+                                                title="Delete Employee"
+                                                class="p-2 rounded-lg border border-slate-200 bg-white text-slate-600 hover:text-rose-600 hover:bg-rose-50 hover:border-rose-200 transition-all shadow-2xs cursor-pointer">
+                                                <Trash2 class="w-4 h-4" />
+                                            </button>
                                         </div>
                                     </td>
                                 </tr>
@@ -144,7 +171,7 @@
                     <div class="text-center sm:text-left space-y-1.5">
                         <div class="flex flex-col sm:flex-row sm:items-center items-center gap-2">
                             <h4 class="text-lg font-semibold text-slate-950">{{ selectedEmployee.fullName }}</h4>
-                            <StatusBadge :content="selectedEmployee.status"></StatusBadge>
+                            <StatusBadge :content="selectedEmployee.status" :type="selectedEmployee.status"></StatusBadge>
                         </div>
                         <p class="text-xs text-slate-400 font-light">
                             Code: <span class="font-medium text-slate-600">
@@ -320,11 +347,196 @@
                 </div>
             </template>
         </ModalGeneric>
+
+        <!-- Edit Employee Modal -->
+        <ModalGeneric v-model="showEditModal" title="Edit Employee Information" width="560px">
+            <form @submit.prevent="handleUpdateEmployee" class="space-y-4 text-xs text-slate-700">
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Full Name <span class="text-red-500">*</span></label>
+                        <input v-model="editForm.fullName" type="text" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Email <span class="text-red-500">*</span></label>
+                        <input v-model="editForm.email" type="email" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Gender <span class="text-red-500">*</span></label>
+                        <select v-model="editForm.gender" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs">
+                            <option value="MALE">MALE</option>
+                            <option value="FEMALE">FEMALE</option>
+                            <option value="OTHER">OTHER</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Phone Number</label>
+                        <input v-model="editForm.phone" type="text" placeholder="e.g. 0987654321"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Date of Birth</label>
+                        <input v-model="editForm.dateOfBirth" type="date"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">Start Date</label>
+                        <input v-model="editForm.startDate" type="date"
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">Address</label>
+                    <input v-model="editForm.address" type="text" placeholder="e.g. Hanoi, Vietnam"
+                        class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-blue-500 text-xs" />
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
+                    <button type="button" @click="showEditModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="isUpdating"
+                        class="px-4 h-9 bg-black text-white font-bold rounded-lg hover:bg-slate-900 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                        <LoaderCircle v-if="isUpdating" class="animate-spin w-4 h-4" />
+                        <span>{{ isUpdating ? 'Saving...' : 'Save Changes' }}</span>
+                    </button>
+                </div>
+            </form>
+        </ModalGeneric>
+
+        <!-- Delete Employee Confirmation Modal -->
+        <ModalGeneric v-model="showDeleteModal" title="Delete Employee" width="440px">
+            <div class="space-y-4 text-xs text-slate-700">
+                <p>Are you sure you want to delete employee <strong class="text-slate-900">{{ employeeToDelete?.fullName }}</strong> (Code: {{ employeeToDelete?.employeeCode }})?</p>
+                <p class="text-rose-600 font-medium bg-rose-50 border border-rose-200 p-3 rounded-lg">
+                    Warning: This action cannot be undone. All data related to this employee will be permanently removed.
+                </p>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" @click="showDeleteModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="button" @click="confirmDeleteEmployee" :disabled="isDeleting"
+                        class="px-4 h-9 bg-rose-600 text-white font-bold rounded-lg hover:bg-rose-700 cursor-pointer disabled:opacity-50 flex items-center gap-2">
+                        <LoaderCircle v-if="isDeleting" class="animate-spin w-4 h-4" />
+                        <span>{{ isDeleting ? 'Deleting...' : 'Delete Employee' }}</span>
+                    </button>
+                </div>
+            </div>
+        </ModalGeneric>
+
+        <!-- Transfer Employee Modal -->
+        <ModalGeneric v-model="showTransferModal" title="Transfer Employee & Change Position" width="560px">
+            <form @submit.prevent="handleTransferEmployee" class="space-y-4 text-xs text-slate-700">
+                <!-- Current Employee Summary -->
+                <div v-if="transferEmployeeItem" class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-1.5">
+                    <div class="flex items-center justify-between">
+                        <span class="font-bold text-slate-900 text-sm">{{ transferEmployeeItem.fullName }}</span>
+                        <span class="text-[11px] font-mono text-slate-500 bg-slate-200/60 px-2 py-0.5 rounded">{{ transferEmployeeItem.employeeCode }}</span>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2 text-[11px] text-slate-500 pt-1 border-t border-slate-200/60">
+                        <div><span class="text-slate-400">Branch:</span> <strong class="text-slate-700 font-medium">{{ transferEmployeeItem.branchName || 'N/A' }}</strong></div>
+                        <div><span class="text-slate-400">Dept:</span> <strong class="text-slate-700 font-medium">{{ transferEmployeeItem.departmentName || 'N/A' }}</strong></div>
+                        <div><span class="text-slate-400">Position:</span> <strong class="text-slate-700 font-medium">{{ transferEmployeeItem.positionName || 'N/A' }}</strong></div>
+                    </div>
+                </div>
+
+                <!-- Branch & Department -->
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">New Branch <span class="text-red-500">*</span></label>
+                        <select v-model="transferForm.branchId" @change="handleBranchChange" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 text-xs bg-white">
+                            <option value="" disabled>Select Branch</option>
+                            <option v-for="b in availableBranches" :key="b.id" :value="b.id">{{ b.name }}</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-bold text-slate-800 mb-1">New Department <span class="text-red-500">*</span></label>
+                        <select v-model="transferForm.departmentId" :disabled="!transferForm.branchId || isTransferDeptLoading" required
+                            class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 text-xs bg-white disabled:bg-slate-100 disabled:cursor-not-allowed">
+                            <option value="" disabled>{{ isTransferDeptLoading ? 'Loading departments...' : 'Select Department' }}</option>
+                            <option v-for="d in transferDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- New Position -->
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1">New Position (Job Title)</label>
+                    <select v-model="transferForm.positionId"
+                        class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-indigo-500 text-xs bg-white">
+                        <option value="">Keep current position ({{ transferEmployeeItem?.positionName || 'N/A' }})</option>
+                        <option v-for="p in availablePositions" :key="p.id" :value="p.id">{{ p.name }}</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-4 border-t border-slate-200">
+                    <button type="button" @click="showTransferModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="isTransferring"
+                        class="px-4 h-9 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-xs">
+                        <LoaderCircle v-if="isTransferring" class="animate-spin w-4 h-4" />
+                        <span>{{ isTransferring ? 'Transferring...' : 'Transfer Employee' }}</span>
+                    </button>
+                </div>
+            </form>
+        </ModalGeneric>
+
+        <!-- Change Status Modal -->
+        <ModalGeneric v-model="showStatusModal" title="Update Employee Status" width="460px">
+            <form @submit.prevent="handleUpdateStatus" class="space-y-4 text-xs text-slate-700">
+                <div v-if="statusEmployeeItem" class="p-3.5 bg-slate-50 border border-slate-200 rounded-xl flex items-center justify-between">
+                    <div>
+                        <h4 class="font-bold text-slate-900 text-sm">{{ statusEmployeeItem.fullName }}</h4>
+                        <p class="text-[11px] text-slate-500 font-mono">Code: {{ statusEmployeeItem.employeeCode }}</p>
+                    </div>
+                    <StatusBadge :content="statusEmployeeItem.status" :type="statusEmployeeItem.status" />
+                </div>
+
+                <div>
+                    <label class="block font-bold text-slate-800 mb-1.5">New Status <span class="text-red-500">*</span></label>
+                    <select v-model="selectedStatus" required
+                        class="w-full h-9 px-3 border border-slate-300 rounded-lg focus:outline-none focus:border-emerald-500 text-xs bg-white">
+                        <option value="PROBATION">PROBATION (Probation)</option>
+                        <option value="ACTIVE">ACTIVE (Active)</option>
+                        <option value="ON_LEAVE">ON_LEAVE (On Leave)</option>
+                        <option value="RESIGNED">RESIGNED (Resigned)</option>
+                        <option value="TERMINATED">TERMINATED (Terminated)</option>
+                    </select>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-200">
+                    <button type="button" @click="showStatusModal = false"
+                        class="px-4 h-9 border border-slate-300 text-slate-700 font-semibold rounded-lg hover:bg-slate-50 cursor-pointer">
+                        Cancel
+                    </button>
+                    <button type="submit" :disabled="isUpdatingStatus"
+                        class="px-4 h-9 bg-emerald-600 text-white font-bold rounded-lg hover:bg-emerald-700 cursor-pointer disabled:opacity-50 flex items-center gap-2 shadow-xs">
+                        <LoaderCircle v-if="isUpdatingStatus" class="animate-spin w-4 h-4" />
+                        <span>{{ isUpdatingStatus ? 'Updating...' : 'Update Status' }}</span>
+                    </button>
+                </div>
+            </form>
+        </ModalGeneric>
     </MainContent>
 </template>
 
 <script setup>
-import { ChevronLeft, Circle, Eye, LoaderCircle, Plus, X, Upload, FileSpreadsheet, AlertCircle } from "@lucide/vue";
+import { ChevronLeft, Circle, Eye, Pencil, Trash2, LoaderCircle, Plus, X, Upload, FileSpreadsheet, AlertCircle, ArrowLeftRight } from "@lucide/vue";
 import MainContent from "../components/MainContent.vue";
 import PrimaryButton from "../components/PrimaryButton.vue";
 import SecondaryButton from "../components/SecondaryButton.vue";
@@ -476,6 +688,190 @@ const getInitials = (name) => {
 const openDetailModal = async (employee) => {
     selectedEmployee.value = employee
     showDetailModal.value = true
+}
+
+// --- Edit & Delete Employee Handlers ---
+const showEditModal = ref(false)
+const isUpdating = ref(false)
+const editingEmployeeId = ref(null)
+const editForm = reactive({
+    fullName: '',
+    email: '',
+    gender: 'MALE',
+    phone: '',
+    dateOfBirth: '',
+    startDate: '',
+    address: ''
+})
+
+const openEditModal = (emp) => {
+    editingEmployeeId.value = emp.id
+    editForm.fullName = emp.fullName || ''
+    editForm.email = emp.email || ''
+    editForm.gender = emp.gender || 'MALE'
+    editForm.phone = emp.phone || ''
+    editForm.dateOfBirth = emp.dateOfBirth || ''
+    editForm.startDate = emp.startDate || ''
+    editForm.address = emp.address || ''
+    showEditModal.value = true
+}
+
+const handleUpdateEmployee = async () => {
+    if (!editingEmployeeId.value) return
+    isUpdating.value = true
+    try {
+        await employeeStore.updateEmployee(editingEmployeeId.value, editForm)
+        showToast('Employee updated successfully', 'success')
+        showEditModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        showToast(e.response?.data?.message || 'Failed to update employee', 'error')
+    } finally {
+        isUpdating.value = false
+    }
+}
+
+const showDeleteModal = ref(false)
+const isDeleting = ref(false)
+const employeeToDelete = ref(null)
+
+const openDeleteModal = (emp) => {
+    employeeToDelete.value = emp
+    showDeleteModal.value = true
+}
+
+const confirmDeleteEmployee = async () => {
+    if (!employeeToDelete.value) return
+    isDeleting.value = true
+    try {
+        await employeeStore.deleteEmployee(employeeToDelete.value.id)
+        showToast('Employee deleted successfully', 'success')
+        showDeleteModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        showToast(e.response?.data?.message || 'Failed to delete employee', 'error')
+    } finally {
+        isDeleting.value = false
+    }
+}
+
+// --- Change Employee Status State & Handlers ---
+const showStatusModal = ref(false)
+const isUpdatingStatus = ref(false)
+const statusEmployeeItem = ref(null)
+const selectedStatus = ref('ACTIVE')
+
+const openStatusModal = (emp) => {
+    statusEmployeeItem.value = emp
+    selectedStatus.value = emp.status || 'ACTIVE'
+    showStatusModal.value = true
+}
+
+const handleUpdateStatus = async () => {
+    if (!statusEmployeeItem.value) return
+    isUpdatingStatus.value = true
+    try {
+        await employeeStore.updateEmployeeStatus(statusEmployeeItem.value.id, selectedStatus.value)
+        showToast('Employee status updated successfully!', 'success')
+        showStatusModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        console.error("Status update error:", e)
+        showToast(e.response?.data?.message || 'Failed to update employee status', 'error')
+    } finally {
+        isUpdatingStatus.value = false
+    }
+}
+
+// --- Transfer Employee State & Handlers ---
+const showTransferModal = ref(false)
+const isTransferring = ref(false)
+const transferEmployeeItem = ref(null)
+
+const availableBranches = computed(() => branchStore.branches)
+const availablePositions = computed(() => positionStore.positions)
+const transferDepartments = ref([])
+const isTransferDeptLoading = ref(false)
+
+const transferForm = reactive({
+    branchId: '',
+    departmentId: '',
+    positionId: ''
+})
+
+const openTransferModal = async (emp) => {
+    transferEmployeeItem.value = emp
+    transferForm.branchId = emp.branchId || ''
+    transferForm.departmentId = emp.departmentId || ''
+    transferForm.positionId = emp.positionId || ''
+
+    showTransferModal.value = true
+
+    try {
+        if (branchStore.branches.length === 0) {
+            await branchStore.fetchBranches(0, 100)
+        }
+        if (positionStore.positions.length === 0) {
+            await positionStore.fetchPositions(1, 100)
+        }
+        if (transferForm.branchId) {
+            await loadDepartmentsForTransfer(transferForm.branchId)
+        }
+    } catch (err) {
+        console.error("Error loading transfer options:", err)
+    }
+}
+
+const handleBranchChange = async () => {
+    transferForm.departmentId = ''
+    if (transferForm.branchId) {
+        await loadDepartmentsForTransfer(transferForm.branchId)
+    } else {
+        transferDepartments.value = []
+    }
+}
+
+const loadDepartmentsForTransfer = async (branchId) => {
+    isTransferDeptLoading.value = true
+    try {
+        const res = await departmentStore.getDepartmentsByBranch(branchId, 0, 100)
+        transferDepartments.value = res.data?.data?.items || res.data?.items || []
+    } catch (err) {
+        console.error("Error loading departments for branch:", err)
+        transferDepartments.value = []
+    } finally {
+        isTransferDeptLoading.value = false
+    }
+}
+
+const handleTransferEmployee = async () => {
+    if (!transferEmployeeItem.value) return
+    if (!transferForm.branchId) {
+        showToast('Please select a new branch', 'error')
+        return
+    }
+    if (!transferForm.departmentId) {
+        showToast('Please select a new department', 'error')
+        return
+    }
+
+    isTransferring.value = true
+    try {
+        const payload = {
+            branchId: Number(transferForm.branchId),
+            departmentId: Number(transferForm.departmentId),
+            positionId: transferForm.positionId ? Number(transferForm.positionId) : null
+        }
+        await employeeStore.transferEmployee(transferEmployeeItem.value.id, payload)
+        showToast('Employee transferred successfully!', 'success')
+        showTransferModal.value = false
+        await handlePageChange(pagination.pageNo)
+    } catch (e) {
+        console.error("Transfer error:", e)
+        showToast(e.response?.data?.message || 'Failed to transfer employee', 'error')
+    } finally {
+        isTransferring.value = false
+    }
 }
 
 onMounted(async () => {

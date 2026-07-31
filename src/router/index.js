@@ -221,6 +221,12 @@ const routes = [
         component: ContractDetailPage,
         name: 'ContractDetail',
         meta: { requiresAuth: true }
+    },
+    {
+        path: '/profile',
+        component: () => import('../views/ProfilePage.vue'),
+        name: 'Profile',
+        meta: { requiresAuth: true }
     }
 ]
 

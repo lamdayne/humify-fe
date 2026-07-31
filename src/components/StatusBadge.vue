@@ -7,19 +7,20 @@
 
 <script setup>
 
-defineProps({
+const props = defineProps({
     content: {
         type: String,
         default: 'Content'
     },
     type: {
         type: String,
-        default: 'ACTIVE'
+        default: ''
     }
 })
 
 const getColorByCode = (typeCode) => {
-    switch (typeCode) {
+    const code = (typeCode || props.content || '').toUpperCase();
+    switch (code) {
         case 'ACTIVE':
         case 'SUCCESS':
         case 'PRESENT':
@@ -28,6 +29,14 @@ const getColorByCode = (typeCode) => {
         case 'GREEN':
             return 'bg-green-100 text-green-700 border border-green-200';
 
+        case 'PROBATION':
+        case 'COMPLETED':
+        case 'BLUE':
+        case 'INFO':
+        case 'DUE_DATE':
+            return 'bg-blue-100 text-blue-700 border border-blue-200';
+
+        case 'ON_LEAVE':
         case 'LATE':
         case 'HALF_DAY':
         case 'REMOTE':
@@ -36,37 +45,25 @@ const getColorByCode = (typeCode) => {
         case 'WARNING':
             return 'bg-amber-100 text-amber-700 border border-amber-200';
 
+        case 'TERMINATED':
         case 'ABSENT':
         case 'REJECTED':
-            return 'bg-rose-100 text-rose-700 border border-rose-200';
-
         case 'HIGH':
         case 'URGENT':
         case 'CANCELLED':
         case 'RED':
         case 'DANGER':
-            return 'bg-red-100 text-red-700 border border-red-200';
-
-        case 'COMPLETED':
-        case 'BLUE':
-        case 'INFO':
-        case 'DUE_DATE':
-            return 'bg-blue-100 text-blue-700 border border-blue-200';
-
-        case 'PURPLE':
-        case 'TYPE':
-            return 'bg-purple-100 text-purple-700 border border-purple-200';
-
-        case 'SLATE':
-        case 'POINTS':
-            return 'bg-slate-200 text-slate-700 border border-slate-300';
+            return 'bg-rose-100 text-rose-700 border border-rose-200';
 
         case 'PENDING':
             return 'bg-yellow-100 text-yellow-700 border border-yellow-200';
 
+        case 'RESIGNED':
+        case 'SLATE':
+        case 'POINTS':
         case 'INACTIVE':
         default:
-            return 'bg-gray-100 text-gray-600 border border-gray-200';
+            return 'bg-slate-100 text-slate-600 border border-slate-200';
     }
 }
 </script>

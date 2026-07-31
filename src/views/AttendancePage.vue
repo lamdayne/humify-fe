@@ -159,12 +159,13 @@
               <th class="py-4 px-6">Leave Type</th>
               <th class="py-4 px-6">Duration</th>
               <th class="py-4 px-6">Reason</th>
+              <th class="py-4 px-6">Proof File</th>
               <th class="py-4 px-6 text-center">Status</th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
-            <tr v-if="myLeaves.length === 0"><td colspan="5" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
+            <tr v-if="myLeaves.length === 0"><td colspan="6" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
             <tr v-else v-for="item in myLeaves" :key="item.id" class="hover:bg-slate-50/50">
               <td class="py-4 px-6 font-medium text-slate-900">{{ item.leaveTypeName || 'Leave' }}</td>
               <td class="py-4 px-6 text-xs text-slate-600">
@@ -174,6 +175,12 @@
                 </span>
               </td>
               <td class="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">{{ item.reason }}</td>
+              <td class="py-4 px-6 text-xs">
+                <a v-if="item.attachmentUrl" :href="item.attachmentUrl" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1">
+                  <Paperclip class="w-3.5 h-3.5" /> View File
+                </a>
+                <span v-else class="text-slate-400">—</span>
+              </td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button v-if="item.status === 'PENDING' || item.status === 'APPROVED'"
@@ -280,13 +287,14 @@
               <th class="py-4 px-6">Leave Type</th>
               <th class="py-4 px-6">Duration</th>
               <th class="py-4 px-6">Reason</th>
+              <th class="py-4 px-6">Proof File</th>
               <th class="py-4 px-6 text-center">Status</th>
               <th class="py-4 px-6 text-right">Actions</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
-            <tr v-if="isLoading"><td colspan="6" class="py-12 text-center text-slate-400">Loading leave requests...</td></tr>
-            <tr v-else-if="hrLeaves.length === 0"><td colspan="6" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
+            <tr v-if="isLoading"><td colspan="7" class="py-12 text-center text-slate-400">Loading leave requests...</td></tr>
+            <tr v-else-if="hrLeaves.length === 0"><td colspan="7" class="py-12 text-center text-slate-400">No leave requests found.</td></tr>
             <tr v-else v-for="item in hrLeaves" :key="item.id" class="hover:bg-slate-50/50">
               <td class="py-4 px-6 font-semibold text-slate-900">
                 {{ item.employeeName || 'Employee #' + item.employeeId }}
@@ -299,6 +307,12 @@
                 </span>
               </td>
               <td class="py-4 px-6 text-xs text-slate-500 max-w-xs truncate">{{ item.reason }}</td>
+              <td class="py-4 px-6 text-xs">
+                <a v-if="item.attachmentUrl" :href="item.attachmentUrl" target="_blank" class="text-blue-600 hover:underline flex items-center gap-1">
+                  <Paperclip class="w-3.5 h-3.5" /> View File
+                </a>
+                <span v-else class="text-slate-400">—</span>
+              </td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right space-x-2">
                 <template v-if="item.status === 'PENDING'">
@@ -318,11 +332,11 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Requested Check In</label>
-            <input type="datetime-local" v-model="correctionModal.requestedCheckIn" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <DateTimePicker v-model="correctionModal.requestedCheckIn" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Requested Check Out</label>
-            <input type="datetime-local" v-model="correctionModal.requestedCheckOut" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <DateTimePicker v-model="correctionModal.requestedCheckOut" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Reason <span class="text-red-500">*</span></label>
@@ -332,12 +346,12 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="correctionModal.show = false" />
-            <PrimaryButton content="Submit Request" @click="submitCorrection" />
+            <PrimaryButton content="Submit" @click="submitCorrection" />
           </div>
         </template>
       </ModalGeneric>
 
-      <!-- MODAL 2: XIN NGHỈ PHÉP (ĐÃ THÊM LỰA CHỌN CA NGHỈ HALF-DAY) -->
+      <!-- MODAL 2: XIN NGHỈ PHÉP (ĐÃ CHUYỂN ATTACHMENT SANG UPLOAD FILE THỰC TẾ) -->
       <ModalGeneric v-model="leaveModal.show" title="Create Leave Request" width="500px">
         <div class="space-y-4">
           <div>
@@ -352,15 +366,15 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase">Start Date <span class="text-red-500">*</span></label>
-              <input type="date" v-model="leaveModal.startDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+              <DateTimePicker v-model="manualModal.checkIn" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase">End Date <span class="text-red-500">*</span></label>
-              <input type="date" v-model="leaveModal.endDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+              <DateTimePicker v-model="manualModal.checkOut" />
             </div>
           </div>
 
-          <!-- 🌟 LỰA CHỌN CA NGHỈ (HIỆN KHI CHỌN NGHỈ TRONG CÙNG 1 NGÀY) -->
+          <!-- LỰA CHỌN CA NGHỈ (HIỆN KHI CHỌN NGHỈ TRONG CÙNG 1 NGÀY) -->
           <div v-if="isSingleDayLeave">
             <label class="text-[10px] font-bold text-slate-400 uppercase">Session Type (Half-Day Support)</label>
             <select v-model="leaveModal.sessionType" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1">
@@ -375,20 +389,50 @@
             <textarea v-model="leaveModal.reason" rows="3" placeholder="Reason for leave..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1 resize-none"></textarea>
           </div>
 
+          <!-- 🌟 UPLOAD ATTACHMENT FILE (THAY THẾ CHO CHO PHẦN INPUT LINK URL THỦ CÔNG) -->
           <div>
-            <label class="text-[10px] font-bold text-slate-400 uppercase flex items-center justify-between">
-              <span>Attachment URL {{ isAttachmentRequired ? '(Required)' : '(Optional)' }}</span>
-              <span v-if="isAttachmentRequired" class="text-red-500 text-[10px] font-normal">* This leave type requires proof</span>
+            <label class="text-[10px] font-bold text-slate-400 uppercase flex items-center justify-between mb-1">
+              <span>Attachment {{ isAttachmentRequired ? '(Required)' : '(Optional)' }}</span>
+              <span v-if="isAttachmentRequired" class="text-red-500 text-[10px] font-normal">* Requires proof document</span>
             </label>
-            <input type="url" v-model="leaveModal.attachmentUrl" placeholder="https://example.com/medical-proof.pdf"
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+
+            <input type="file" ref="leaveFileInputRef" class="hidden" @change="onLeaveFileSelected" accept="image/*,.pdf,.doc,.docx" />
+
+            <!-- Trường hợp chưa chọn / chưa upload file -->
+            <div v-if="!leaveModal.attachmentUrl"
+                 @click="leaveFileInputRef.click()"
+                 class="border-2 border-dashed border-slate-200 hover:border-slate-400 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-50/50 hover:bg-slate-50 flex flex-col items-center justify-center gap-1">
+              <Upload class="w-5 h-5 text-slate-400" />
+              <span class="text-xs text-slate-600 font-medium">Click to upload proof document</span>
+              <span class="text-[10px] text-slate-400">PDF, PNG, JPG, DOC up to 10MB</span>
+            </div>
+
+            <!-- Trường hợp đang tải file lên Cloudinary -->
+            <div v-else-if="isUploadingAttachment" class="border border-slate-200 rounded-xl p-3 flex items-center justify-center gap-2 bg-slate-50 text-xs text-slate-500">
+              <LoaderCircle class="w-4 h-4 animate-spin text-slate-700" />
+              <span>Uploading attachment...</span>
+            </div>
+
+            <!-- Trường hợp đã tải file lên thành công -->
+            <div v-else class="border border-slate-200 rounded-xl p-3 flex items-center justify-between bg-slate-50 text-xs">
+              <div class="flex items-center gap-2 overflow-hidden mr-2">
+                <Paperclip class="w-4 h-4 text-blue-600 shrink-0" />
+                <span class="font-medium text-slate-800 truncate max-w-xs">{{ uploadedFileName || 'Attachment Document' }}</span>
+              </div>
+              <div class="flex items-center gap-2 shrink-0">
+                <a :href="leaveModal.attachmentUrl" target="_blank" class="text-blue-600 hover:underline text-[11px] font-medium">Preview</a>
+                <button type="button" @click="removeLeaveAttachment" class="text-slate-400 hover:text-red-500 p-1 transition-colors cursor-pointer">
+                  <X class="w-4 h-4" />
+                </button>
+              </div>
+            </div>
           </div>
         </div>
 
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="leaveModal.show = false" />
-            <PrimaryButton content="Submit" @click="submitLeaveRequest" />
+            <PrimaryButton content="Submit" @click="submitLeaveRequest" :disabled="isUploadingAttachment" />
           </div>
         </template>
       </ModalGeneric>
@@ -398,11 +442,11 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Check In Time</label>
-            <input type="datetime-local" v-model="manualModal.checkIn" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <input type="datetime-local" lang="en-US" v-model="manualModal.checkIn" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Check Out Time</label>
-            <input type="datetime-local" v-model="manualModal.checkOut" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <input type="datetime-local" lang="en-US" v-model="manualModal.checkOut" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Status</label>
@@ -421,7 +465,7 @@
         <template #footer>
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="manualModal.show = false" />
-            <PrimaryButton content="Save Changes" @click="submitManualUpdate" />
+            <PrimaryButton content="Save" @click="submitManualUpdate" />
           </div>
         </template>
       </ModalGeneric>
@@ -457,21 +501,30 @@ import SecondaryButton from '../components/SecondaryButton.vue';
 import StatusBadge from '../components/StatusBadge.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
+import DateTimePicker from '../components/DateTimePicker.vue';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { useAuthStore } from '../store/authStore';
 import { useLeaveTypeStore } from '../store/leaveTypeStore';
+import { useUploadStore } from '../store/uploadStore';
+
 import { storeToRefs } from 'pinia';
-import { Clock, LogIn, LogOut, AlertTriangle } from '@lucide/vue';
+import { Clock, LogIn, LogOut, AlertTriangle, Paperclip, Upload, X, LoaderCircle } from '@lucide/vue';
 
 const attendanceStore = useAttendanceStore();
 const authStore = useAuthStore();
 const leaveTypeStore = useLeaveTypeStore();
+const uploadStore = useUploadStore();
 
 const { leaveTypes } = storeToRefs(leaveTypeStore);
 
 const activeTab = ref('my-attendance');
 const isLoading = ref(false);
 const isSwiping = ref(false);
+
+// State dành riêng cho Upload Attachment File trong Leave Modal
+const leaveFileInputRef = ref(null);
+const isUploadingAttachment = ref(false);
+const uploadedFileName = ref('');
 
 const myAttendances = ref([]);
 const myCorrections = ref([]);
@@ -480,7 +533,7 @@ const hrAttendances = ref([]);
 const hrCorrections = ref([]);
 const hrLeaves = ref([]);
 
-// 🌟 PHÂN QUYỀN HR / ADMIN
+// PHÂN QUYỀN HR / ADMIN
 const isHR = computed(() => {
   if (authStore.isSystemAdmin) return true;
 
@@ -536,7 +589,7 @@ const leaveModal = reactive({
   endDate: '',
   reason: '',
   attachmentUrl: '',
-  sessionType: 'FULL_DAY' // 🌟 Mặc định là FULL_DAY
+  sessionType: 'FULL_DAY'
 });
 
 const correctionModal = reactive({
@@ -570,7 +623,7 @@ const isAttachmentRequired = computed(() => {
   return selectedLeaveType.value?.requiresAttachment === true;
 });
 
-// 🌟 BẮT ĐIỀU KIỆN NGHỈ TRONG CÙNG 1 NGÀY ĐỂ MỞ TÙY CHỌN HALF-DAY
+// BẮT ĐIỀU KIỆN NGHỈ TRONG CÙNG 1 NGÀY ĐỂ MỞ TÙY CHỌN HALF-DAY
 const isSingleDayLeave = computed(() => {
   return leaveModal.startDate && leaveModal.endDate && leaveModal.startDate === leaveModal.endDate;
 });
@@ -578,6 +631,40 @@ const isSingleDayLeave = computed(() => {
 const formatTime = (isoString) => {
   if (!isoString) return '—';
   return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+// 🌟 XỬ LÝ UPLOAD FILE NGHỈ PHÉP LÊN CLOUDINARY
+const onLeaveFileSelected = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  isUploadingAttachment.value = true;
+  uploadedFileName.value = file.name;
+
+  try {
+    const presignRes = await uploadStore.getPresignedUrl('leave_requests');
+    const presignData = presignRes.data?.data;
+    const cloudinaryRes = await uploadStore.uploadToCloudinary(file, presignData);
+
+    leaveModal.attachmentUrl = cloudinaryRes.secure_url;
+    triggerToast('File uploaded successfully!', 'success');
+  } catch (err) {
+    triggerToast('Failed to upload file. Please try again.', 'error');
+    removeLeaveAttachment();
+  } finally {
+    isUploadingAttachment.value = false;
+    if (leaveFileInputRef.value) {
+      leaveFileInputRef.value.value = '';
+    }
+  }
+};
+
+const removeLeaveAttachment = () => {
+  leaveModal.attachmentUrl = '';
+  uploadedFileName.value = '';
+  if (leaveFileInputRef.value) {
+    leaveFileInputRef.value.value = '';
+  }
 };
 
 const handleWebSwipe = async (logType) => {
@@ -758,13 +845,15 @@ const openLeaveModal = async () => {
     if (leaveTypes.value && leaveTypes.value.length > 0) {
       leaveModal.leaveTypeId = leaveTypes.value[0].id;
     }
+    leaveModal.attachmentUrl = '';
+    uploadedFileName.value = '';
     leaveModal.show = true;
   } catch (e) {
     triggerToast('Failed to fetch leave types.', 'error');
   }
 };
 
-// 🌟 XỬ LÝ NỘP ĐƠN NGHỈ PHÉP (TÍNH ĐÚNG SESSION TYPE HOÀN CHỈNH)
+// XỬ LÝ NỘP ĐƠN NGHỈ PHÉP
 const submitLeaveRequest = async () => {
   if (!leaveModal.leaveTypeId || !leaveModal.startDate || !leaveModal.endDate || !leaveModal.reason.trim()) {
     triggerToast('Please fill all required fields.', 'error');
@@ -772,11 +861,10 @@ const submitLeaveRequest = async () => {
   }
 
   if (isAttachmentRequired.value && (!leaveModal.attachmentUrl || !leaveModal.attachmentUrl.trim())) {
-    triggerToast('This leave type requires an attachment proof URL!', 'error');
+    triggerToast('This leave type requires a proof document attachment!', 'error');
     return;
   }
 
-  // Nếu nghỉ khác ngày nhau thì bắt buộc là FULL_DAY, nghỉ trong 1 ngày thì lấy theo lưạ chọn của user
   const session = isSingleDayLeave.value ? leaveModal.sessionType : 'FULL_DAY';
 
   try {
@@ -793,6 +881,7 @@ const submitLeaveRequest = async () => {
     leaveModal.show = false;
     leaveModal.attachmentUrl = '';
     leaveModal.reason = '';
+    uploadedFileName.value = '';
     leaveModal.sessionType = 'FULL_DAY';
 
     await loadMyLeaves();
@@ -832,7 +921,7 @@ const submitManualUpdate = async () => {
   }
 };
 
-// 🌟 WATCHER THEO DÕI NÚT CHUYỂN TAB ĐỂ LOAD DỮ LIỆU ĐÚNG CHUẨN
+// WATCHER THEO DÕI NÚT CHUYỂN TAB ĐỂ LOAD DỮ LIỆU
 watch(activeTab, (newTab) => {
   if (!isHR.value && (newTab === 'hr-attendance' || newTab === 'hr-corrections' || newTab === 'hr-leaves')) {
     activeTab.value = 'my-attendance';

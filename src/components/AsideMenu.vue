@@ -57,7 +57,7 @@
 </template>
 
 <script setup>
-import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText } from '@lucide/vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText, TrendingUp } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -158,6 +158,12 @@ const menus = [
         name: 'PayrollAdmin',
         permission: null
     },
+  {
+    label: 'My Profile',
+    icon: CircleUser,
+    name: 'Profile',
+    permission: null
+  },
     {
         id: 'security',
         label: 'Security',
@@ -189,17 +195,19 @@ const menus = [
 
 const visibleMenus = computed(() => {
     return menus
-        .filter(item => canSeeItem(item))
         .map(item => {
+            if (!canSeeItem(item)) return null
             if (!item.children) return item
             const children = item.children.filter(child => canSeeItem(child))
             return children.length ? { ...item, children } : null
         })
+        .filter(Boolean)
 })
 
-const visibleChildren = (item) => item.children?.filter(child => canSeeItem(child));
+const visibleChildren = (item) => item?.children?.filter(child => canSeeItem(child)) || [];
 
 const canSeeItem = (item) => {
+    if (!item) return false
     if (!item.permission) return true
     if (authStore.isSystemAdmin) return true
     if (item?.isSystemAdmin) return authStore.isSystemAdmin
@@ -212,11 +220,11 @@ const toggleMenu = (id) => {
 
 const isActive = (name) => route.name?.toString().startsWith(name)
 
-const isParentActive = (item) => item.children?.some(child => isActive(child.name))
+const isParentActive = (item) => item?.children?.some(child => isActive(child.name))
 
 watch(() => route.name, (name) => {
     const parent = visibleMenus.value.find(menu =>
-        menu.children?.some(child => child.name === name)
+        menu?.children?.some(child => child.name === name)
     )
 
     if (parent) {
