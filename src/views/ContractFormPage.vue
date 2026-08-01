@@ -227,31 +227,24 @@ const form = reactive({
   fileUrl: ''
 });
 
-// Hàm Fetch Danh sách Nhân viên theo Trang & Từ khoá
 const fetchEmployeesPage = async (page = 1, isNewSearch = false) => {
   if (isLoadingMore.value) return;
   if (!isNewSearch && !hasMoreEmployees.value) return;
 
   isLoadingMore.value = true;
   try {
-    const res = await employeeStore.fetchEmployees(page, pageSize);
+    const keyword = searchKeyword.value.trim();
+    const res = keyword
+        ? await employeeStore.searchEmployees(keyword, page - 1, pageSize)
+        : await employeeStore.fetchEmployees(page, pageSize);
+
     const newItems = res?.data?.items || [];
     const totalPages = res?.data?.totalPages || 1;
 
-    // Filter theo từ khoá nếu có tìm kiếm
-    let filteredItems = newItems;
-    if (searchKeyword.value.trim()) {
-      const q = searchKeyword.value.toLowerCase().trim();
-      filteredItems = newItems.filter(e =>
-          e.fullName?.toLowerCase().includes(q) ||
-          e.employeeCode?.toLowerCase().includes(q)
-      );
-    }
-
     if (isNewSearch) {
-      employees.value = filteredItems;
+      employees.value = newItems;
     } else {
-      employees.value = [...employees.value, ...filteredItems];
+      employees.value = [...employees.value, ...newItems];
     }
 
     hasMoreEmployees.value = page < totalPages;
