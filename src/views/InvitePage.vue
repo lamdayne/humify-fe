@@ -65,7 +65,7 @@
                                     <label for="inv_email" class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
                                     <input type="email" id="inv_email" placeholder="name@company.com"
                                         v-model="loginForm.email"
-                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light" />
+                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light" />
                                 </div>
 
                                 <!-- Password -->
@@ -74,7 +74,7 @@
                                     <div class="relative">
                                         <input :type="showPassword ? 'text' : 'password'" id="inv_password"
                                             placeholder="••••••••" v-model="loginForm.password"
-                                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light" />
+                                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light" />
                                         <button type="button" @click="showPassword = !showPassword"
                                             class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black transition-colors">
                                             <svg v-if="!showPassword" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.2" stroke="currentColor" class="w-5 h-5">

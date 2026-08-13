@@ -1,75 +1,46 @@
 <template>
   <MainContent>
-    <div class="space-y-6 p-6">
+    <div class="space-y-5 p-6">
 
       <!-- Header -->
-      <div class="flex justify-between items-start">
-
+      <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-3xl font-bold text-slate-800">
-            Good Morning, {{ userName }}
-          </h1>
-
-          <p class="text-gray-500 mt-2">
-            Welcome back!
-          </p>
-
+          <h1 class="text-lg font-semibold text-slate-900">Overview</h1>
+          <p class="text-xs text-slate-400 mt-0.5">{{ currentTime }}</p>
         </div>
-
-        <div
-            class="bg-white rounded-xl shadow border border-slate-300 px-6 py-4 text-right">
-
-          <p class="text-gray-500 text-sm">
-            Current Time
-          </p>
-
-          <p class="font-semibold text-xl">
-            {{ currentTime }}
-          </p>
-
-        </div>
-
       </div>
 
-      <!-- Dashboard -->
+      <!-- Dashboard cards row 1 -->
+      <div class="grid grid-cols-12 gap-5">
 
-      <div class="grid grid-cols-12 gap-6">
-
-        <div class="col-span-4 ">
-          <TodayCard class="bg-slate-50/70 border-b border-slate-200" />
+        <div class="col-span-12 lg:col-span-4">
+          <TodayCard />
         </div>
 
-        <div class="col-span-4">
-
+        <div class="col-span-12 lg:col-span-4">
           <div class="grid grid-cols-2 gap-4">
-
-            <AverageHoursCard class="bg-slate-50/70 border-b border-slate-200"/>
-
-            <AverageCheckInCard class="bg-slate-50/70 border-b border-slate-200"/>
-
-            <OnTimeCard class="bg-slate-50/70 border-b border-slate-200"/>
-
-            <AverageCheckOutCard class="bg-slate-50/70 border-b border-slate-200"/>
-
+            <AverageHoursCard />
+            <AverageCheckInCard />
+            <OnTimeCard />
+            <AverageCheckOutCard />
           </div>
-
         </div>
 
-        <div class="col-span-4">
-
-          <AttendanceSummaryCard class="bg-slate-50/70 border-b border-slate-200"/>
-
+        <div class="col-span-12 lg:col-span-4">
+          <AttendanceSummaryCard />
         </div>
 
       </div>
-      <div class="grid grid-cols-12 gap-6 mt-6">
 
-        <div class="col-span-8">
-          <RecentAttendanceTable class="bg-slate-50/70 border-b border-slate-200"/>
+      <!-- Dashboard cards row 2 -->
+      <div class="grid grid-cols-12 gap-5">
+
+        <div class="col-span-12 lg:col-span-8">
+          <RecentAttendanceTable />
         </div>
 
-        <div class="col-span-4">
-          <QuickActions class="bg-slate-50/70 border-b border-slate-200" />
+        <div class="col-span-12 lg:col-span-4">
+          <QuickActions />
         </div>
 
       </div>

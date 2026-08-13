@@ -130,7 +130,7 @@
               Department Name
             </label>
             <input v-model="createForm.name" type="text" id="position_name" placeholder="Department Name"
-              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
               required />
           </div>
 
@@ -139,7 +139,7 @@
               Branch
             </label>
             <select v-model.number="createForm.branchId"
-              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
               <option v-for="branch in branches" :key="branch.id" :value="branch.id">
                 {{ branch.name }}
               </option>
@@ -152,7 +152,7 @@
               class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
             <textarea v-model="createForm.description" id="description" rows="4"
               placeholder="Briefly describe the key responsibilities..."
-              class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
+              class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
           </div>
         </div>
         <template #footer>

@@ -1,7 +1,7 @@
 <template>
     <AsideMenu :open="sidebarOpen" @close="sidebarOpen = false"></AsideMenu>
     <TopNavBar @toggle-sidebar="sidebarOpen = !sidebarOpen"></TopNavBar>
-    <main class="lg:ml-60 pt-14 min-h-screen p-3xl">
+    <main class="lg:ml-60 pt-14 min-h-screen bg-slate-100">
         <slot></slot>
     </main>
 </template>

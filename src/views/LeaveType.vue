@@ -1,22 +1,22 @@
 <template>
   <MainContent>
-    <div class="p-6 md:p-8 font-sans text-slate-800 w-full max-w-full">
+    <div class="p-6 md:p-8 max-w-7xl mx-auto text-slate-800">
       <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show" />
-      
-      <div class="flex justify-between items-center mb-6">
+
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 mb-1">Leave Types</h1>
-          <div class="text-xs text-gray-500 flex items-center gap-2">
+          <h1 class="text-lg font-semibold text-slate-900">Leave Types</h1>
+          <nav class="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
             <span>Organization</span>
-            <span class="text-gray-300">></span>
-            <span class="text-gray-900 font-medium">Leave Types</span>
-          </div>
+            <span>/</span>
+            <span class="text-slate-600">Leave Types</span>
+          </nav>
         </div>
-        <button 
+        <button
           @click="isAddModalOpen = true"
-          class="bg-black hover:bg-gray-800 text-white px-5 py-2.5 rounded-md text-sm font-medium flex items-center gap-2 transition-colors shadow-sm cursor-pointer"
+          class="inline-flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium rounded-md transition-colors cursor-pointer"
         >
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
           Add Leave Type
         </button>
       </div>

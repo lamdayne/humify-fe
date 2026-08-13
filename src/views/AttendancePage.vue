@@ -3,86 +3,90 @@
     <div class="p-6 md:p-8 max-w-7xl mx-auto font-sans text-slate-900 relative">
       <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show" />
 
-      <!-- BANNER CHECK-IN / CHECK-OUT NHANH -->
-      <div class="bg-gradient-to-r from-slate-900 to-slate-800 text-white rounded-2xl p-6 mb-8 shadow-md flex flex-col md:flex-row items-center justify-between gap-6">
-        <div class="space-y-1 text-center md:text-left">
-          <div class="flex items-center justify-center md:justify-start gap-2">
-            <Clock class="w-5 h-5 text-emerald-400" />
-            <h2 class="text-xl font-semibold tracking-tight">Daily Time Attendance</h2>
+      <!-- CHECK-IN / CHECK-OUT ACTION BAR -->
+      <div class="bg-white border border-slate-200 rounded-lg px-5 py-4 mb-6 shadow-[0_1px_2px_rgba(15,23,42,0.04)] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <Clock class="w-4 h-4 text-slate-400 shrink-0" />
+          <div>
+            <p class="text-sm font-medium text-slate-800">Daily Time Tracking</p>
+            <p class="text-xs text-slate-400 mt-0.5">
+              {{ currentDateFormatted }}
+              <span v-if="todayStatusText" class="ml-2 px-1.5 py-0.5 rounded text-[10px] font-medium bg-slate-100 text-slate-600">
+                {{ todayStatusText }}
+              </span>
+            </p>
           </div>
-          <p class="text-xs text-slate-400 font-light">
-            Today: <span class="font-medium text-slate-200">{{ currentDateFormatted }}</span>
-            <span v-if="todayStatusText" class="ml-2 px-2 py-0.5 rounded text-[10px] font-bold bg-white/10 text-emerald-300">
-              {{ todayStatusText }}
-            </span>
-          </p>
         </div>
 
-        <div class="flex items-center gap-3 w-full md:w-auto">
-          <!-- NÚT CHECK IN -->
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+          <!-- CHECK IN -->
           <button @click="handleWebSwipe('CHECK_IN')"
                   :disabled="isSwiping || isAlreadyCheckedIn || isCompletedToday"
                   :class="[
-                    isAlreadyCheckedIn || isCompletedToday ? 'bg-slate-700 opacity-50 cursor-not-allowed' : 'bg-emerald-500 hover:bg-emerald-600 active:scale-95 cursor-pointer',
-                    'flex-1 md:flex-none px-6 py-2.5 text-white text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2'
+                    isAlreadyCheckedIn || isCompletedToday
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                      : 'bg-green-600 hover:bg-green-700 text-white cursor-pointer border border-green-600',
+                    'flex-1 sm:flex-none px-4 py-2 text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1.5'
                   ]">
-            <LogIn class="w-4 h-4" />
+            <LogIn class="w-3.5 h-3.5" />
             <span>{{ isAlreadyCheckedIn ? 'Checked In' : 'Check In' }}</span>
           </button>
 
-          <!-- NÚT CHECK OUT -->
+          <!-- CHECK OUT -->
           <button @click="handleWebSwipe('CHECK_OUT')"
                   :disabled="isSwiping || !isAlreadyCheckedIn || isCompletedToday"
                   :class="[
-                    !isAlreadyCheckedIn || isCompletedToday ? 'bg-slate-700 opacity-50 cursor-not-allowed' : 'bg-rose-500 hover:bg-rose-600 active:scale-95 cursor-pointer',
-                    'flex-1 md:flex-none px-6 py-2.5 text-white text-xs font-semibold rounded-xl transition-all shadow-sm flex items-center justify-center gap-2'
+                    !isAlreadyCheckedIn || isCompletedToday
+                      ? 'bg-slate-100 text-slate-400 cursor-not-allowed border border-slate-200'
+                      : 'bg-red-600 hover:bg-red-700 text-white cursor-pointer border border-red-600',
+                    'flex-1 sm:flex-none px-4 py-2 text-xs font-medium rounded-md transition-colors flex items-center justify-center gap-1.5'
                   ]">
-            <LogOut class="w-4 h-4" />
+            <LogOut class="w-3.5 h-3.5" />
             <span>{{ isCompletedToday ? 'Checked Out' : 'Check Out' }}</span>
           </button>
 
           <button @click="openLeaveModal"
-                  class="flex-1 md:flex-none px-5 py-2.5 bg-white/10 hover:bg-white/20 text-white text-xs font-semibold rounded-xl border border-white/20 transition-all cursor-pointer">
-            + Request Leave
+                  class="flex-1 sm:flex-none px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-medium rounded-md transition-colors cursor-pointer">
+            Request Leave
           </button>
         </div>
       </div>
 
       <!-- HEADER & TAB NAVIGATION -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 border-b border-slate-200 pb-4">
+      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
         <div>
-          <h1 class="text-3xl font-bold tracking-tight text-slate-900">Attendance & Leave</h1>
-          <p class="text-xs text-slate-400 font-light mt-1">Track daily attendance, requests, and approvals.</p>
+          <h1 class="text-lg font-semibold text-slate-900">Attendance &amp; Leave</h1>
+          <p class="text-xs text-slate-400 mt-0.5">Track daily attendance, requests, and approvals.</p>
         </div>
 
-        <div class="flex items-center gap-1 bg-slate-100 p-1 rounded-xl overflow-x-auto">
+        <div class="flex items-center gap-0.5 bg-slate-100 p-1 rounded-lg overflow-x-auto">
           <button @click="activeTab = 'my-attendance'"
-                  :class="[activeTab === 'my-attendance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                  :class="[activeTab === 'my-attendance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
             My Attendance
           </button>
 
           <button @click="activeTab = 'my-corrections'"
-                  :class="[activeTab === 'my-corrections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                  :class="[activeTab === 'my-corrections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
             My Corrections
           </button>
 
           <button @click="activeTab = 'my-leaves'"
-                  :class="[activeTab === 'my-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                  :class="[activeTab === 'my-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
             My Leaves
           </button>
 
-          <!-- TAB DÀNH CHO HR / ADMIN -->
+          <!-- HR / ADMIN TABS -->
           <template v-if="isHR">
             <button @click="activeTab = 'hr-attendance'"
-                    :class="[activeTab === 'hr-attendance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                    :class="[activeTab === 'hr-attendance' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
               HR Management
             </button>
             <button @click="activeTab = 'hr-corrections'"
-                    :class="[activeTab === 'hr-corrections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                    :class="[activeTab === 'hr-corrections' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
               Corrections Approval
             </button>
             <button @click="activeTab = 'hr-leaves'"
-                    :class="[activeTab === 'hr-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-900', 'px-4 py-2 text-xs font-semibold rounded-lg transition-all cursor-pointer whitespace-nowrap']">
+                    :class="[activeTab === 'hr-leaves' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700', 'px-3 py-1.5 text-xs font-medium rounded-md transition-all cursor-pointer whitespace-nowrap']">
               Leave Approvals
             </button>
           </template>
@@ -340,7 +344,7 @@
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Reason <span class="text-red-500">*</span></label>
-            <textarea v-model="correctionModal.reason" rows="3" placeholder="Enter reason for explanation..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1 resize-none"></textarea>
+            <textarea v-model="correctionModal.reason" rows="3" placeholder="Enter reason for explanation..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 resize-none"></textarea>
           </div>
         </div>
         <template #footer>
@@ -356,7 +360,7 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Leave Type <span class="text-red-500">*</span></label>
-            <select v-model="leaveModal.leaveTypeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1">
+            <select v-model="leaveModal.leaveTypeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1">
               <option v-for="t in (leaveTypes || [])" :key="t.id" :value="t.id">
                 {{ t.name }} ({{ t.code }}) {{ t.isPaid ? '- Paid' : '- Unpaid' }}
               </option>
@@ -377,7 +381,7 @@
           <!-- LỰA CHỌN CA NGHỈ (HIỆN KHI CHỌN NGHỈ TRONG CÙNG 1 NGÀY) -->
           <div v-if="isSingleDayLeave">
             <label class="text-[10px] font-bold text-slate-400 uppercase">Session Type (Half-Day Support)</label>
-            <select v-model="leaveModal.sessionType" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1">
+            <select v-model="leaveModal.sessionType" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1">
               <option value="FULL_DAY">Full Day (1.0 day)</option>
               <option value="MORNING">Morning Half-Day (0.5 day)</option>
               <option value="AFTERNOON">Afternoon Half-Day (0.5 day)</option>
@@ -386,7 +390,7 @@
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Reason <span class="text-red-500">*</span></label>
-            <textarea v-model="leaveModal.reason" rows="3" placeholder="Reason for leave..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1 resize-none"></textarea>
+            <textarea v-model="leaveModal.reason" rows="3" placeholder="Reason for leave..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 resize-none"></textarea>
           </div>
 
           <!-- 🌟 UPLOAD ATTACHMENT FILE (THAY THẾ CHO CHO PHẦN INPUT LINK URL THỦ CÔNG) -->
@@ -442,15 +446,15 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Check In Time</label>
-            <input type="datetime-local" lang="en-US" v-model="manualModal.checkIn" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <input type="datetime-local" lang="en-US" v-model="manualModal.checkIn" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Check Out Time</label>
-            <input type="datetime-local" lang="en-US" v-model="manualModal.checkOut" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1" />
+            <input type="datetime-local" lang="en-US" v-model="manualModal.checkOut" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1" />
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Status</label>
-            <select v-model="manualModal.status" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1">
+            <select v-model="manualModal.status" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1">
               <option value="PRESENT">PRESENT</option>
               <option value="LATE">LATE</option>
               <option value="HALF_DAY">HALF_DAY</option>
@@ -459,7 +463,7 @@
           </div>
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Modification Reason <span class="text-red-500">*</span></label>
-            <textarea v-model="manualModal.reason" rows="3" placeholder="Explain why modifying this record..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black mt-1 resize-none"></textarea>
+            <textarea v-model="manualModal.reason" rows="3" placeholder="Explain why modifying this record..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 resize-none"></textarea>
           </div>
         </div>
         <template #footer>
