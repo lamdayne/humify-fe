@@ -4,7 +4,7 @@
 
 <template>
 
-  <div class="bg-white rounded-2xl border shadow-sm p-9 h-full">
+  <div class="bg-white rounded-lg border border-slate-200 shadow-[0_1px_2px_rgba(15,23,42,0.04)] p-5 h-full">
 
     <slot/>
 

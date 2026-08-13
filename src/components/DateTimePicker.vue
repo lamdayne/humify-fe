@@ -1,7 +1,7 @@
 <template>
   <div class="relative" ref="rootRef">
     <div
-        class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black flex items-center justify-between cursor-pointer bg-white"
+        class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 flex items-center justify-between cursor-pointer bg-white"
         @click="toggleOpen"
     >
       <span :class="displayValue ? 'text-slate-800' : 'text-slate-400'">

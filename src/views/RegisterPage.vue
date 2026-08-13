@@ -42,7 +42,7 @@
                             <label for="companyName"
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Company Name</label>
                             <input type="text" id="companyName" placeholder="Acme Corporation" v-model="companyInfo.name"
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
 
                         <div class="mb-5">
@@ -50,7 +50,7 @@
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Field</label>
                             <div class="relative">
                                 <select id="field" v-model="companyInfo.field"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light appearance-none bg-white">
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light appearance-none bg-white">
                                     <option :value="null" disabled>Select field...</option>
                                     <option value="other">Other</option>
                                     <option value="energy">Energy</option>
@@ -75,28 +75,28 @@
                             <label for="website"
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Website</label>
                             <input type="text" id="website" placeholder="https://example.com" v-model="companyInfo.website"
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
 
                         <div class="mb-5">
                             <label for="taxCode"
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Tax Code</label>
                             <input type="text" id="taxCode" placeholder="Enter tax code" v-model="companyInfo.taxCode"
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
 
                         <div class="mb-5">
                             <label for="phone"
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Phone</label>
                             <input type="text" id="phone" placeholder="Enter phone number" v-model="companyInfo.phone"
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
 
                         <div class="mb-6">
                             <label for="email"
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Email Address</label>
                             <input type="email" id="email" placeholder="name@company.com" v-model="companyInfo.email" required
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
 
                         <button type="submit"

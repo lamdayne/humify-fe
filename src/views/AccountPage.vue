@@ -77,7 +77,7 @@
                  :readonly="isSearchReadonly"
                  @focus="isSearchReadonly = false"
                  placeholder="Search users, emails, or IDs..."
-                 class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-black transition-colors" />
+                 class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-colors" />
         </div>
       </div>
 
@@ -167,13 +167,13 @@
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Email Address <span class="text-red-500">*</span></label>
             <input type="email" v-model="createForm.email" placeholder="user@company.com" required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Password <span class="text-red-500">*</span></label>
             <input type="password" v-model="createForm.password" placeholder="••••••••" required autocomplete="new-password"
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
@@ -235,7 +235,7 @@
                    autocomplete="current-password"
                    placeholder="••••••••"
                    required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
@@ -245,7 +245,7 @@
                    autocomplete="new-password"
                    placeholder="••••••••"
                    required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
         </form>
 

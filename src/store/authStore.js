@@ -23,7 +23,8 @@ export const useAuthStore = defineStore('auth', () => {
         }
     })
 
-    const canView = (resources) => permissions.value.includes(`${resources}_READ`)
+    const canView = (resources) => permissions.value.includes('FULL_ACCESS')
+        || permissions.value.includes(`${resources}_READ`)
         || permissions.value.includes(`${resources}_FULL`)
 
     const login = async (user) => {

@@ -60,7 +60,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Full Name</label>
                                 <input type="text" id="fullName" v-model="form.fullName" placeholder="e.g. Jonathan Ive"
                                     :class="[
-                                        errors.fullName ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-black',
+                                        errors.fullName ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20',
                                         'w-full border rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white'
                                     ]" />
                                 <span v-if="errors.fullName" class="text-[11px] text-red-500 font-normal mt-1 block">{{ errors.fullName }}</span>
@@ -71,7 +71,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Date
                                     of Birth</label>
                                 <input type="date" id="dob" v-model="form.dob"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg p-3 text-sm transition-all duration-200 outline-none font-light bg-white" />
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-lg p-3 text-sm transition-all duration-200 outline-none font-light bg-white" />
                             </div>
                         </div>
 
@@ -95,7 +95,7 @@
                                     Address</label>
                                 <input type="email" id="email" v-model="form.email"
                                     placeholder="e.g. j.ive@apple.com" :class="[
-                                        errors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-black',
+                                        errors.email ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20',
                                         'w-full border rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white'
                                     ]" />
                                 <span v-if="errors.email" class="text-[11px] text-red-500 font-normal mt-1 block">{{
@@ -109,7 +109,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Phone
                                     Number</label>
                                 <input type="text" id="phone" v-model="form.phone" placeholder="+1 (555) 000-0000"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white" />
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white" />
                             </div>
 
                             <div>
@@ -117,7 +117,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Address</label>
                                 <input type="text" id="address" v-model="form.address"
                                     placeholder="e.g. 1 Infinite Loop, Cupertino, CA"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white" />
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-lg p-3 text-sm transition-all duration-200 outline-none placeholder:text-slate-400 font-light bg-white" />
                             </div>
                         </div>
                     </div>
@@ -146,7 +146,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Start
                                     Date</label>
                                 <input type="date" id="startDate" v-model="form.startDate"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg p-3 text-sm transition-all duration-200 outline-none font-light bg-white" />
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-lg p-3 text-sm transition-all duration-200 outline-none font-light bg-white" />
                             </div>
                         </div>
 
@@ -157,7 +157,7 @@
                                 <div class="relative">
                                     <select id="branch" v-model="form.branchId"
                                         :class="[
-                                            errors.branchId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-black',
+                                            errors.branchId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20',
                                             'w-full border rounded-lg p-3 text-sm transition-all duration-200 outline-none bg-white font-light appearance-none pr-10'
                                         ]">
                                         <option v-for="b in branchStore.branches" :key="b.id" :value="b.id">{{ b.name }}
@@ -182,7 +182,7 @@
                                 <div class="relative">
                                     <select id="department" v-model="form.departmentId"
                                         :class="[
-                                            errors.departmentId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-black',
+                                            errors.departmentId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20',
                                             'w-full border rounded-lg p-3 text-sm transition-all duration-200 outline-none bg-white font-light appearance-none pr-10'
                                         ]">
                                         <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
@@ -208,7 +208,7 @@
                                 <div class="relative">
                                     <select id="position" v-model="form.positionId"
                                         :class="[
-                                            errors.positionId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-black',
+                                            errors.positionId ? 'border-red-500 focus:border-red-500' : 'border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20',
                                             'w-full border rounded-lg p-3 text-sm transition-all duration-200 outline-none bg-white font-light appearance-none pr-10'
                                         ]">
                                         <option v-for="p in positionStore.positions" :key="p.id" :value="p.id">{{
@@ -244,7 +244,7 @@
                                     class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Employment Status</label>
                                 <div class="relative">
                                     <select id="status" v-model="form.status"
-                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg p-3 text-sm transition-all duration-200 outline-none bg-white font-light appearance-none pr-10">
+                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-lg p-3 text-sm transition-all duration-200 outline-none bg-white font-light appearance-none pr-10">
                                         <option value="ACTIVE">Active (Làm việc chính thức)</option>
                                         <option value="PROBATION">Probation (Thử việc)</option>
                                     </select>

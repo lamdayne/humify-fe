@@ -71,7 +71,7 @@
                                 <div class="relative">
                                     <input :type="isNewPasswordVisible ? 'text' : 'password'" id="newPassword"
                                         v-model="newPassword" placeholder="••••••••"
-                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none pr-10 font-light bg-white"
+                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none pr-10 font-light bg-white"
                                         required />
                                     <button type="button" @click="isNewPasswordVisible = !isNewPasswordVisible"
                                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black transition-colors">
@@ -101,7 +101,7 @@
                                 <div class="relative">
                                     <input :type="isConfirmPasswordVisible ? 'text' : 'password'" id="confirmPassword"
                                         v-model="confirmPassword" placeholder="••••••••"
-                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none pr-10 font-light bg-white"
+                                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none pr-10 font-light bg-white"
                                         required />
                                     <button type="button" @click="isConfirmPasswordVisible = !isConfirmPasswordVisible"
                                         class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black transition-colors">

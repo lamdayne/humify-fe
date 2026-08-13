@@ -1,27 +1,25 @@
 <template>
     <MainContent>
-        <div class="p-6 md:p-8 max-w-7xl mx-auto font-sans antialiased text-slate-900 relative">
+        <div class="p-6 md:p-8 max-w-7xl mx-auto text-slate-900 relative">
 
             <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show"></ToastMessage>
 
             <!-- Header -->
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between justify-start gap-4 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-3xl font-semibold text-slate-900 tracking-tight mb-1">Role Management</h1>
-                    <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-light">
+                    <h1 class="text-lg font-semibold text-slate-900">Role Management</h1>
+                    <nav class="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
                         <span class="hover:text-slate-600 cursor-pointer transition-colors">Security</span>
-                        <span>&gt;</span>
-                        <span class="text-slate-600 font-normal">Roles</span>
+                        <span>/</span>
+                        <span class="text-slate-600">Roles</span>
                     </nav>
                 </div>
 
-                <div class="w-auto min-w-30">
-                    <PrimaryButton :content="'Add Role'" @click="openCreateModal">
-                        <template #icon>
-                            <Plus class="w-5"></Plus>
-                        </template>
-                    </PrimaryButton>
-                </div>
+                <PrimaryButton :content="'Add Role'" @click="openCreateModal">
+                    <template #icon>
+                        <Plus class="w-3.5 h-3.5"></Plus>
+                    </template>
+                </PrimaryButton>
             </div>
 
             <!-- Table Loader -->
@@ -124,7 +122,7 @@
                             Role Name
                         </label>
                         <input type="text" id="role_name" placeholder="E.g. Department Manager" v-model="roleForm.name"
-                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
+                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light"
                             required />
                     </div>
 
@@ -136,7 +134,7 @@
                         <textarea id="role_desc" rows="3"
                             placeholder="Briefly describe the responsibilities of this role..."
                             v-model="roleForm.description"
-                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
+                            class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none"></textarea>
                     </div>
 
                     <div>

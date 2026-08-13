@@ -1,5 +1,5 @@
 <template>
-    <span :class="['px-sm py-xs text-xs font-mono font-medium uppercase rounded-sm inline-flex items-center gap-1', getColorByCode(type)]">
+    <span :class="['px-2 py-0.5 text-xs font-medium rounded-sm inline-flex items-center gap-1', getColorByCode(type)]">
         <slot name="icon"></slot>
         <span>{{ content }}</span>
     </span>
