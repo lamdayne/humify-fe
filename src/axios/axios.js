@@ -36,7 +36,17 @@ axiosInstance.interceptors.response.use(
 
         if (
             errorResponse?.status === 401 &&
-            errorResponse?.data.code === 'JWT_EXPIRED' &&
+            errorResponse?.data?.code === 'USER_NOT_ACTIVATED'
+        ) {
+            localStorage.removeItem('accessToken')
+            localStorage.removeItem('refreshToken')
+            window.location.href = '/login?error=account_deactivated'
+            return Promise.reject(error)
+        }
+
+        if (
+            errorResponse?.status === 401 &&
+            errorResponse?.data?.code === 'JWT_EXPIRED' &&
             !originalRequest._retry
         ) {
             if (isRefreshing) {
