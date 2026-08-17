@@ -540,7 +540,7 @@ import StatusBadge from "../components/StatusBadge.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import ToastMessage from "../components/ToastMessage.vue";
 import { useRouter } from "vue-router";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useEmployeeStore } from "../store/employeeStore.js";
 import { useBranchStore } from "../store/branchStore.js";
 import { useDepartmentStore } from "../store/departmentStore.js";
@@ -570,6 +570,20 @@ const isDragging = ref(false)
 const importFile = ref(null)
 const importErrors = ref([])
 const fileInputRef = ref(null)
+
+const resetImportState = () => {
+    importFile.value = null
+    importErrors.value = []
+    if (fileInputRef.value) {
+        fileInputRef.value.value = ''
+    }
+}
+
+watch(showImportModal, (newVal) => {
+    if (!newVal) {
+        resetImportState()
+    }
+})
 
 const toast = reactive({
     show: false,
@@ -605,7 +619,9 @@ const handleDrop = (e) => {
 }
 
 const triggerFileInput = () => {
-    fileInputRef.value.click()
+    if (fileInputRef.value) {
+        fileInputRef.value.click()
+    }
 }
 
 const handleFileChange = (e) => {
@@ -619,6 +635,7 @@ const selectFile = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
     if (ext !== 'xlsx' && ext !== 'xls') {
         showToast('Invalid file format. Please upload an Excel file (.xlsx or .xls)', 'error')
+        resetImportState()
         return
     }
     importFile.value = file
@@ -626,11 +643,7 @@ const selectFile = (file) => {
 }
 
 const removeFile = () => {
-    importFile.value = null
-    importErrors.value = []
-    if (fileInputRef.value) {
-        fileInputRef.value.value = ''
-    }
+    resetImportState()
 }
 
 const executeImport = async () => {

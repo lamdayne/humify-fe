@@ -360,7 +360,8 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase">Leave Type <span class="text-red-500">*</span></label>
-            <select v-model="leaveModal.leaveTypeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1">
+            <select v-model="leaveModal.leaveTypeId" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 bg-white text-slate-800">
+              <option :value="null" disabled>-- Select Leave Type --</option>
               <option v-for="t in (leaveTypes || [])" :key="t.id" :value="t.id">
                 {{ t.name }} ({{ t.code }}) {{ t.isPaid ? '- Paid' : '- Unpaid' }}
               </option>
@@ -370,11 +371,11 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase">Start Date <span class="text-red-500">*</span></label>
-              <DateTimePicker v-model="manualModal.checkIn" />
+              <input type="date" v-model="leaveModal.startDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 bg-white text-slate-800 cursor-pointer" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase">End Date <span class="text-red-500">*</span></label>
-              <DateTimePicker v-model="manualModal.checkOut" />
+              <input type="date" v-model="leaveModal.endDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 mt-1 bg-white text-slate-800 cursor-pointer" />
             </div>
           </div>
 
@@ -715,7 +716,7 @@ const loadMyCorrections = async () => {
 
 const loadMyLeaves = async () => {
   try {
-    const res = await attendanceStore.fetchLeaveRequests(0, 20);
+    const res = await attendanceStore.fetchMyLeaveRequests(0, 20);
     myLeaves.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
   } catch (err) {
     console.error("Load my leaves error:", err);
@@ -849,8 +850,12 @@ const openLeaveModal = async () => {
     if (leaveTypes.value && leaveTypes.value.length > 0) {
       leaveModal.leaveTypeId = leaveTypes.value[0].id;
     }
+    leaveModal.startDate = '';
+    leaveModal.endDate = '';
+    leaveModal.reason = '';
     leaveModal.attachmentUrl = '';
     uploadedFileName.value = '';
+    leaveModal.sessionType = 'FULL_DAY';
     leaveModal.show = true;
   } catch (e) {
     triggerToast('Failed to fetch leave types.', 'error');
@@ -859,8 +864,24 @@ const openLeaveModal = async () => {
 
 // XỬ LÝ NỘP ĐƠN NGHỈ PHÉP
 const submitLeaveRequest = async () => {
-  if (!leaveModal.leaveTypeId || !leaveModal.startDate || !leaveModal.endDate || !leaveModal.reason.trim()) {
-    triggerToast('Please fill all required fields.', 'error');
+  if (!leaveModal.leaveTypeId) {
+    triggerToast('Please select a leave type.', 'error');
+    return;
+  }
+  if (!leaveModal.startDate) {
+    triggerToast('Please select a start date.', 'error');
+    return;
+  }
+  if (!leaveModal.endDate) {
+    triggerToast('Please select an end date.', 'error');
+    return;
+  }
+  if (leaveModal.startDate > leaveModal.endDate) {
+    triggerToast('End date cannot be before start date.', 'error');
+    return;
+  }
+  if (!leaveModal.reason || !leaveModal.reason.trim()) {
+    triggerToast('Please enter a reason for leave.', 'error');
     return;
   }
 
@@ -873,7 +894,7 @@ const submitLeaveRequest = async () => {
 
   try {
     await attendanceStore.createLeaveRequest({
-      leaveTypeId: leaveModal.leaveTypeId,
+      leaveTypeId: Number(leaveModal.leaveTypeId),
       startDate: leaveModal.startDate,
       endDate: leaveModal.endDate,
       reason: leaveModal.reason.trim(),

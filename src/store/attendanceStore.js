@@ -100,6 +100,20 @@ export const useAttendanceStore = defineStore("attendance", () => {
         return res.data;
     };
 
+    // Lấy danh sách đơn nghỉ phép cá nhân (GET /leave-requests/me)
+    const fetchMyLeaveRequests = async (page = 0, size = 10, searchParams = []) => {
+        let url = `/leave-requests/me?page=${page}&size=${size}`;
+
+        if (searchParams && Array.isArray(searchParams) && searchParams.length > 0) {
+            searchParams.forEach(p => {
+                if (p) url += `&leaveRequest=${encodeURIComponent(p)}`;
+            });
+        }
+
+        const res = await axiosInstance.get(url);
+        return res.data?.data || res.data;
+    };
+
     // Lấy danh sách đơn nghỉ phép (Chung cho HR hoặc Lọc)
     // Lấy danh sách đơn xin nghỉ phép (An toàn 100% với Backend)
     const fetchLeaveRequests = async (page = 0, size = 10, searchParams = []) => {
@@ -153,6 +167,7 @@ export const useAttendanceStore = defineStore("attendance", () => {
         rejectCorrection,
         cancelLeaveRequest,
         createLeaveRequest,
+        fetchMyLeaveRequests,
         fetchLeaveRequests,
         approveLeaveRequest,
         rejectLeaveRequest,

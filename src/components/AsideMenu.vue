@@ -185,7 +185,7 @@ const menus = [
         label: 'Leave Types',
         icon: DoorClosed,
         name: 'LeaveTypes',
-        permission: 'LEAVE_TYPE'
+        permission: 'LEAVE'
     },
     {
         label: 'Payroll',

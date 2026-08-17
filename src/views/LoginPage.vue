@@ -274,6 +274,9 @@ const clearForm = () => {
 }
 
 onMounted(() => {
+    if (route.query.error === 'account_deactivated') {
+        showToast('Your account has been deactivated. Please contact your administrator.', 'error');
+    }
     if (authStore.isAuthenticated) {
         router.push(route.query.redirect || { name: 'Dashboard' })
     }
