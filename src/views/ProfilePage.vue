@@ -72,7 +72,7 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Full Name</label>
-                <input type="text" v-model="employeeForm.fullName" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-medium" />
+                <input type="text" v-model="employeeForm.fullName" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-medium" />
               </div>
 
               <div>
@@ -84,18 +84,18 @@
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Email Address</label>
-                <input type="email" v-model="employeeForm.email" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-medium" />
+                <input type="email" v-model="employeeForm.email" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-medium" />
               </div>
 
               <div>
                 <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Phone Number</label>
-                <input type="text" v-model="employeeForm.phone" placeholder="+1 (555) 000-8842" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-medium" />
+                <input type="text" v-model="employeeForm.phone" placeholder="+1 (555) 000-8842" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-medium" />
               </div>
             </div>
 
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Address</label>
-              <input type="text" v-model="employeeForm.address" placeholder="Residential Address..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-medium" />
+              <input type="text" v-model="employeeForm.address" placeholder="Residential Address..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-medium" />
             </div>
           </div>
 
@@ -341,33 +341,33 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Degree Level <span class="text-red-500">*</span></label>
-            <input type="text" v-model="eduForm.degreeLevel" placeholder="Bachelor of Science" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="eduForm.degreeLevel" placeholder="Bachelor of Science" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">School / University <span class="text-red-500">*</span></label>
-            <input type="text" v-model="eduForm.schoolName" placeholder="Harvard University" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="eduForm.schoolName" placeholder="Harvard University" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Major</label>
-              <input type="text" v-model="eduForm.major" placeholder="Computer Science" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="text" v-model="eduForm.major" placeholder="Computer Science" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">GPA</label>
-              <input type="number" step="0.1" v-model.number="eduForm.gpa" placeholder="3.8" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="number" step="0.1" v-model.number="eduForm.gpa" placeholder="3.8" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Start Year <span class="text-red-500">*</span></label>
-              <input type="number" v-model.number="eduForm.startYear" placeholder="2018" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="number" v-model.number="eduForm.startYear" placeholder="2018" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">End Year</label>
-              <input type="number" v-model.number="eduForm.endYear" placeholder="2022" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="number" v-model.number="eduForm.endYear" placeholder="2022" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
           </div>
         </div>
@@ -385,12 +385,12 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Certificate Name <span class="text-red-500">*</span></label>
-            <input type="text" v-model="certForm.name" placeholder="AWS Certified Solutions Architect" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="certForm.name" placeholder="AWS Certified Solutions Architect" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Issued By</label>
-            <input type="text" v-model="certForm.issuedBy" placeholder="Amazon Web Services" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="certForm.issuedBy" placeholder="Amazon Web Services" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -427,12 +427,12 @@
         <div class="space-y-4">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Company Name <span class="text-red-500">*</span></label>
-            <input type="text" v-model="expForm.companyName" placeholder="Aura Systems" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="expForm.companyName" placeholder="Aura Systems" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Position <span class="text-red-500">*</span></label>
-            <input type="text" v-model="expForm.position" placeholder="Senior Product Designer" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="text" v-model="expForm.position" placeholder="Senior Product Designer" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div class="grid grid-cols-2 gap-4">
@@ -448,7 +448,7 @@
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Description</label>
-            <textarea v-model="expForm.description" rows="3" placeholder="Key responsibilities and achievements..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black resize-none"></textarea>
+            <textarea v-model="expForm.description" rows="3" placeholder="Key responsibilities and achievements..." class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 resize-none"></textarea>
           </div>
         </div>
 
@@ -465,12 +465,12 @@
         <form @submit.prevent="handleSavePassword" class="space-y-4" autocomplete="off">
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Old Password <span class="text-red-500">*</span></label>
-            <input type="password" v-model="passwordForm.oldPassword" autocomplete="current-password" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="password" v-model="passwordForm.oldPassword" autocomplete="current-password" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">New Password <span class="text-red-500">*</span></label>
-            <input type="password" v-model="passwordForm.newPassword" autocomplete="new-password" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+            <input type="password" v-model="passwordForm.newPassword" autocomplete="new-password" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
         </form>
 

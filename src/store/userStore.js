@@ -42,12 +42,21 @@ export const useUserStore = defineStore("user", () => {
         }
     };
 
+    const updateStatus = async (userId, active) => {
+        try {
+            const res = await axiosInstance.put(`/users/${userId}/status`, { active });
+            return res.data;
+        } catch (error) {
+            throw error;
+        }
+    };
 
     return {
         users,
         fetchUsers,
         createUser,
         changeRole,
-        changePassword
+        changePassword,
+        updateStatus
     };
 });

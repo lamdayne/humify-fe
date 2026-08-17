@@ -2,24 +2,24 @@
     <MainContent>
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
             <!-- Header Section -->
-            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-8">
+            <div class="flex flex-col md:flex-row md:items-end md:justify-between gap-4 mb-6">
                 <div>
-                    <div class="flex items-center gap-2 text-xs text-slate-400 mb-2">
+                    <nav class="flex items-center gap-1 text-xs text-slate-400 mb-1">
                         <span>Security</span>
                         <span>/</span>
-                        <span class="text-slate-600 font-medium">Permissions</span>
-                    </div>
-                    <h1 class="text-3xl font-extrabold text-slate-900 tracking-tight">Permissions</h1>
-                    <p class="text-sm text-slate-500 font-light mt-1">
+                        <span class="text-slate-600">Permissions</span>
+                    </nav>
+                    <h1 class="text-lg font-semibold text-slate-900">Permissions</h1>
+                    <p class="text-xs text-slate-400 mt-0.5">
                         Browse and inspect system security modules, permissions, and your assignment capability.
                     </p>
                 </div>
 
                 <!-- Module filter select -->
                 <div class="flex items-center gap-2 self-start md:self-auto">
-                    <label class="text-xs font-medium text-slate-500 whitespace-nowrap">Filter by Module:</label>
+                    <label class="text-xs font-medium text-slate-500 whitespace-nowrap">Module:</label>
                     <select v-model="selectedModule"
-                        class="border border-slate-200 hover:border-slate-300 focus:border-black rounded-lg px-3 py-2.5 text-sm outline-none transition-colors bg-white font-medium text-slate-700 min-w-40 shadow-sm">
+                        class="border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md px-3 py-1.5 text-sm outline-none transition-colors bg-white text-slate-700 min-w-36">
                         <option v-for="mod in modules" :key="mod" :value="mod">
                             {{ mod === 'ALL' ? 'All Modules' : mod }}
                         </option>

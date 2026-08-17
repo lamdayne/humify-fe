@@ -77,7 +77,7 @@
                  :readonly="isSearchReadonly"
                  @focus="isSearchReadonly = false"
                  placeholder="Search users, emails, or IDs..."
-                 class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-black transition-colors" />
+                 class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-colors" />
         </div>
       </div>
 
@@ -143,6 +143,23 @@
                   <button @click="openChangePasswordModal(user)" class="p-1.5 text-slate-400 hover:text-amber-600 rounded-lg hover:bg-slate-100 transition-colors cursor-pointer" title="Change Password">
                     <KeyRound class="w-4 h-4" />
                   </button>
+                  <button
+                    v-if="user.active"
+                    @click="openToggleStatusModal(user)"
+                    :disabled="isCurrentUser(user)"
+                    :class="[isCurrentUser(user) ? 'opacity-30 cursor-not-allowed text-slate-300' : 'text-slate-400 hover:text-red-600 hover:bg-red-50 cursor-pointer', 'p-1.5 rounded-lg transition-colors']"
+                    :title="isCurrentUser(user) ? 'Cannot deactivate your own account' : 'Deactivate User'"
+                  >
+                    <UserX class="w-4 h-4" />
+                  </button>
+                  <button
+                    v-else
+                    @click="openToggleStatusModal(user)"
+                    class="p-1.5 text-emerald-500 hover:text-emerald-700 hover:bg-emerald-50 rounded-lg transition-colors cursor-pointer"
+                    title="Activate User"
+                  >
+                    <UserCheck class="w-4 h-4" />
+                  </button>
                 </div>
               </td>
 
@@ -167,13 +184,13 @@
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Email Address <span class="text-red-500">*</span></label>
             <input type="email" v-model="createForm.email" placeholder="user@company.com" required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
             <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Password <span class="text-red-500">*</span></label>
             <input type="password" v-model="createForm.password" placeholder="••••••••" required autocomplete="new-password"
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
@@ -235,7 +252,7 @@
                    autocomplete="current-password"
                    placeholder="••••••••"
                    required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
 
           <div>
@@ -245,7 +262,7 @@
                    autocomplete="new-password"
                    placeholder="••••••••"
                    required
-                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+                   class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
           </div>
         </form>
 
@@ -253,6 +270,46 @@
           <div class="flex gap-2">
             <SecondaryButton content="Cancel" @click="passwordModal.show = false" />
             <PrimaryButton content="Update" @click="handleSavePassword" :disabled="isSubmitting" />
+          </div>
+        </template>
+      </ModalGeneric>
+
+      <!-- MODAL 4: TOGGLE USER STATUS -->
+      <ModalGeneric v-model="statusModal.show" :title="statusModal.targetActive ? 'Activate User Account' : 'Deactivate User Account'" width="450px">
+        <div class="space-y-3" v-if="selectedTargetUser">
+          <div class="flex items-center gap-3 p-3 rounded-xl" :class="statusModal.targetActive ? 'bg-emerald-50 text-emerald-900 border border-emerald-100' : 'bg-rose-50 text-rose-900 border border-rose-100'">
+            <div class="w-10 h-10 rounded-full flex items-center justify-center shrink-0" :class="statusModal.targetActive ? 'bg-emerald-100 text-emerald-600' : 'bg-rose-100 text-rose-600'">
+              <component :is="statusModal.targetActive ? UserCheck : UserX" class="w-5 h-5" />
+            </div>
+            <div>
+              <div class="text-xs font-bold">{{ selectedTargetUser.email }}</div>
+              <div class="text-[11px] opacity-80 mt-0.5">
+                Current status: <span class="font-semibold">{{ selectedTargetUser.active ? 'ACTIVE' : 'INACTIVE' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <p class="text-xs text-slate-600">
+            <template v-if="statusModal.targetActive">
+              Are you sure you want to <strong>activate</strong> this account? The user will be able to log in and use the system again.
+            </template>
+            <template v-else>
+              Are you sure you want to <strong>deactivate</strong> this account? The user will be blocked from logging into the system immediately.
+            </template>
+          </p>
+        </div>
+
+        <template #footer>
+          <div class="flex gap-2">
+            <SecondaryButton content="Cancel" @click="statusModal.show = false" />
+            <button
+              @click="handleSaveStatus"
+              :disabled="isSubmitting"
+              class="px-4 py-2 text-xs font-semibold rounded-lg text-white transition-all cursor-pointer shadow-sm disabled:opacity-50"
+              :class="statusModal.targetActive ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-rose-600 hover:bg-rose-700'"
+            >
+              {{ isSubmitting ? 'Updating...' : (statusModal.targetActive ? 'Activate Account' : 'Deactivate Account') }}
+            </button>
           </div>
         </template>
       </ModalGeneric>
@@ -273,11 +330,13 @@ import ModalGeneric from '../components/ModalGeneric.vue';
 import { useUserStore } from '../store/userStore';
 import { useRoleStore } from '../store/roleStore';
 import { useEmployeeStore } from '../store/employeeStore';
-import { Users, UserCheck, Search, Shield, KeyRound, LoaderCircle } from '@lucide/vue';
+import { useAuthStore } from '../store/authStore';
+import { Users, UserCheck, UserX, Search, Shield, KeyRound, LoaderCircle } from '@lucide/vue';
 
 const userStore = useUserStore();
 const roleStore = useRoleStore();
 const employeeStore = useEmployeeStore();
+const authStore = useAuthStore();
 
 const isLoading = ref(false);
 const isSubmitting = ref(false);
@@ -288,6 +347,11 @@ const isSearchReadonly = ref(true);
 const roleList = ref([]);
 const employeeList = ref([]);
 const selectedTargetUser = ref(null);
+
+const isCurrentUser = (targetUser) => {
+  if (!targetUser || !authStore.user) return false;
+  return authStore.user.id === targetUser.id || authStore.user.email === targetUser.email;
+};
 
 const pagination = reactive({
   pageNo: 1,
@@ -342,6 +406,11 @@ const passwordModal = reactive({ show: false });
 const passwordForm = reactive({
   oldPassword: '',
   newPassword: ''
+});
+
+const statusModal = reactive({
+  show: false,
+  targetActive: false
 });
 
 const loadUsers = async () => {
@@ -482,6 +551,40 @@ const handleSavePassword = async () => {
     passwordModal.show = false;
   } catch (err) {
     triggerToast(err.response?.data?.message || 'Failed to change password.', 'error');
+  } finally {
+    isSubmitting.value = false;
+  }
+};
+
+const openToggleStatusModal = (user) => {
+  if (!user || !user.id) {
+    triggerToast('User ID is missing. Please refresh the page.', 'error');
+    return;
+  }
+  if (isCurrentUser(user) && user.active) {
+    triggerToast('You cannot deactivate your own account.', 'error');
+    return;
+  }
+
+  selectedTargetUser.value = user;
+  statusModal.targetActive = !user.active;
+  statusModal.show = true;
+};
+
+const handleSaveStatus = async () => {
+  if (!selectedTargetUser.value || !selectedTargetUser.value.id) {
+    triggerToast('Invalid target user.', 'error');
+    return;
+  }
+
+  isSubmitting.value = true;
+  try {
+    await userStore.updateStatus(selectedTargetUser.value.id, statusModal.targetActive);
+    triggerToast(`User account ${statusModal.targetActive ? 'activated' : 'deactivated'} successfully!`, 'success');
+    statusModal.show = false;
+    await loadUsers();
+  } catch (err) {
+    triggerToast(err.response?.data?.message || 'Failed to update user status.', 'error');
   } finally {
     isSubmitting.value = false;
   }

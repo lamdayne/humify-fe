@@ -15,15 +15,12 @@
         <main class="grow flex flex-col md:flex-row min-h-screen w-full">
             <ToastMessage :type="toast.type" :message="toast.message" :show="toast.show"></ToastMessage>
             <div
-                class="w-full md:w-1/2 bg-[#050b14] flex flex-col items-center justify-center text-center p-10 md:p-20 relative overflow-hidden">
-                <div
-                    class="absolute inset-0 bg-[linear-gradient(to_right,#111827_1px,transparent_1px),linear-gradient(to_bottom,#111827_1px,transparent_1px)] bg-size-[4rem_4rem] opacity-20">
-                </div>
+                class="w-full md:w-1/2 flex flex-col items-center justify-center text-center p-10 md:p-20 relative overflow-hidden"
+                style="background: #0F172A;">
 
                 <div class="relative z-10">
-                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-2">Humify
-                    </h1>
-                    <p class="text-sm md:text-base text-slate-400 font-light tracking-wide">Workforce. Simplified.</p>
+                    <h1 class="text-4xl md:text-5xl lg:text-6xl font-semibold text-white tracking-tight mb-2">Humify</h1>
+                    <p class="text-sm md:text-base font-light tracking-wide" style="color: #60A5FA;">Workforce. Simplified.</p>
                 </div>
             </div>
 
@@ -37,7 +34,7 @@
                                 class="block text-[11px] font-semibold text-slate-500 uppercase tracking-wider mb-2">Email
                                 Address</label>
                             <input type="email" id="email" placeholder="name@company.com" v-model="user.email"
-                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                         </div>
                         <div class="mb-5">
                             <label for="password"
@@ -45,7 +42,7 @@
                             <div class="relative">
                                 <input :type="isPasswordVisible ? 'text' : 'password'" id="password"
                                     placeholder="••••••••" v-model="user.password"
-                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                                    class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 pr-10 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                                 <button type="button" @click="isPasswordVisible = !isPasswordVisible"
                                     class="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-black transition-colors">
                                     <svg v-if="!isPasswordVisible" xmlns="http://www.w3.org/2000/svg" fill="none"
@@ -70,7 +67,7 @@
                                 class="ml-2 text-sm text-slate-500 font-light cursor-pointer select-none">Remember
                                 me</label>
                         </div>
-                        <button type="submit" :disabled="isLoading" :class="['gap-lg w-full bg-[#09090b] hover:bg-black text-white text-sm font-medium py-3 px-4 rounded-md transition-colors duration-200 mb-6 cursor-pointer',
+                        <button type="submit" :disabled="isLoading" :class="['gap-lg w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-3 px-4 rounded-md transition-colors duration-200 mb-6 cursor-pointer',
                             isLoading ? 'flex justify-center items-center opacity-70' : '']">
                             <LoaderCircle v-if="isLoading" class="animate-spin"></LoaderCircle>
                             Sign in
@@ -119,7 +116,7 @@
                         Company Code
                     </label>
                     <input type="text" id="companyCode" placeholder="aSk87sb" v-model="user.companyCode"
-                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
+                        class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-2 focus:ring-blue-500/10 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light">
                 </div>
                 <template #footer>
                     <PrimaryButton @click="handleContinue" :content="'Continue'"></PrimaryButton>
@@ -277,6 +274,9 @@ const clearForm = () => {
 }
 
 onMounted(() => {
+    if (route.query.error === 'account_deactivated') {
+        showToast('Your account has been deactivated. Please contact your administrator.', 'error');
+    }
     if (authStore.isAuthenticated) {
         router.push(route.query.redirect || { name: 'Dashboard' })
     }

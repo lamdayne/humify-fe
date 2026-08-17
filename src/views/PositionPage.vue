@@ -143,7 +143,7 @@
               <label for="position_name"
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Position Name</label>
               <input type="text" id="position_name" v-model="form.name" placeholder="e.g. Senior Frontend Developer"
-                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
                 :disabled="modalMode === 'view'" required />
             </div>
 
@@ -152,7 +152,7 @@
                 class="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-2">Description</label>
               <textarea id="description" v-model="form.description" rows="4"
                 placeholder="Briefly describe the key responsibilities..."
-                class="w-full border border-slate-200 hover:border-slate-300 focus:border-black rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
+                class="w-full border border-slate-200 hover:border-slate-300 focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 rounded-md p-3 text-sm transition-colors duration-200 outline-none placeholder:text-slate-400 font-light resize-none disabled:bg-slate-50 disabled:text-slate-500 disabled:cursor-not-allowed"
                 :disabled="modalMode === 'view'"></textarea>
             </div>
           </div>

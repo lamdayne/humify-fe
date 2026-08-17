@@ -1,47 +1,26 @@
 <template>
 
   <StatCard>
-    <div
-        v-if="store.loading"
-        class="animate-pulse">
-
-      <div class="h-8 w-8 rounded bg-gray-200"/>
-
-      <div class="mt-4 h-4 bg-gray-200 rounded"/>
-
-      <div class="mt-2 h-8 bg-gray-200 rounded"/>
-
+    <div v-if="store.loading" class="animate-pulse space-y-2">
+      <div class="h-3 w-3 rounded bg-slate-200"/>
+      <div class="h-3 bg-slate-100 rounded"/>
+      <div class="h-7 bg-slate-200 rounded"/>
     </div>
 
-    <div class="space-y-4">
-
-      <span class="text-orange-500 text-xl">📤</span>
-
+    <div v-else class="space-y-2">
+      <LogOut class="w-4 h-4 text-orange-400" />
       <div>
-
-        <p class="text-gray-500 text-sm">
-
-          Average Check-out
-
-        </p>
-
-        <h2 class="text-3xl font-bold">
-
-          {{ averageCheckOut }}
-
-        </h2>
-
+        <p class="text-xs text-slate-400 font-medium">Avg Check-out</p>
+        <h2 class="text-2xl font-semibold text-slate-800 mt-0.5">{{ averageCheckOut }}</h2>
       </div>
-
     </div>
-
   </StatCard>
 
 </template>
 
 <script setup>
 import { computed } from "vue";
-
+import { LogOut } from '@lucide/vue';
 import { useOverviewStore } from "/src/store/overview.js";
 import StatCard from "../StatCard.vue";
 

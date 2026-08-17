@@ -1,34 +1,30 @@
 <template>
     <MainContent>
-        <div class="p-6 md:p-8 max-w-7xl mx-auto font-sans antialiased text-slate-900 relative">
+        <div class="p-6 md:p-8 max-w-7xl mx-auto text-slate-900 relative">
 
             <ToastMessage :message="toast.message" :type="toast.type" :show="toast.show"></ToastMessage>
 
-            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between justify-start gap-4 mb-8">
+            <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
                 <div>
-                    <h1 class="text-3xl font-semibold text-slate-900 tracking-tight mb-1">Employee</h1>
-                    <nav class="flex items-center gap-1.5 text-xs text-slate-400 font-light">
+                    <h1 class="text-lg font-semibold text-slate-900">Employees</h1>
+                    <nav class="flex items-center gap-1 text-xs text-slate-400 mt-0.5">
                         <span class="hover:text-slate-600 cursor-pointer transition-colors">Organization</span>
-                        <span>&gt;</span>
-                        <span class="text-slate-600 font-normal">Employee</span>
+                        <span>/</span>
+                        <span class="text-slate-600">Employees</span>
                     </nav>
                 </div>
 
-                <div class="flex items-center gap-3 w-auto">
-                    <div class="min-w-32">
-                        <SecondaryButton :content="'Import Excel'" @click="showImportModal = true">
-                            <template #icon>
-                                <Upload class="w-4 h-4"></Upload>
-                            </template>
-                        </SecondaryButton>
-                    </div>
-                    <div class="min-w-32">
-                        <PrimaryButton :content="'Add Employee'" @click="addEmployee">
-                            <template #icon>
-                                <Plus class="w-5"></Plus>
-                            </template>
-                        </PrimaryButton>
-                    </div>
+                <div class="flex items-center gap-2">
+                    <SecondaryButton :content="'Import Excel'" @click="showImportModal = true">
+                        <template #icon>
+                            <Upload class="w-3.5 h-3.5"></Upload>
+                        </template>
+                    </SecondaryButton>
+                    <PrimaryButton :content="'Add Employee'" @click="addEmployee">
+                        <template #icon>
+                            <Plus class="w-3.5 h-3.5"></Plus>
+                        </template>
+                    </PrimaryButton>
                 </div>
             </div>
             <TableEmployeeSkeleton v-if="isFirstLoading"></TableEmployeeSkeleton>
@@ -544,7 +540,7 @@ import StatusBadge from "../components/StatusBadge.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import ToastMessage from "../components/ToastMessage.vue";
 import { useRouter } from "vue-router";
-import { computed, onMounted, reactive, ref } from "vue";
+import { computed, onMounted, reactive, ref, watch } from "vue";
 import { useEmployeeStore } from "../store/employeeStore.js";
 import { useBranchStore } from "../store/branchStore.js";
 import { useDepartmentStore } from "../store/departmentStore.js";
@@ -574,6 +570,20 @@ const isDragging = ref(false)
 const importFile = ref(null)
 const importErrors = ref([])
 const fileInputRef = ref(null)
+
+const resetImportState = () => {
+    importFile.value = null
+    importErrors.value = []
+    if (fileInputRef.value) {
+        fileInputRef.value.value = ''
+    }
+}
+
+watch(showImportModal, (newVal) => {
+    if (!newVal) {
+        resetImportState()
+    }
+})
 
 const toast = reactive({
     show: false,
@@ -609,7 +619,9 @@ const handleDrop = (e) => {
 }
 
 const triggerFileInput = () => {
-    fileInputRef.value.click()
+    if (fileInputRef.value) {
+        fileInputRef.value.click()
+    }
 }
 
 const handleFileChange = (e) => {
@@ -623,6 +635,7 @@ const selectFile = (file) => {
     const ext = file.name.split('.').pop().toLowerCase()
     if (ext !== 'xlsx' && ext !== 'xls') {
         showToast('Invalid file format. Please upload an Excel file (.xlsx or .xls)', 'error')
+        resetImportState()
         return
     }
     importFile.value = file
@@ -630,11 +643,7 @@ const selectFile = (file) => {
 }
 
 const removeFile = () => {
-    importFile.value = null
-    importErrors.value = []
-    if (fileInputRef.value) {
-        fileInputRef.value.value = ''
-    }
+    resetImportState()
 }
 
 const executeImport = async () => {

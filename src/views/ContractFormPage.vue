@@ -48,7 +48,7 @@
                         v-model="searchKeyword"
                         @input="onSearchInput"
                         placeholder="Type to search..."
-                        class="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:border-black"
+                        class="w-full bg-white border border-slate-200 rounded-lg pl-8 pr-3 py-1.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20"
                     />
                   </div>
                 </div>
@@ -88,14 +88,14 @@
 
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Contract Number <span class="text-red-500">*</span></label>
-              <input type="text" v-model="form.contractNumber" placeholder="e.g. CTR-2026-001" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="text" v-model="form.contractNumber" placeholder="e.g. CTR-2026-001" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
           </div>
 
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Contract Type <span class="text-red-500">*</span></label>
-              <select v-model="form.contractType" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black bg-slate-50">
+              <select v-model="form.contractType" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 bg-slate-50">
                 <option value="Full-time Permanent">Full-time Permanent</option>
                 <option value="Probation">Probation</option>
                 <option value="Fixed-term">Fixed-term</option>
@@ -104,7 +104,7 @@
 
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Taxable Dependents</label>
-              <input type="number" min="0" v-model.number="form.taxableDependents" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="number" min="0" v-model.number="form.taxableDependents" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
           </div>
         </div>
@@ -116,12 +116,12 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Start Date <span class="text-red-500">*</span></label>
-              <input type="date" v-model="form.startDate" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="date" v-model="form.startDate" required class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
 
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">End Date (Optional)</label>
-              <input type="date" v-model="form.endDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black" />
+              <input type="date" v-model="form.endDate" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20" />
             </div>
           </div>
         </div>
@@ -133,31 +133,31 @@
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Base Monthly Salary (VND) <span class="text-red-500">*</span></label>
-              <input type="number" step="100000" v-model.number="form.baseSalary" required placeholder="0.00" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" step="100000" v-model.number="form.baseSalary" required placeholder="0.00" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
 
             <div>
               <label class="text-[11px] font-bold text-slate-500 uppercase tracking-wider block mb-1">Insurance Salary (VND) <span class="text-red-500">*</span></label>
-              <input type="number" step="100000" v-model.number="form.insuranceSalary" required placeholder="0.00" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" step="100000" v-model.number="form.insuranceSalary" required placeholder="0.00" class="w-full border border-slate-200 rounded-lg p-2.5 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
           </div>
 
           <div class="grid grid-cols-2 md:grid-cols-4 gap-3 pt-2">
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Lunch Allowance</label>
-              <input type="number" v-model.number="form.allowanceLunch" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" v-model.number="form.allowanceLunch" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Phone Allowance</label>
-              <input type="number" v-model.number="form.allowancePhone" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" v-model.number="form.allowancePhone" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Transport</label>
-              <input type="number" v-model.number="form.allowanceTransport" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" v-model.number="form.allowanceTransport" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
             <div>
               <label class="text-[10px] font-bold text-slate-400 uppercase block mb-1">Other Allowance</label>
-              <input type="number" v-model.number="form.allowanceOther" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-black font-mono" />
+              <input type="number" v-model.number="form.allowanceOther" class="w-full border border-slate-200 rounded-lg p-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 font-mono" />
             </div>
           </div>
         </div>
@@ -227,31 +227,24 @@ const form = reactive({
   fileUrl: ''
 });
 
-// Hàm Fetch Danh sách Nhân viên theo Trang & Từ khoá
 const fetchEmployeesPage = async (page = 1, isNewSearch = false) => {
   if (isLoadingMore.value) return;
   if (!isNewSearch && !hasMoreEmployees.value) return;
 
   isLoadingMore.value = true;
   try {
-    const res = await employeeStore.fetchEmployees(page, pageSize);
+    const keyword = searchKeyword.value.trim();
+    const res = keyword
+        ? await employeeStore.searchEmployees(keyword, page - 1, pageSize)
+        : await employeeStore.fetchEmployees(page, pageSize);
+
     const newItems = res?.data?.items || [];
     const totalPages = res?.data?.totalPages || 1;
 
-    // Filter theo từ khoá nếu có tìm kiếm
-    let filteredItems = newItems;
-    if (searchKeyword.value.trim()) {
-      const q = searchKeyword.value.toLowerCase().trim();
-      filteredItems = newItems.filter(e =>
-          e.fullName?.toLowerCase().includes(q) ||
-          e.employeeCode?.toLowerCase().includes(q)
-      );
-    }
-
     if (isNewSearch) {
-      employees.value = filteredItems;
+      employees.value = newItems;
     } else {
-      employees.value = [...employees.value, ...filteredItems];
+      employees.value = [...employees.value, ...newItems];
     }
 
     hasMoreEmployees.value = page < totalPages;
