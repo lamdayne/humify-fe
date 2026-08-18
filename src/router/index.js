@@ -29,6 +29,7 @@ import AccountPage from "../views/AccountPage.vue";
 import ContractPage from "../views/ContractPage.vue";
 import ContractFormPage from "../views/ContractFormPage.vue";
 import ContractDetailPage from "../views/ContractDetailPage.vue";
+import WorkShiftPage from "../views/WorkShiftPage.vue";
 
 const routes = [
     {
@@ -218,6 +219,15 @@ const routes = [
         }
     }
     ,
+    {
+        path: '/work-shifts',
+        component: WorkShiftPage,
+        name: 'WorkShifts',
+        meta: {
+            requiresAuth: true,
+            permission: 'WORK_SHIFT'
+        }
+    },
     {
         path: '/contracts',
         component: ContractPage,

@@ -92,7 +92,7 @@
 
 
 <script setup>
-import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText, TrendingUp } from '@lucide/vue';
+import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText, TrendingUp, Timer } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
@@ -180,6 +180,12 @@ const menus = [
                 permission: 'CONTRACT'
             }
         ]
+    },
+    {
+        label: 'Work Shifts',
+        icon: Timer,
+        name: 'WorkShifts',
+        permission: 'WORK_SHIFT'
     },
     {
         label: 'Leave Types',
