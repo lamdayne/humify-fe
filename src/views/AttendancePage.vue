@@ -115,6 +115,7 @@
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkInTime) }}</td>
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkOutTime) }}</td>
               <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.checkOutTime ? (parseFloat(item.workedHours) || 0).toFixed(1) + 'h' : '--' }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openCorrectionModal(item)" class="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer">
@@ -226,6 +227,7 @@
                 {{ formatTime(item.checkInTime) }} – {{ formatTime(item.checkOutTime) }}
               </td>
               <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.checkOutTime ? (parseFloat(item.workedHours) || 0).toFixed(1) + 'h' : ' ' }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openManualUpdateModal(item)" class="text-xs text-slate-600 hover:text-black font-semibold border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
