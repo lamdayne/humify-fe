@@ -40,13 +40,32 @@ export const useWorkShiftStore = defineStore('workShift', () => {
         } catch (error) {
             throw error;
         }
+    };
+    const workShifts = ref([])
+
+    const fetchWorkShifts = async (page = 0, size = 100) => {
+        try {
+            const res = await axiosInstance.get(`/work-shifts?page=${page}&size=${size}`)
+            if (res.data && res.data.data) {
+                workShifts.value = res.data.data.items || []
+            }
+
+            return res.data
+        } catch (error) {   
+            throw error;
+        }
     }
 
     return {
+
         shifts,
         fetchShifts,
         createShift,
         updateShift,
-        deleteShift
+        deleteShift,
+
+        workShifts,
+        fetchWorkShifts
+
     }
 })
