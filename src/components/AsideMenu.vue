@@ -1,66 +1,102 @@
 <template>
     <Transition name="fade">
-        <div v-if="open" class="fixed inset-0 bg-black/50 z-40 lg:hidden" @click="$emit('close')" />
+        <div v-if="open" class="fixed inset-0 bg-black/60 z-40 lg:hidden" @click="$emit('close')" />
     </Transition>
     <aside :class="[
-        'fixed left-0 top-0 h-full w-60 bg-surface flex flex-col py-xl border-r-2 border-slate-200 z-50',
+        'fixed left-0 top-0 h-full w-60 flex flex-col z-50',
         'transform transition-transform duration-300 ease-in-out',
         'lg:translate-x-0',
         open ? 'translate-x-0' : '-translate-x-full'
-    ]">
-        <div class="flex justify-center">
-            <img class="w-30" src="https://res.cloudinary.com/dmzsletu0/image/upload/v1782044819/logo_lgugm5.png"
-                alt="">
+    ]" style="background: var(--sidebar-bg); border-right: 1px solid rgba(255,255,255,0.06);">
+
+        <!-- Logo -->
+        <div class="flex items-center justify-center px-2 h-14 border-b shrink-0 overflow-hidden"
+            style="border-color: rgba(255,255,255,0.07);">
+            <img class="h-13 w-auto object-contain max-h-14 scale-110" :src="logoImg" alt="Humify">
         </div>
-        <nav class="flex-1 overflow-auto scrollbar-none">
-            <div class="flex flex-col">
+
+        <!-- Navigation -->
+        <nav class="flex-1 overflow-y-auto py-3 hide-scrollbar">
+            <div class="flex flex-col gap-0.5 px-2">
                 <template v-for="item in visibleMenus" :key="item.id || item.name">
-                    <router-link v-if="!item.children" :to="{ name: item.name }" :class="['flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80',
-                        isActive(item.name) ? 'border-r-2 border-primary' : '']">
-                        <span class="font-bold">
-                            <component :is="item.icon"></component>
+
+                    <!-- Single nav item -->
+                    <router-link v-if="!item.children" :to="{ name: item.name }" :class="[
+                        'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150',
+                        isActive(item.name)
+                            ? 'text-white'
+                            : 'hover:text-slate-200'
+                    ]" :style="isActive(item.name)
+                        ? 'background: var(--sidebar-item-active); color: var(--sidebar-text-active);'
+                        : 'color: var(--sidebar-text);'"
+                        @mouseover="e => !isActive(item.name) && (e.currentTarget.style.background = 'var(--sidebar-item-hover)')"
+                        @mouseleave="e => !isActive(item.name) && (e.currentTarget.style.background = 'transparent')">
+                        <span class="w-4 h-4 shrink-0 flex items-center justify-center"
+                            :style="isActive(item.name) ? 'color: var(--sidebar-accent)' : ''">
+                            <component :is="item.icon" class="w-4 h-4" />
                         </span>
-                        <span class="font-body-md text-body-md">{{ item.label }}</span>
+                        <span>{{ item.label }}</span>
+                        <span v-if="isActive(item.name)" class="ml-auto w-1 h-4 rounded-full shrink-0"
+                            style="background: var(--sidebar-accent);">
+                        </span>
                     </router-link>
+
+                    <!-- Expandable nav item -->
                     <div v-else>
-                        <button @click="toggleMenu(item.id)" :class="['w-full flex items-center justify-between gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 cursor-pointer',
-                            isParentActive(item) ? 'border-r-2 border-primary' : '']">
-                            <span class="flex items-center gap-md">
-                                <span class="font-bold">
-                                    <component :is="item.icon"></component>
-                                </span>
-                                <span class="font-body-md text-body-md">{{ item.label }}</span>
+                        <button @click="toggleMenu(item.id)" :class="[
+                            'w-full flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors duration-150 cursor-pointer',
+                        ]" :style="isParentActive(item)
+                            ? 'background: var(--sidebar-item-active); color: var(--sidebar-text-active);'
+                            : 'color: var(--sidebar-text);'"
+                            @mouseover="e => !isParentActive(item) && (e.currentTarget.style.background = 'var(--sidebar-item-hover)')"
+                            @mouseleave="e => !isParentActive(item) && (e.currentTarget.style.background = 'transparent')">
+                            <span class="w-4 h-4 shrink-0 flex items-center justify-center"
+                                :style="isParentActive(item) ? 'color: var(--sidebar-accent)' : ''">
+                                <component :is="item.icon" class="w-4 h-4" />
                             </span>
-                            <ChevronDown class="w-4 h4 duration-75" :class="openMenus === item.id ? 'rotate-180' : ''">
-                            </ChevronDown>
+                            <span class="flex-1 text-left">{{ item.label }}</span>
+                            <ChevronDown class="w-3.5 h-3.5 shrink-0 transition-transform duration-150"
+                                :class="openMenus === item.id ? 'rotate-180' : ''"
+                                style="color: var(--sidebar-text);" />
                         </button>
-                        <div v-show="openMenus === item.id" class="flex flex-col">
+
+                        <!-- Children -->
+                        <div v-show="openMenus === item.id" class="mt-0.5 ml-3 pl-4 flex flex-col gap-0.5"
+                            style="border-left: 1px solid rgba(255,255,255,0.08);">
                             <router-link v-for="child in visibleChildren(item)" :key="child.name"
-                                :to="{ name: child.name }" :class="['flex items-center gap-md pl-12 pr-xl py-sm font-body-md font-medium transition-colors opacity-80',
-                                    isActive(child.name) ? 'border-r-2 border-primary text-primary' : '']">
-                                <component v-if="child.icon" :is="child.icon" class="w-5 h-5"></component>
-                                <span class="text-[16px]">{{ child.label }}</span>
+                                :to="{ name: child.name }" :class="[
+                                    'flex items-center gap-2.5 px-3 py-1.5 rounded-md text-sm transition-colors duration-150',
+                                    isActive(child.name) ? 'font-medium' : 'font-normal'
+                                ]" :style="isActive(child.name)
+                                    ? 'color: white; background: var(--sidebar-item-active);'
+                                    : 'color: var(--sidebar-text);'"
+                                @mouseover="e => !isActive(child.name) && (e.currentTarget.style.background = 'var(--sidebar-item-hover)') && (e.currentTarget.style.color = 'var(--sidebar-text-hover)')"
+                                @mouseleave="e => !isActive(child.name) && (e.currentTarget.style.background = 'transparent') && (e.currentTarget.style.color = 'var(--sidebar-text)')">
+                                <component v-if="child.icon" :is="child.icon" class="w-3.5 h-3.5 shrink-0"
+                                    :style="isActive(child.name) ? 'color: var(--sidebar-accent)' : ''" />
+                                <span>{{ child.label }}</span>
                             </router-link>
                         </div>
                     </div>
+
                 </template>
-                <router-link v-if="open"
-                    class="flex items-center gap-md px-xl py-md font-bold hover:bg-surface transition-colors opacity-80 text-red-500">
-                    <span class="font-bold">
-                        <door-open></door-open>
-                    </span>
-                    <span class="font-body-md text-body-md">Logout</span>
-                </router-link>
             </div>
         </nav>
+
+        <!-- Bottom: version or branding -->
+        <div class="px-5 py-3 shrink-0" style="border-top: 1px solid rgba(255,255,255,0.06);">
+            <p class="text-xs" style="color: rgba(148,163,184,0.5);">Humify HRM</p>
+        </div>
     </aside>
 </template>
+
 
 <script setup>
 import { Building2, HandCoins, CalendarCheck, DoorOpen, DoorClosed, FolderKanban, IdCardLanyard, LayoutDashboard, Network, ShieldCogCorner, UserLock, Users, ChevronDown, ShieldUser, CircleUser, Building, FileText, TrendingUp } from '@lucide/vue';
 import { computed, onMounted, ref, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import { useAuthStore } from '../store/authStore';
+import logoImg from '../assets/logo-through.jpg';
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -87,19 +123,24 @@ const menus = [
         label: 'Attendance',
         icon: CalendarCheck,
         name: 'Attendance',
-        permission: 'ATTENDANCE'
+        permission: null
     },
     {
-        label: 'Payroll',
+        label: 'Payslip',
         icon: HandCoins,
         name: 'Payroll',
-        permission: 'PAYROLL'
+        permission: 'PAYSLIP'
+    },
+    {
+        label: 'Project',
+        icon: FolderKanban,
+        name: 'Project',
+        permission: 'PROJECT'
     },
     {
         id: 'organization',
         label: 'Organization',
         icon: Building,
-        name: 'Branches',
         children: [
             {
                 label: 'Branches',
@@ -108,7 +149,7 @@ const menus = [
                 permission: 'BRANCH'
             },
             {
-                label: 'Department',
+                label: 'Departments',
                 icon: Network,
                 name: 'Departments',
                 permission: 'DEPARTMENT'
@@ -133,57 +174,44 @@ const menus = [
                 permission: 'POSITION'
             },
             {
-                label: 'Contract',
+                label: 'Contracts',
                 icon: FileText,
                 name: 'Contracts',
-                permission: null
+                permission: 'CONTRACT'
             }
         ]
     },
     {
-        label: 'Project',
-        icon: FolderKanban,
-        name: 'Project',
-        permission: null
-    },
-    {
-        label: 'LeaveType',
+        label: 'Leave Types',
         icon: DoorClosed,
         name: 'LeaveTypes',
-        permission: null
+        permission: 'LEAVE_TYPE'
     },
     {
-        label: 'Payroll Admin',
+        label: 'Payroll',
         icon: HandCoins,
         name: 'PayrollAdmin',
-        permission: null
+        permission: 'PAYROLL'
     },
-  {
-    label: 'My Profile',
-    icon: CircleUser,
-    name: 'Profile',
-    permission: null
-  },
     {
         id: 'security',
         label: 'Security',
         icon: ShieldUser,
         children: [
             {
-                label: 'Account',
+                label: 'Accounts',
                 icon: CircleUser,
                 name: 'AccountManager',
-                permission: null
+                permission: 'USER'
             },
             {
-                label: 'Role',
+                label: 'Roles',
                 icon: UserLock,
                 name: 'Roles',
-                permission: 'ROLE',
-                isSystemAdmin: false
+                permission: 'ROLE'
             },
             {
-                label: 'Permission',
+                label: 'Permissions',
                 icon: ShieldCogCorner,
                 name: 'Permissions',
                 permission: 'PERMISSION',
@@ -208,9 +236,13 @@ const visibleChildren = (item) => item?.children?.filter(child => canSeeItem(chi
 
 const canSeeItem = (item) => {
     if (!item) return false
+    // Không yêu cầu permission → mọi người đăng nhập đều thấy
     if (!item.permission) return true
+    // SystemAdmin thấy tất cả
     if (authStore.isSystemAdmin) return true
-    if (item?.isSystemAdmin) return authStore.isSystemAdmin
+    // isSystemAdmin flag → chỉ SystemAdmin mới thấy
+    if (item?.isSystemAdmin) return false
+    // Kiểm tra quyền READ hoặc FULL
     return authStore.canView(item.permission)
 }
 

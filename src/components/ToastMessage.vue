@@ -1,11 +1,14 @@
 <template>
     <Transition name="slide-fade">
-        <div v-if="show" :class="[type === 'success' ? 'bg-black text-white' : 'bg-red-500 text-white',
-            'fixed top-6 right-6 z-9999 flex items-center gap-3 px-5 py-3.5 rounded-xl shadow-2xl border border-slate-300'
+        <div v-if="show" :class="[
+            type === 'success'
+                ? 'border-l-[3px] border-green-500'
+                : 'border-l-[3px] border-red-500',
+            'fixed top-5 right-5 z-9999 flex items-center gap-3 px-4 py-3 bg-white rounded-lg shadow-[0_4px_12px_rgba(15,23,42,0.12)] border border-slate-200'
         ]">
-            <CircleCheckBig v-if="type === 'success'" class="w-5 h-5 text-emerald-400"></CircleCheckBig>
-            <CircleX v-else class="w-5 h-5 text-red-200"></CircleX>
-            <span class="text-sm font-medium">{{ message }}</span>
+            <CircleCheckBig v-if="type === 'success'" class="w-4 h-4 text-green-500 shrink-0"></CircleCheckBig>
+            <CircleX v-else class="w-4 h-4 text-red-500 shrink-0"></CircleX>
+            <span class="text-sm font-medium text-slate-800">{{ message }}</span>
         </div>
     </Transition>
 </template>

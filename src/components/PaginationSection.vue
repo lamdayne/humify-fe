@@ -1,33 +1,29 @@
 <template>
-    <footer class="mt-xl flex items-center justify-between">
-        <span class="text-on-surface-variant font-body-sm">
+    <footer class="mt-6 flex items-center justify-between">
+        <span class="text-xs text-slate-400">
             Showing {{ startIndex }} – {{ endIndex }} of {{ totalItems }} {{ itemLabel }}
         </span>
-        <div class="flex items-center gap-xs">
+        <div class="flex items-center gap-1">
             <button :disabled="currentPage <= 1" @click="previousPage"
-                class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-surface-container-high transition-colors disabled:opacity-50 cursor-pointer">
-                <span>
-                    <ChevronLeft class="w-4"></ChevronLeft>
-                </span>
+                class="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-md hover:bg-slate-50 transition-colors disabled:opacity-40 cursor-pointer">
+                <ChevronLeft class="w-3.5 h-3.5 text-slate-500" />
             </button>
-            <div class="flex gap-xs mx-sm">
+            <div class="flex gap-1 mx-1">
                 <template v-for="(page, idx) in pageRange" :key="idx">
                     <span v-if="page === DOTS"
-                        class="w-8 h-8 flex items-center justify-center text-on-surface-variant">...</span>
+                        class="w-8 h-8 flex items-center justify-center text-slate-400 text-xs">…</span>
 
                     <button v-else @click="goTo(page)"
                         :class="page === currentPage
-                            ? 'w-8 h-8 flex items-center justify-center bg-black text-white rounded font-mono text-xs cursor-pointer'
-                            : 'w-8 h-8 flex items-center justify-center border border-gray-300 rounded font-mono text-xs cursor-pointer hover:bg-surface-container-high transition-colors'">
+                            ? 'w-8 h-8 flex items-center justify-center bg-blue-600 text-white rounded-md text-xs font-medium cursor-pointer'
+                            : 'w-8 h-8 flex items-center justify-center border border-slate-200 rounded-md text-xs text-slate-600 cursor-pointer hover:bg-slate-50 transition-colors'">
                         {{ page }}
                     </button>
                 </template>
             </div>
             <button :disabled="currentPage >= totalPage" @click="nextPage"
-                class="w-8 h-8 flex items-center justify-center border border-gray-300 rounded hover:bg-surface-container-high transition-colors disabled:opacity-50 cursor-pointer">
-                <span>
-                    <ChevronRight class="w-4"></ChevronRight>
-                </span>
+                class="w-8 h-8 flex items-center justify-center border border-slate-200 rounded-md hover:bg-slate-50 transition-colors disabled:opacity-40 cursor-pointer">
+                <ChevronRight class="w-3.5 h-3.5 text-slate-500" />
             </button>
         </div>
     </footer>

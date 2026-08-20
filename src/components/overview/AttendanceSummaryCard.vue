@@ -1,107 +1,55 @@
 <template>
   <StatCard>
-    <div
-        v-if="store.loading"
-        class="animate-pulse">
-
-      <div class="h-8 w-8 rounded bg-gray-200"/>
-      <div class="mt-4 h-4 bg-gray-200 rounded"/>
-      <div class="mt-2 h-8 bg-gray-200 rounded"/>
-      <div class="mt-2 h-8 bg-gray-200 rounded"/>
-      <div class="mt-2 h-8 bg-gray-200 rounded"/>
-      <div class="mt-2 h-8 bg-gray-200 rounded"/>
-
+    <div v-if="store.loading" class="animate-pulse space-y-3">
+      <div class="h-4 w-24 rounded bg-slate-200"/>
+      <div class="h-3 bg-slate-100 rounded"/>
+      <div class="h-3 bg-slate-100 rounded"/>
+      <div class="h-3 bg-slate-100 rounded"/>
+      <div class="h-3 bg-slate-100 rounded"/>
     </div>
 
-    <div class="grid grid-cols-2 gap-6 items-center">
-      <div class="space-y-6">
+    <div v-else class="grid grid-cols-2 gap-5 items-center">
+      <div class="space-y-4">
+        <h2 class="text-sm font-semibold text-slate-800">My Attendance</h2>
 
-        <div class="flex justify-between">
-
-          <h2 class="text-2xl font-bold text-slate-900">
-
-            My Attendance
-
-          </h2>
-
-        </div>
-
-        <div class="space-y-4">
-
-          <div class="flex justify-between">
-
-            <div class="flex items-center gap-3">
-
-              <span class="w-3 h-3 rounded-full bg-green-500"/>
-
-              <span>Present Days</span>
-
+        <div class="space-y-3">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-green-500 shrink-0"/>
+              <span class="text-xs text-slate-600">Present Days</span>
             </div>
-
-            <span class="font-semibold">
-            {{ summary?.totalPresentDays }}
-        </span>
-
+            <span class="text-sm font-semibold text-slate-900">{{ summary?.totalPresentDays }}</span>
           </div>
 
-          <div class="flex justify-between">
-
-            <div class="flex items-center gap-3">
-
-              <span class="w-3 h-3 rounded-full bg-yellow-400"/>
-
-              <span>Late Count</span>
-
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-amber-400 shrink-0"/>
+              <span class="text-xs text-slate-600">Late Count</span>
             </div>
-
-            <span class="font-semibold">
-            {{ summary?.totalLateCount }}
-        </span>
-
+            <span class="text-sm font-semibold text-slate-900">{{ summary?.totalLateCount }}</span>
           </div>
 
-          <div class="flex justify-between">
-
-            <div class="flex items-center gap-3">
-
-              <span class="w-3 h-3 rounded-full bg-red-500"/>
-
-              <span>Absent Days</span>
-
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-red-500 shrink-0"/>
+              <span class="text-xs text-slate-600">Absent Days</span>
             </div>
-
-            <span class="font-semibold">
-            {{ summary?.totalAbsentDays }}
-        </span>
-
+            <span class="text-sm font-semibold text-slate-900">{{ summary?.totalAbsentDays }}</span>
           </div>
 
-          <div class="flex justify-between">
-
-            <div class="flex items-center gap-3">
-
-              <span class="w-3 h-3 rounded-full bg-blue-500"/>
-
-              <span>Leave Days</span>
-
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500 shrink-0"/>
+              <span class="text-xs text-slate-600">Leave Days</span>
             </div>
-
-            <span class="font-semibold">
-            {{ summary?.totalLeaveDays }}
-        </span>
-
+            <span class="text-sm font-semibold text-slate-900">{{ summary?.totalLeaveDays }}</span>
           </div>
-
         </div>
       </div>
-      <!-- Right -->
 
-      <AttendanceChart
-          :summary="summary"
-      />
+      <!-- Chart -->
+      <AttendanceChart :summary="summary" />
     </div>
-
-
   </StatCard>
 </template>
 

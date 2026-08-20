@@ -15,6 +15,25 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
+    const searchEmployees = async (keyword = '', page = 0, size = 20) => {
+        try {
+            const params = new URLSearchParams();
+            params.append('page', page);
+            params.append('size', size);
+
+            const kw = keyword.trim();
+            if (kw) {
+                params.append('params', `fullName:*${kw}*`);
+                params.append('params', `employeeCode:*${kw}*'`);
+            }
+
+            const res = await axiosInstance.get(`/employees/filter?${params.toString()}`)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
     const createEmployee = async (employeeData) => {
         try {
             const res = await axiosInstance.post('/employees', employeeData)
@@ -78,6 +97,7 @@ export const useEmployeeStore = defineStore('employee', () => {
     return {
         employees,
         fetchEmployees,
+        searchEmployees,
         createEmployee,
         updateEmployee,
         deleteEmployee,

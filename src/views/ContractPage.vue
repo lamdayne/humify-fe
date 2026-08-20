@@ -27,7 +27,7 @@
           <!-- Filter Status -->
           <div class="flex items-center gap-2">
             <span class="text-xs text-slate-400 font-medium uppercase tracking-wider">Status:</span>
-            <select v-model="statusFilter" @change="loadContracts" class="bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold px-3 py-2 outline-none focus:border-black cursor-pointer">
+            <select v-model="statusFilter" @change="loadContracts" class="bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 cursor-pointer">
               <option value="ALL">All Status</option>
               <option value="ACTIVE">Active</option>
               <option value="EXPIRED">Expired</option>
@@ -44,7 +44,7 @@
         <!-- Search input -->
         <div class="relative w-full sm:w-72">
           <Search class="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-          <input v-model="searchQuery" type="text" placeholder="Search contracts, employees..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-black transition-colors" />
+          <input v-model="searchQuery" type="text" placeholder="Search contracts, employees..." class="w-full bg-slate-50 border border-slate-200 rounded-lg pl-9 pr-3 py-2 text-xs outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 transition-colors" />
         </div>
       </div>
 

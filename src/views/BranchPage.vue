@@ -53,7 +53,7 @@
             <span class="text-sm text-slate-500 font-light">Status:</span>
             <select
                 v-model="statusFilter"
-                class="bg-white border border-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-black cursor-pointer shadow-sm min-w-36"
+                class="bg-white border border-slate-200 text-sm rounded-lg px-3 py-2 outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 cursor-pointer shadow-sm min-w-36"
             >
               <option value="ALL">All Branches</option>
               <option value="ACTIVE">Active</option>
@@ -74,7 +74,7 @@
             v-model="searchQuery"
             type="text"
             placeholder="Filter branches..."
-            class="w-full h-10 bg-white border border-slate-200 pl-10 pr-4 rounded-lg outline-none focus:border-black text-sm transition-colors placeholder:text-slate-400 shadow-sm block"
+            class="w-full h-10 bg-white border border-slate-200 pl-10 pr-4 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm transition-colors placeholder:text-slate-400 shadow-sm block"
         />
       </div>
 
@@ -175,7 +175,7 @@
                   v-model="form.name"
                   type="text"
                   placeholder="London Central"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm"
               />
             </div>
 
@@ -186,7 +186,7 @@
                     v-model="form.field"
                     type="text"
                     placeholder="Logistics"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm"
                 />
               </div>
               <div class="space-y-1">
@@ -195,7 +195,7 @@
                     v-model.number="form.standardHoursPerDay"
                     type="number"
                     placeholder="8"
-                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
+                    class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm"
                 />
               </div>
             </div>
@@ -206,7 +206,7 @@
                   v-model="form.website"
                   type="text"
                   placeholder="https://domixi.com"
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm"
               />
             </div>
 
@@ -216,7 +216,7 @@
                   v-model="form.address"
                   rows="4"
                   placeholder="Enter full address..."
-                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-black text-sm resize-none"
+                  class="w-full border border-slate-200 px-3 py-2 rounded-lg outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/20 text-sm resize-none"
               ></textarea>
             </div>
 

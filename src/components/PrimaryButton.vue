@@ -1,6 +1,6 @@
 <template>
     <button @click="$emit('click')"
-        class="w-full h-9 px-3 bg-black text-white font-medium rounded-lg hover:opacity-80 transition-all flex items-center justify-center cursor-pointer gap-xs">
+        class="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 active:bg-blue-800 text-white text-sm font-medium rounded-md transition-colors duration-150 cursor-pointer whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed">
         <slot name="icon"></slot>
         {{ content }}
     </button>
