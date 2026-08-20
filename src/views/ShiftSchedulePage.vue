@@ -12,15 +12,6 @@
         </div>
 
         <div class="flex items-center gap-2 self-start md:self-auto">
-          <SecondaryButton content="Import Excel">
-            <template #icon>
-              <Upload class="w-3.5 h-3.5" />
-            </template>
-          </SecondaryButton>
-          <button class="flex items-center gap-1.5 px-3 py-1.5 border border-slate-200 hover:border-slate-300 rounded-lg text-xs font-semibold text-white bg-slate-900 hover:bg-slate-800 transition-all shadow-xs cursor-pointer">
-            <Sparkles class="w-3.5 h-3.5 text-amber-400" />
-            AI Scheduling
-          </button>
           <PrimaryButton content="Bulk Assignment" @click="openAssignModal(null, null)">
             <template #icon>
               <Plus class="w-3.5 h-3.5" />
@@ -55,7 +46,7 @@
           <!-- Department Filter -->
           <select v-model="selectedDept" class="border border-slate-200 rounded-lg px-3 py-1.5 text-xs outline-none bg-white font-medium text-slate-600 focus:border-blue-500 shadow-2xs">
             <option :value="null">All Departments</option>
-            <option v-for="d in departmentStore.departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+            <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
           </select>
 
           <!-- Branch Filter -->
@@ -274,6 +265,21 @@
           </div>
         </template>
       </ModalGeneric>
+
+      <!-- DELETE CONFIRMATION MODAL -->
+      <ModalGeneric v-model="deleteConfirmModal" title="Confirm Deletion" width="400px">
+        <div class="space-y-4">
+          <p class="text-xs text-slate-600">Are you sure you want to delete this shift assignment? This action cannot be undone.</p>
+        </div>
+        <template #footer>
+          <div class="flex gap-2 w-full justify-end">
+            <SecondaryButton content="Cancel" @click="deleteConfirmModal = false" />
+            <button @click="confirmDelete" class="px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-xs font-semibold cursor-pointer transition-colors shadow-xs">
+              Confirm Delete
+            </button>
+          </div>
+        </template>
+      </ModalGeneric>
     </div>
   </MainContent>
 </template>
@@ -294,7 +300,7 @@ import { useBranchStore } from '../store/branchStore';
 import { useAttendanceStore } from '../store/attendanceStore';
 
 import { storeToRefs } from 'pinia';
-import { Plus, ChevronLeft, ChevronRight, Calendar, Sparkles, Upload, LoaderCircle, Search, AlertTriangle } from '@lucide/vue';
+import { Plus, ChevronLeft, ChevronRight, Calendar, LoaderCircle, Search, AlertTriangle } from '@lucide/vue';
 
 const employeeStore = useEmployeeStore();
 const workShiftStore = useWorkShiftStore();
@@ -311,6 +317,16 @@ const currentDate = ref(new Date());
 const selectedDept = ref(null);
 const selectedBranch = ref(null);
 const selectedStatus = ref('ALL');
+const departmentsList = ref([]);
+const filteredDepartments = computed(() => {
+  if (selectedBranch.value) {
+    return departmentsList.value.filter(d => d.branchId === selectedBranch.value);
+  }
+  return departmentsList.value;
+});
+watch(selectedBranch, () => {
+  selectedDept.value = null;
+});
 
 const employeeShiftsList = ref([]);
 const leaveRequestsList = ref([]);
@@ -361,6 +377,13 @@ const clearAllEmployees = () => {
 };
 
 // GENERATE 7 DAYS OF THE WEEK
+const formatLocalDate = (d) => {
+  const year = d.getFullYear();
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const date = String(d.getDate()).padStart(2, '0');
+  return `${year}-${month}-${date}`;
+};
+
 const weekDays = computed(() => {
   const day = currentDate.value.getDay();
   // Monday is 1, Sunday is 0. Shift start of week to Monday
@@ -370,12 +393,12 @@ const weekDays = computed(() => {
 
   const days = [];
   const englishDayNames = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-  const todayStr = new Date().toISOString().split('T')[0];
+  const todayStr = formatLocalDate(new Date());
 
   for (let i = 0; i < 7; i++) {
     const nextDay = new Date(monday);
     nextDay.setDate(monday.getDate() + i);
-    const dateStr = nextDay.toISOString().split('T')[0];
+    const dateStr = formatLocalDate(nextDay);
     const isWeekend = nextDay.getDay() === 0 || nextDay.getDay() === 6; // Sunday = 0, Saturday = 6
 
     days.push({
@@ -412,12 +435,27 @@ const loadData = async () => {
   try {
     await employeeStore.fetchEmployees(0, 100);
     await workShiftStore.fetchWorkShifts(0, 100);
-    await departmentStore.fetchDepartments();
-    await branchStore.fetchBranches();
+    await branchStore.fetchBranches(0, 100);
+
+    // Fetch departments for each branch dynamically since there is no get-all endpoint
+    const depts = [];
+    const branches = branchStore.branches || [];
+    for (const b of branches) {
+      try {
+        const res = await departmentStore.getDepartmentsByBranch(b.id, 0, 100);
+        const items = res?.data?.data?.items || res?.data?.items || res?.data || [];
+        depts.push(...items);
+      } catch (err) {
+        console.error(`Error fetching departments for branch ${b.id}:`, err);
+      }
+    }
+    departmentsList.value = depts;
 
     // Fetch shift assignments
     const shiftRes = await employeeShiftStore.fetchEmployeeShifts(0, 1000);
+    console.log("shiftRes returned from API:", shiftRes);
     employeeShiftsList.value = shiftRes?.data?.items || shiftRes?.data || [];
+    console.log("Parsed employeeShiftsList:", employeeShiftsList.value);
 
     // Fetch leave requests for LEAVE checking
     const leaveRes = await attendanceStore.fetchLeaveRequests(0, 1000);
@@ -431,12 +469,13 @@ const loadData = async () => {
 
 // CELLS MATCHING LOGIC
 const getCellShift = (employeeId, dateStr) => {
-  const current = new Date(dateStr);
   return employeeShiftsList.value.find(es => {
     if (es.employee?.id !== employeeId) return false;
-    const start = new Date(es.startDate);
-    const end = es.endDate ? new Date(es.endDate) : null;
-    return start <= current && (!end || end >= current);
+    const start = es.startDate;
+    const end = es.endDate || null;
+    const isMatch = start <= dateStr && (!end || end >= dateStr);
+    console.log(`Matching shift for employee ID ${employeeId} on ${dateStr}: start=${start}, end=${end}, isMatch=${isMatch}`);
+    return isMatch;
   });
 };
 
@@ -470,16 +509,24 @@ const calculateTotalHours = (employeeId) => {
   return Math.round(total);
 };
 
+const isoToTime = (isoStr) => {
+  if (!isoStr) return '';
+  if (typeof isoStr === 'string' && isoStr.includes('T')) {
+    const timePart = isoStr.split('T')[1];
+    const parts = timePart.split(':');
+    return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}`;
+  }
+  return isoStr;
+};
+
 const formatShiftTime = (workShift) => {
   if (!workShift || !workShift.startTime || !workShift.endTime) return '—';
-  const fmt = (isoStr) => new Date(isoStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${fmt(workShift.startTime)} - ${fmt(workShift.endTime)}`;
+  return `${isoToTime(workShift.startTime)} - ${isoToTime(workShift.endTime)}`;
 };
 
 const formatShiftTimeSingle = (ws) => {
   if (!ws || !ws.startTime || !ws.endTime) return '';
-  const fmt = (isoStr) => new Date(isoStr).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
-  return `${fmt(ws.startTime)} - ${fmt(ws.endTime)}`;
+  return `${isoToTime(ws.startTime)} - ${isoToTime(ws.endTime)}`;
 };
 
 const getShiftStyle = (employeeShift) => {
@@ -500,8 +547,8 @@ const getShiftStyle = (employeeShift) => {
 const conflicts = computed(() => {
   if (!shiftModal.startDate || selectedEmployees.value.length === 0) return [];
   const list = [];
-  const selStart = new Date(shiftModal.startDate);
-  const selEnd = shiftModal.endDate ? new Date(shiftModal.endDate) : null;
+  const selStart = shiftModal.startDate;
+  const selEnd = shiftModal.endDate || null;
 
   selectedEmployees.value.forEach(empId => {
     const emp = employeeStore.employees.find(e => e.id === empId);
@@ -512,9 +559,9 @@ const conflicts = computed(() => {
       const lrEmpId = lr.employeeId || lr.employee?.id;
       if (lrEmpId !== empId) return false;
       if (lr.status !== 'APPROVED') return false;
-      const start = new Date(lr.startDate);
-      const end = new Date(lr.endDate);
-      return start <= (selEnd || new Date("9999-12-31")) && (selStart <= end);
+      const start = lr.startDate;
+      const end = lr.endDate;
+      return start <= (selEnd || "9999-12-31") && (selStart <= end);
     });
     if (leaveOverlap) {
       list.push(`${emp.fullName} has approved leave from ${leaveOverlap.startDate} to ${leaveOverlap.endDate}.`);
@@ -524,9 +571,9 @@ const conflicts = computed(() => {
     const shiftOverlap = employeeShiftsList.value.find(es => {
       if (es.employee?.id !== empId) return false;
       if (shiftModal.id && es.id === shiftModal.id) return false;
-      const start = new Date(es.startDate);
-      const end = es.endDate ? new Date(es.endDate) : null;
-      return start <= (selEnd || new Date("9999-12-31")) && (end === null || selStart <= end);
+      const start = es.startDate;
+      const end = es.endDate || null;
+      return start <= (selEnd || "9999-12-31") && (end === null || selStart <= end);
     });
     if (shiftOverlap) {
       list.push(`${emp.fullName} has an overlapping shift "${shiftOverlap.workShift?.name}" from ${shiftOverlap.startDate} to ${shiftOverlap.endDate || 'Ongoing'}.`);
@@ -544,6 +591,8 @@ const shiftModal = reactive({
   startDate: '',
   endDate: ''
 });
+
+const deleteConfirmModal = ref(false);
 
 const openAssignModal = async (employee = null, employeeShift = null, dateStr = null) => {
   try {
@@ -563,7 +612,7 @@ const openAssignModal = async (employee = null, employeeShift = null, dateStr = 
       shiftModal.id = null;
       shiftModal.employeeId = null;
       shiftModal.workShiftId = workShifts.value?.[0]?.id || null;
-      shiftModal.startDate = dateStr || new Date().toISOString().split('T')[0];
+      shiftModal.startDate = dateStr || formatLocalDate(new Date());
       shiftModal.endDate = '';
       selectedEmployees.value = employee ? [employee.id] : [];
     }
@@ -632,12 +681,16 @@ const handleSubmit = async () => {
   }
 };
 
-const handleDelete = async () => {
+const handleDelete = () => {
   if (!shiftModal.id) return;
-  if (!confirm("Are you sure you want to delete this shift assignment?")) return;
+  deleteConfirmModal.value = true;
+};
+
+const confirmDelete = async () => {
   try {
     await employeeShiftStore.deleteEmployeeShift(shiftModal.id);
     triggerToast("Shift assignment deleted successfully!", "success");
+    deleteConfirmModal.value = false;
     shiftModal.show = false;
     await loadData();
   } catch (err) {
