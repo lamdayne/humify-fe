@@ -29,6 +29,7 @@ import AccountPage from "../views/AccountPage.vue";
 import ContractPage from "../views/ContractPage.vue";
 import ContractFormPage from "../views/ContractFormPage.vue";
 import ContractDetailPage from "../views/ContractDetailPage.vue";
+import WorkShiftPage from "../views/WorkShiftPage.vue";
 
 const routes = [
     {
@@ -70,7 +71,8 @@ const routes = [
         component: BranchPage,
         name: 'Branches',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'BRANCH'
         }
     },
     {
@@ -78,7 +80,8 @@ const routes = [
         component: DepartmentPage,
         name: 'Departments',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'DEPARTMENT'
         }
     },
     {
@@ -86,7 +89,8 @@ const routes = [
         component: PositionPage,
         name: 'Positions',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'POSITION'
         }
     },
     {
@@ -94,7 +98,8 @@ const routes = [
         component: EmployeePage,
         name: 'Employees',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'EMPLOYEE'
         }
     },
     {
@@ -102,7 +107,8 @@ const routes = [
         component: RolePage,
         name: 'Roles',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'ROLE'
         }
     },
     {
@@ -110,7 +116,8 @@ const routes = [
         component: PermissionPage,
         name: 'Permissions',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            isSystemAdmin: true
         }
     },
     {
@@ -123,7 +130,8 @@ const routes = [
         component: EmployeeFormPage,
         name: 'EmployeeForm',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'EMPLOYEE'
         }
     }
     ,
@@ -152,7 +160,8 @@ const routes = [
         component: ProjectPage,
         name: 'Project',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'PROJECT'
         }
     },
     {
@@ -160,7 +169,8 @@ const routes = [
         component: ProjectDetailPage,
         name: 'ProjectDetail',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'PROJECT'
         }
     },
     {
@@ -168,7 +178,8 @@ const routes = [
         component: LeaveType,
         name: 'LeaveTypes',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'LEAVE'
         }
     },
     {
@@ -176,7 +187,8 @@ const routes = [
         component: PayrollPage,
         name: 'Payroll',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'PAYSLIP'
         }
     },
     {
@@ -184,7 +196,8 @@ const routes = [
         component: PayslipPage,
         name: 'Payslip',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'PAYSLIP'
         }
     },
     {
@@ -192,7 +205,8 @@ const routes = [
         component: PayrollAdminPage,
         name: 'PayrollAdmin',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'PAYROLL'
         }
     },
     {
@@ -200,27 +214,46 @@ const routes = [
         component: AccountPage,
         name: 'AccountManager',
         meta: {
-            requiresAuth: true
+            requiresAuth: true,
+            permission: 'USER'
         }
     }
     ,
     {
+        path: '/work-shifts',
+        component: WorkShiftPage,
+        name: 'WorkShifts',
+        meta: {
+            requiresAuth: true,
+            permission: 'WORK_SHIFT'
+        }
+    },
+    {
         path: '/contracts',
         component: ContractPage,
         name: 'Contracts',
-        meta: { requiresAuth: true }
+        meta: {
+            requiresAuth: true,
+            permission: 'CONTRACT'
+        }
     },
     {
         path: '/contracts/create',
         component: ContractFormPage,
         name: 'ContractCreate',
-        meta: { requiresAuth: true }
+        meta: {
+            requiresAuth: true,
+            permission: 'CONTRACT'
+        }
     },
     {
         path: '/contracts/:id',
         component: ContractDetailPage,
         name: 'ContractDetail',
-        meta: { requiresAuth: true }
+        meta: {
+            requiresAuth: true,
+            permission: 'CONTRACT'
+        }
     },
     {
         path: '/profile',
@@ -261,6 +294,17 @@ router.beforeEach(async (to, from, next) => {
             query: { redirect: to.fullPath }
         })
     }
+
+    if (to.meta.requiresAuth) {
+        if (to.meta.isSystemAdmin && !authStore.isSystemAdmin) {
+            return next({ name: 'NotFound' })
+        }
+
+        if (to.meta.permission && !authStore.isSystemAdmin && !authStore.canView(to.meta.permission)) {
+            return next({ name: 'NotFound' })
+        }
+    }
+
     next()
 })
 
