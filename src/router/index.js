@@ -4,6 +4,7 @@ import LoginPage from "../views/LoginPage.vue";
 import RegisterPage from "../views/RegisterPage.vue";
 import DashboardPage from "../views/DashboardPage.vue";
 import AttendancePage from "../views/AttendancePage.vue";
+import ShiftSchedulePage from "../views/ShiftSchedulePage.vue";
 import BranchPage from "../views/BranchPage.vue";
 import DepartmentPage from "../views/DepartmentPage.vue";
 import PositionPage from "../views/PositionPage.vue";
@@ -62,6 +63,14 @@ const routes = [
         path: '/attendance',
         component: AttendancePage,
         name: 'Attendance',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/shifts',
+        component: ShiftSchedulePage,
+        name: 'Shifts',
         meta: {
             requiresAuth: true
         }

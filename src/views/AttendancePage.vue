@@ -513,9 +513,8 @@ import { useAttendanceStore } from '../store/attendanceStore';
 import { useAuthStore } from '../store/authStore';
 import { useLeaveTypeStore } from '../store/leaveTypeStore';
 import { useUploadStore } from '../store/uploadStore';
-
 import { storeToRefs } from 'pinia';
-import { Clock, LogIn, LogOut, AlertTriangle, Paperclip, Upload, X, LoaderCircle } from '@lucide/vue';
+import { Clock, LogIn, LogOut, AlertTriangle, Paperclip, Upload, X, LoaderCircle, Calendar, Pencil, Trash2, Plus } from '@lucide/vue';
 
 const attendanceStore = useAttendanceStore();
 const authStore = useAuthStore();
@@ -620,6 +619,8 @@ const cancelLeaveModal = reactive({
   show: false,
   requestId: null
 });
+
+
 
 const selectedLeaveType = computed(() => {
   if (!leaveTypes.value || !leaveModal.leaveTypeId) return null;

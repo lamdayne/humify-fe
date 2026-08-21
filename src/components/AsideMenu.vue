@@ -182,10 +182,18 @@ const menus = [
         ]
     },
     {
+
         label: 'Work Shifts',
         icon: Timer,
         name: 'WorkShifts',
         permission: 'WORK_SHIFT'
+    },   
+    { 
+        label: 'Shifts',
+        icon: CalendarCheck,
+        name: 'Shifts',
+        permission: null
+
     },
     {
         label: 'Leave Types',
