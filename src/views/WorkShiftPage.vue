@@ -38,12 +38,12 @@
 
       <!-- Create / Edit Modal -->
       <Teleport to="body">
-        <div v-if="shiftModal.show" class="fixed inset-0 z-[500] flex items-start justify-center overflow-y-auto py-8 px-4">
+        <div v-if="shiftModal.show" class="fixed inset-0 z-[500] flex items-center justify-center p-4 sm:p-6">
           <div class="fixed inset-0 bg-slate-900/50 backdrop-blur-[2px]" @click="closeShiftModal" />
-          <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-[680px] z-10 my-auto">
+          <div class="relative bg-white rounded-xl shadow-2xl w-full max-w-[680px] z-10 max-h-[calc(100vh-3rem)] flex flex-col overflow-hidden">
 
             <!-- Modal Header -->
-            <div class="px-6 py-5 border-b border-slate-100">
+            <div class="px-6 py-5 border-b border-slate-100 shrink-0">
               <div class="flex items-start justify-between">
                 <div>
                   <h2 class="text-lg font-bold text-slate-900">
@@ -58,7 +58,7 @@
             </div>
 
             <!-- Modal Body -->
-            <div class="px-6 py-5 space-y-6 max-h-[75vh] overflow-y-auto">
+            <div class="px-6 py-5 space-y-6 overflow-y-auto flex-1">
 
               <!-- Basic Details -->
               <div>
@@ -235,7 +235,7 @@
             </div>
 
             <!-- Modal Footer -->
-            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3">
+            <div class="px-6 py-4 border-t border-slate-100 flex items-center justify-end gap-3 shrink-0 bg-white">
               <button
                   @click="closeShiftModal"
                   class="px-5 py-2.5 border border-slate-200 text-sm font-medium rounded-lg text-slate-600 bg-white hover:bg-slate-50 transition-colors cursor-pointer"
@@ -255,6 +255,36 @@
         </div>
       </Teleport>
 
+      <!-- Action Dropdown Menu Teleported to Body -->
+      <Teleport to="body">
+        <div
+            v-if="activeActionShift"
+            class="fixed w-36 bg-white border border-slate-200 rounded-lg shadow-xl z-[9999] py-1 overflow-hidden"
+            :style="{ top: menuPos.top, left: menuPos.left }"
+            @click.stop
+        >
+          <button
+              @click="openShiftModal('edit', activeActionShift); closeActionMenu()"
+              class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            <Pencil class="w-3.5 h-3.5" /> Edit
+          </button>
+          <button
+              @click="handleToggleStatus(activeActionShift); closeActionMenu()"
+              class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
+          >
+            <Power class="w-3.5 h-3.5 text-slate-400" />
+            {{ activeActionShift.status === true || activeActionShift.status === 'ACTIVE' ? 'Set Inactive' : 'Set Active' }}
+          </button>
+          <button
+              @click="handleDelete(activeActionShift.id); closeActionMenu()"
+              class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
+          >
+            <Trash2 class="w-3.5 h-3.5" /> Delete
+          </button>
+        </div>
+      </Teleport>
+
       <!-- ============================== PAGE HEADER ============================== -->
       <div class="flex justify-between items-start gap-6">
         <div class="min-w-0">
@@ -264,13 +294,6 @@
           </p>
         </div>
         <div class="flex items-center gap-3 shrink-0">
-          <button
-              @click="handleExportCSV"
-              class="flex items-center gap-2 px-4 py-2.5 border border-slate-200 bg-white text-sm font-medium text-slate-600 rounded-lg hover:bg-slate-50 hover:border-slate-300 transition-all shadow-sm cursor-pointer"
-          >
-            <Download class="w-4 h-4" />
-            Export CSV
-          </button>
           <button
               @click="openShiftModal('create')"
               class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg shadow-sm transition-all active:scale-[0.98] cursor-pointer"
@@ -437,61 +460,31 @@
 
               <!-- Actions -->
               <td class="px-5 py-4 text-right">
-                <div class="relative inline-block">
+                <div class="inline-block">
                   <button
-                      @click.stop="toggleActionMenu(shift.id)"
+                      @click.stop="toggleActionMenu(shift, $event)"
                       class="w-7 h-7 rounded-md flex items-center justify-center text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                   >
                     <MoreVertical class="w-4 h-4" />
                   </button>
-                  <div
-                      v-if="openActionMenu === shift.id"
-                      class="absolute right-0 mt-1 w-36 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1 overflow-hidden"
-                  >
-                    <button
-                        @click="openShiftModal('edit', shift); openActionMenu = null"
-                        class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-                    >
-                      <Pencil class="w-3.5 h-3.5" /> Edit
-                    </button>
-                    <button
-                        @click="handleToggleStatus(shift); openActionMenu = null"
-                        class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-slate-600 hover:bg-slate-50 transition-colors cursor-pointer"
-                    >
-                      <Power class="w-3.5 h-3.5 text-slate-400" />
-                      {{ shift.status === true || shift.status === 'ACTIVE' ? 'Set Inactive' : 'Set Active' }}
-                    </button>
-                    <button
-                        @click="handleDelete(shift.id); openActionMenu = null"
-                        class="w-full flex items-center gap-2.5 px-3 py-2 text-sm text-red-500 hover:bg-red-50 transition-colors cursor-pointer"
-                    >
-                      <Trash2 class="w-3.5 h-3.5" /> Delete
-                    </button>
-                  </div>
                 </div>
               </td>
             </tr>
             </tbody>
           </table>
         </div>
-
-        <!-- Pagination footer -->
-        <div class="flex items-center justify-between px-5 py-3 border-t border-slate-100">
-          <span class="text-xs text-slate-400 font-light">
-            Showing {{ Math.min((pagination.pageNo - 1) * pagination.pageSize + 1, pagination.totalElements) }} to
-            {{ Math.min(pagination.pageNo * pagination.pageSize, pagination.totalElements) }}
-            of {{ pagination.totalElements }} entries
-          </span>
-          <PaginationSection
-              :page-size="pagination.pageSize"
-              :current-page="pagination.pageNo"
-              :item-label="'Shifts'"
-              :total-items="pagination.totalElements"
-              :total-page="pagination.totalPages"
-              @changePage="handlePageChange"
-          />
-        </div>
       </div>
+
+      <!-- Pagination outside table card -->
+      <PaginationSection
+          v-if="filteredShifts.length > 0 && !isLoading"
+          :page-size="pagination.pageSize"
+          :current-page="pagination.pageNo"
+          :item-label="'Shifts'"
+          :total-items="pagination.totalElements"
+          :total-page="pagination.totalPages"
+          @changePage="handlePageChange"
+      />
 
     </div>
   </MainContent>
@@ -506,18 +499,19 @@ import StatusBadge from '../components/StatusBadge.vue';
 import PaginationSection from '../components/PaginationSection.vue';
 import { useWorkShiftStore } from '../store/workShiftStore';
 import {
-  Clock, Sun, Moon, Plus, Download, Search, Filter,
+  Clock, Sun, Moon, Plus, Search, Filter,
   Pencil, Trash2, MoreVertical, HelpCircle, Utensils, Eye, X, Save, Power
 } from '@lucide/vue';
 
 const workShiftStore = useWorkShiftStore();
 
 // ─── State ───────────────────────────────────────────────────────────────────
-const searchQuery    = ref('');
-const statusFilter   = ref('ALL');
-const isLoading      = ref(false);
-const isSaving       = ref(false);
-const openActionMenu = ref(null);
+const searchQuery       = ref('');
+const statusFilter      = ref('ALL');
+const isLoading         = ref(false);
+const isSaving          = ref(false);
+const activeActionShift = ref(null);
+const menuPos           = reactive({ top: '0px', left: '0px' });
 
 const pagination = reactive({
   pageNo: 1,
@@ -698,19 +692,47 @@ const triggerToast = (message, type = 'success') => {
   setTimeout(() => { toast.show = false; }, 3500);
 };
 
-const toggleActionMenu = (id) => {
-  openActionMenu.value = openActionMenu.value === id ? null : id;
+const toggleActionMenu = (shift, event) => {
+  if (activeActionShift.value?.id === shift.id) {
+    activeActionShift.value = null;
+    return;
+  }
+  const rect = event.currentTarget.getBoundingClientRect();
+  const menuWidth = 144; // 144px corresponds to w-36
+  const menuHeight = 125; // approx height of menu dropdown
+
+  // If opening downwards overflows the viewport, pop upwards above the button
+  if (rect.bottom + menuHeight + 8 > window.innerHeight) {
+    menuPos.top = `${Math.max(8, rect.top - menuHeight - 4)}px`;
+  } else {
+    menuPos.top = `${rect.bottom + 4}px`;
+  }
+
+  menuPos.left = `${rect.right - menuWidth}px`;
+  activeActionShift.value = shift;
 };
 
-const closeMenuOnClick = () => { openActionMenu.value = null; };
+const closeActionMenu = () => {
+  activeActionShift.value = null;
+};
+
+const handleWindowEvents = () => {
+  if (activeActionShift.value) {
+    closeActionMenu();
+  }
+};
 
 onMounted(() => {
-  document.addEventListener('click', closeMenuOnClick);
+  document.addEventListener('click', handleWindowEvents);
+  window.addEventListener('scroll', handleWindowEvents, true);
+  window.addEventListener('resize', handleWindowEvents);
   loadShifts(0);
 });
 
 onUnmounted(() => {
-  document.removeEventListener('click', closeMenuOnClick);
+  document.removeEventListener('click', handleWindowEvents);
+  window.removeEventListener('scroll', handleWindowEvents, true);
+  window.removeEventListener('resize', handleWindowEvents);
 });
 
 // ─── Data loading ─────────────────────────────────────────────────────────────
@@ -848,22 +870,5 @@ const handleConfirmDelete = async () => {
     triggerToast(err.response?.data?.message || 'Error deleting work shift.', 'error');
   }
 };
-
-// ─── Export CSV ───────────────────────────────────────────────────────────────
-const handleExportCSV = () => {
-  const headers = ['Code', 'Shift Name', 'Check-in', 'Check-out', 'Break Start', 'Break End', 'Grace (min)', 'Overnight', 'Status'];
-  const rows    = shifts.value.map(s => [
-    s.shiftCode, s.name || s.shiftName,
-    isoToTime(s.startTime || s.checkInTime), isoToTime(s.endTime || s.checkOutTime),
-    isoToTime(s.breakStartTime || s.breakStart) || '', isoToTime(s.breakEndTime || s.breakEnd) || '',
-    s.gracePeriodMinutes ?? s.gracePeriod ?? '', s.isOvernight ? 'Yes' : 'No',
-    s.status === true || s.status === 'ACTIVE' ? 'ACTIVE' : 'INACTIVE',
-  ]);
-  const csv  = [headers, ...rows].map(r => r.join(',')).join('\n');
-  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = 'work_shifts.csv'; a.click();
-  URL.revokeObjectURL(url);
-};
 </script>
+
