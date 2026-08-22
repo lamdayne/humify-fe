@@ -109,21 +109,20 @@
                 </td>
 
                 <!-- Week Cells -->
-                <td v-for="day in weekDays" :key="day.dateStr" class="py-4 px-2 border-l border-slate-100 text-center align-middle relative group/cell" :class="{ 'bg-blue-50/10': day.isToday }">
-                  <!-- Case 1: Shift Assigned -->
-                  <div v-if="getCellShift(emp.id, day.dateStr)" class="mx-auto select-none">
-                    <div @click="openAssignModal(emp, getCellShift(emp.id, day.dateStr))" 
-                         class="cursor-pointer hover:scale-105 transition-transform inline-flex flex-col justify-center items-center px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-2xs max-w-[95px] truncate"
-                         :style="getShiftStyle(getCellShift(emp.id, day.dateStr))">
-                      <span>{{ formatShiftTime(getCellShift(emp.id, day.dateStr).workShift) }}</span>
-                    </div>
-                  </div>
-
-                  <!-- Case 2: Leave Request -->
-                  <div v-else-if="getCellLeave(emp.id, day.dateStr)" class="mx-auto">
+                <td v-for="day in weekDays" :key="day.dateStr" class="py-4 px-2 border-l border-slate-100 text-center align-middle relative group/cell" :class="{ 'bg-blue-50/10': day.isToday }">                  <!-- Case 1: Leave Request -->
+                  <div v-if="getCellLeave(emp.id, day.dateStr)" class="mx-auto">
                     <span class="inline-block px-2.5 py-1 bg-red-50 text-red-600 border border-red-100 rounded-md text-[10px] font-bold tracking-tight">
                       ON LEAVE
                     </span>
+                  </div>
+
+                  <!-- Case 2: Shift Assigned -->
+                  <div v-else-if="getCellShift(emp.id, day.dateStr)" class="mx-auto select-none">
+                    <div @click="openAssignModal(emp, getCellShift(emp.id, day.dateStr))" 
+                         class="cursor-pointer hover:scale-105 transition-transform inline-flex flex-col justify-center items-center px-2.5 py-1 rounded-md text-[11px] font-semibold shadow-2xs max-w-[95px] truncate"
+                         :style="getShiftStyle(getCellShift(emp.id, day.dateStr))">
+                       <span>{{ formatShiftTime(getCellShift(emp.id, day.dateStr).workShift) }}</span>
+                    </div>
                   </div>
 
                   <!-- Case 3: Weekend (OFF) -->
@@ -150,6 +149,17 @@
           </table>
         </div>
       </div>
+
+      <!-- Pagination controls -->
+      <PaginationSection
+        v-if="pagination.totalItems > 0"
+        :page-size="pagination.pageSize"
+        :current-page="pagination.pageNo"
+        :item-label="'employees'"
+        :total-items="pagination.totalItems"
+        :total-page="pagination.totalPages"
+        @changePage="handlePageChange"
+      />
 
       <!-- BULK / SINGLE ASSIGN SHIFT MODAL -->
       <ModalGeneric v-model="shiftModal.show" :title="shiftModal.id ? 'Update Shift Assignment' : 'Bulk Shift Assignment'" width="500px">
@@ -291,6 +301,7 @@ import PrimaryButton from '../components/PrimaryButton.vue';
 import SecondaryButton from '../components/SecondaryButton.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
+import PaginationSection from '../components/PaginationSection.vue';
 
 import { useEmployeeStore } from '../store/employeeStore';
 import { useWorkShiftStore } from '../store/workShiftStore';
@@ -314,6 +325,14 @@ const { workShifts } = storeToRefs(workShiftStore);
 const isLoading = ref(false);
 const currentDate = ref(new Date());
 
+const pagination = reactive({
+  pageNo: 1,
+  pageSize: 10,
+  totalItems: 0,
+  totalPages: 0,
+  itemLabel: 'Employees'
+});
+
 const selectedDept = ref(null);
 const selectedBranch = ref(null);
 const selectedStatus = ref('ALL');
@@ -324,8 +343,21 @@ const filteredDepartments = computed(() => {
   }
   return departmentsList.value;
 });
+
+const handlePageChange = (page) => {
+  pagination.pageNo = page;
+  loadData();
+};
+
 watch(selectedBranch, () => {
   selectedDept.value = null;
+  pagination.pageNo = 1;
+  loadData();
+});
+
+watch(selectedDept, () => {
+  pagination.pageNo = 1;
+  loadData();
 });
 
 const employeeShiftsList = ref([]);
@@ -342,20 +374,15 @@ const triggerToast = (msg, type = 'success') => {
 
 // FILTERED EMPLOYEES
 const filteredEmployees = computed(() => {
-  let list = employeeStore.employees || [];
-  if (selectedDept.value) {
-    list = list.filter(e => e.departmentId === selectedDept.value);
-  }
-  if (selectedBranch.value) {
-    list = list.filter(e => e.branchId === selectedBranch.value);
-  }
-  return list;
+  return employeeStore.employees || [];
 });
+
+const bulkEmployeesList = ref([]);
 
 // SEARCH EMPLOYEES INSIDE MODAL
 const searchedEmployees = computed(() => {
   const term = employeeSearchTerm.value.toLowerCase().trim();
-  const list = employeeStore.employees || [];
+  const list = bulkEmployeesList.value;
   if (!term) return list;
   return list.filter(e => 
     (e.fullName || '').toLowerCase().includes(term) ||
@@ -365,7 +392,7 @@ const searchedEmployees = computed(() => {
 
 const editingEmployee = computed(() => {
   if (!shiftModal.id || !shiftModal.employeeId) return null;
-  return employeeStore.employees.find(e => e.id === shiftModal.employeeId);
+  return bulkEmployeesList.value.find(e => e.id === shiftModal.employeeId) || employeeStore.employees.find(e => e.id === shiftModal.employeeId);
 });
 
 const selectAllEmployees = () => {
@@ -433,23 +460,40 @@ const jumpToToday = () => {
 const loadData = async () => {
   isLoading.value = true;
   try {
-    await employeeStore.fetchEmployees(0, 100);
-    await workShiftStore.fetchWorkShifts(0, 100);
-    await branchStore.fetchBranches(0, 100);
+    if (branchStore.branches.length === 0) {
+      await branchStore.fetchBranches(0, 100);
+    }
+    if (workShifts.value.length === 0) {
+      await workShiftStore.fetchWorkShifts(0, 100);
+    }
 
     // Fetch departments for each branch dynamically since there is no get-all endpoint
-    const depts = [];
-    const branches = branchStore.branches || [];
-    for (const b of branches) {
-      try {
-        const res = await departmentStore.getDepartmentsByBranch(b.id, 0, 100);
-        const items = res?.data?.data?.items || res?.data?.items || res?.data || [];
-        depts.push(...items);
-      } catch (err) {
-        console.error(`Error fetching departments for branch ${b.id}:`, err);
+    if (departmentsList.value.length === 0) {
+      const depts = [];
+      const branches = branchStore.branches || [];
+      for (const b of branches) {
+        try {
+          const res = await departmentStore.getDepartmentsByBranch(b.id, 0, 100);
+          const items = res?.data?.data?.items || res?.data?.items || res?.data || [];
+          depts.push(...items);
+        } catch (err) {
+          console.error(`Error fetching departments for branch ${b.id}:`, err);
+        }
       }
+      departmentsList.value = depts;
     }
-    departmentsList.value = depts;
+
+    // Fetch employees for current page and filters
+    const empRes = await employeeStore.fetchEmployeesFiltered(
+      pagination.pageNo - 1,
+      pagination.pageSize,
+      {
+        branchId: selectedBranch.value,
+        departmentId: selectedDept.value
+      }
+    );
+    pagination.totalItems = empRes?.data?.totalElements || 0;
+    pagination.totalPages = empRes?.data?.totalPages || 0;
 
     // Fetch shift assignments
     const shiftRes = await employeeShiftStore.fetchEmployeeShifts(0, 1000);
@@ -597,7 +641,8 @@ const deleteConfirmModal = ref(false);
 const openAssignModal = async (employee = null, employeeShift = null, dateStr = null) => {
   try {
     await workShiftStore.fetchWorkShifts(0, 100);
-    await employeeStore.fetchEmployees(0, 100);
+    const empRes = await employeeStore.fetchEmployeesNoMutate(0, 1000);
+    bulkEmployeesList.value = empRes?.data?.items || empRes?.items || [];
 
     employeeSearchTerm.value = '';
 
