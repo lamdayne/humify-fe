@@ -15,7 +15,7 @@ export const useEmployeeStore = defineStore('employee', () => {
         }
     }
 
-    const searchEmployees = async (keyword = '', page = 0, size = 20) => {
+    const searchEmployees = async (keyword = '', page = 0, size = 10, status = null) => {
         try {
             const params = new URLSearchParams();
             params.append('page', page);
@@ -23,14 +23,19 @@ export const useEmployeeStore = defineStore('employee', () => {
 
             const kw = keyword.trim();
             if (kw) {
-                params.append('params', `fullName:*${kw}*`);
-                params.append('params', `employeeCode:*${kw}*'`);
+                params.append('params', `fullName~${kw}'`);
+                params.append('params', `employeeCode~${kw}'`);
+                params.append('params', `email~${kw}'`);
+            }
+            if (status && status !== 'ALL') {
+                params.append('params', `status:${status}`);
             }
 
-            const res = await axiosInstance.get(`/employees/filter?${params.toString()}`)
-            return res.data
+            const res = await axiosInstance.get(`/employees/filter?${params.toString()}`);
+            employees.value = res.data.data.items || [];
+            return res.data;
         } catch (error) {
-            throw error
+            throw error;
         }
     }
 
@@ -61,6 +66,26 @@ export const useEmployeeStore = defineStore('employee', () => {
     const updateEmployee = async (id, employeeData) => {
         try {
             const res = await axiosInstance.put(`/employees/${id}`, employeeData)
+            return res.data
+        } catch (error) {
+            throw error
+        }
+    }
+
+    const assignNfcCard = async (id, employeeData, nfcCardUid) => {
+        try {
+            const payload = {
+                fullName: employeeData.fullName,
+                email: employeeData.email,
+                gender: employeeData.gender || 'MALE',
+                phone: employeeData.phone || '',
+                address: employeeData.address || '',
+                dateOfBirth: employeeData.dateOfBirth || null,
+                startDate: employeeData.startDate || null,
+                avatarUrl: employeeData.avatarUrl || null,
+                nfcCardUid: nfcCardUid !== undefined ? nfcCardUid : employeeData.nfcCardUid
+            }
+            const res = await axiosInstance.put(`/employees/${id}`, payload)
             return res.data
         } catch (error) {
             throw error
@@ -100,6 +125,7 @@ export const useEmployeeStore = defineStore('employee', () => {
         searchEmployees,
         createEmployee,
         updateEmployee,
+        assignNfcCard,
         deleteEmployee,
         importEmployees,
         transferEmployee,
