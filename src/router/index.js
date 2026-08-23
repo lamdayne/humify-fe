@@ -234,7 +234,8 @@ const routes = [
         name: 'WorkShifts',
         meta: {
             requiresAuth: true,
-            permission: 'WORK_SHIFT'
+            permission: 'WORK_SHIFT',
+            hrOnly: true
         }
     },
     {
@@ -259,6 +260,15 @@ const routes = [
         path: '/contracts/:id',
         component: ContractDetailPage,
         name: 'ContractDetail',
+        meta: {
+            requiresAuth: true,
+            permission: 'CONTRACT'
+        }
+    },
+    {
+        path: '/contracts/:id/edit',
+        component: ContractFormPage,
+        name: 'ContractEdit',
         meta: {
             requiresAuth: true,
             permission: 'CONTRACT'
@@ -311,6 +321,22 @@ router.beforeEach(async (to, from, next) => {
 
         if (to.meta.permission && !authStore.isSystemAdmin && !authStore.canView(to.meta.permission)) {
             return next({ name: 'NotFound' })
+        }
+
+        // hrOnly: chỉ cho HR / Admin vào, Employee bị redirect về Dashboard
+        if (to.meta.hrOnly && !authStore.isSystemAdmin) {
+            const perms = authStore.permissions || []
+            const hrPerms = ['FULL_ACCESS', 'WORK_SHIFT_FULL', 'WORK_SHIFT_CREATE', 'WORK_SHIFT_UPDATE', 'WORK_SHIFT_DELETE', 'WORK_SHIFT_WRITE']
+            const user = authStore.user || {}
+            const roles = (user.roles || []).map(r => (typeof r === 'string' ? r : r.name || '').toUpperCase())
+            const hrRoles = ['HR', 'ADMIN', 'HR_MANAGER', 'ROLE_HR', 'ROLE_ADMIN', 'COMPANY_ADMIN', 'SYSTEM_ADMIN']
+
+            const hasHRPerm = perms.some(p => hrPerms.includes(typeof p === 'string' ? p : p.name || ''))
+            const hasHRRole = roles.some(r => hrRoles.includes(r))
+
+            if (!hasHRPerm && !hasHRRole) {
+                return next({ name: 'Dashboard' })
+            }
         }
     }
 

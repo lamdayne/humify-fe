@@ -294,7 +294,9 @@
           </p>
         </div>
         <div class="flex items-center gap-3 shrink-0">
+          <!-- Chỉ HR / Company Admin mới thấy nút Create -->
           <button
+              v-if="canManageShift"
               @click="openShiftModal('create')"
               class="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white rounded-lg shadow-sm transition-all active:scale-[0.98] cursor-pointer"
               style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);"
@@ -302,6 +304,8 @@
             <Plus class="w-4 h-4" />
             Create New Shift
           </button>
+          <!-- Badge chỉ đọc cho Employee -->
+          <span v-else class="text-xs text-slate-400 bg-slate-100 px-3 py-2 rounded-lg font-medium">View Only</span>
         </div>
       </div>
 
@@ -373,7 +377,8 @@
               <th class="px-5 py-3.5">Grace</th>
               <th class="px-5 py-3.5">Pts</th>
               <th class="px-5 py-3.5">Status</th>
-              <th class="px-5 py-3.5 text-right">Actions</th>
+              <!-- Chỉ hiển thị cột Actions cho HR/Admin -->
+              <th v-if="canManageShift" class="px-5 py-3.5 text-right">Actions</th>
             </tr>
             </thead>
             <tbody class="divide-y divide-slate-100 text-sm text-slate-700">
@@ -383,11 +388,11 @@
             </tr>
 
             <tr v-else-if="filteredShifts.length === 0">
-              <td colspan="8" class="px-6 py-12 text-center">
+              <td :colspan="canManageShift ? 8 : 7" class="px-6 py-12 text-center">
                 <div class="flex flex-col items-center gap-2">
                   <Clock class="w-8 h-8 text-slate-200" />
                   <p class="text-slate-400 font-light text-sm">No work shifts found.</p>
-                  <button @click="openShiftModal('create')" class="text-indigo-600 text-xs font-medium hover:underline cursor-pointer">
+                  <button v-if="canManageShift" @click="openShiftModal('create')" class="text-indigo-600 text-xs font-medium hover:underline cursor-pointer">
                     + Create your first shift
                   </button>
                 </div>
@@ -458,8 +463,8 @@
                 </StatusBadge>
               </td>
 
-              <!-- Actions -->
-              <td class="px-5 py-4 text-right">
+              <!-- Actions: chỉ HR/Admin mới thấy -->
+              <td v-if="canManageShift" class="px-5 py-4 text-right">
                 <div class="inline-block">
                   <button
                       @click.stop="toggleActionMenu(shift, $event)"
@@ -498,12 +503,34 @@ import ModalGeneric from '../components/ModalGeneric.vue';
 import StatusBadge from '../components/StatusBadge.vue';
 import PaginationSection from '../components/PaginationSection.vue';
 import { useWorkShiftStore } from '../store/workShiftStore';
+import { useAuthStore } from '../store/authStore';
 import {
   Clock, Sun, Moon, Plus, Search, Filter,
   Pencil, Trash2, MoreVertical, HelpCircle, Utensils, Eye, X, Save, Power
 } from '@lucide/vue';
 
 const workShiftStore = useWorkShiftStore();
+const authStore = useAuthStore();
+
+// ─── Phân quyền: chỉ HR / Company Admin mới được thao tác ─────────────────────
+const canManageShift = computed(() => {
+  if (authStore.isSystemAdmin) return true;
+
+  const user = authStore.user || {};
+  const userRoles = user.roles || [];
+  const userPerms = authStore.permissions || user.permissions || [];
+
+  const roleNames = userRoles.map(r => (typeof r === 'string' ? r : r.name || '').toUpperCase());
+  const permNames = userPerms.map(p => (typeof p === 'string' ? p : p.name || '').toUpperCase());
+
+  // Kiểm tra roles HR / Company Admin
+  const hrRoles = ['HR', 'ADMIN', 'HR_MANAGER', 'ROLE_HR', 'ROLE_ADMIN', 'COMPANY_ADMIN', 'SYSTEM_ADMIN'];
+  if (roleNames.some(r => hrRoles.includes(r))) return true;
+
+  // Kiểm tra permissions liên quan đến WORK_SHIFT
+  const shiftPerms = ['FULL_ACCESS', 'WORK_SHIFT_FULL', 'WORK_SHIFT_CREATE', 'WORK_SHIFT_UPDATE', 'WORK_SHIFT_DELETE', 'WORK_SHIFT_WRITE'];
+  return permNames.some(p => shiftPerms.includes(p));
+});
 
 // ─── State ───────────────────────────────────────────────────────────────────
 const searchQuery       = ref('');
