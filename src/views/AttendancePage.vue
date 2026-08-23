@@ -114,8 +114,7 @@
               <td class="py-4 px-6 font-medium text-slate-900">{{ item.workDate }}</td>
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkInTime) }}</td>
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkOutTime) }}</td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.checkOutTime ? (parseFloat(item.workedHours) || 0).toFixed(1) + 'h' : '--' }}</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ calcWorkedHours(item.checkInTime, item.checkOutTime) }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openCorrectionModal(item)" class="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer">
@@ -226,8 +225,7 @@
               <td class="py-4 px-6 font-mono text-xs text-slate-600">
                 {{ formatTime(item.checkInTime) }} – {{ formatTime(item.checkOutTime) }}
               </td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.checkOutTime ? (parseFloat(item.workedHours) || 0).toFixed(1) + 'h' : ' ' }}</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ calcWorkedHours(item.checkInTime, item.checkOutTime) }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openManualUpdateModal(item)" class="text-xs text-slate-600 hover:text-black font-semibold border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
@@ -639,6 +637,19 @@ const isSingleDayLeave = computed(() => {
 const formatTime = (isoString) => {
   if (!isoString) return '—';
   return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+// Tính worked hours trực tiếp từ checkIn/checkOut, hiển thị dạng "Xh Ym"
+const calcWorkedHours = (checkInTime, checkOutTime) => {
+  if (!checkInTime || !checkOutTime) return '--';
+  const diffMs = new Date(checkOutTime) - new Date(checkInTime);
+  if (diffMs <= 0) return '--';
+  const totalMinutes = Math.floor(diffMs / 1000 / 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 };
 
 // 🌟 XỬ LÝ UPLOAD FILE NGHỈ PHÉP LÊN CLOUDINARY
