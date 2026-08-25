@@ -114,7 +114,7 @@
               <td class="py-4 px-6 font-medium text-slate-900">{{ item.workDate }}</td>
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkInTime) }}</td>
               <td class="py-4 px-6 font-mono text-xs text-slate-600">{{ formatTime(item.checkOutTime) }}</td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ calcWorkedHours(item.checkInTime, item.checkOutTime) }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openCorrectionModal(item)" class="text-xs text-blue-600 hover:text-blue-800 font-semibold cursor-pointer">
@@ -125,6 +125,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: MY ATTENDANCE -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="myAttendancePag.pageSize"
+          :current-page="myAttendancePag.pageNo"
+          :item-label="'records'"
+          :total-items="myAttendancePag.totalElements"
+          :total-page="myAttendancePag.totalPages"
+          @changePage="(p) => handlePageChange('my-attendance', p)"
+        />
       </div>
 
       <!-- TAB 2: MY CORRECTIONS -->
@@ -152,6 +162,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: MY CORRECTIONS -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="myCorrectionsPag.pageSize"
+          :current-page="myCorrectionsPag.pageNo"
+          :item-label="'requests'"
+          :total-items="myCorrectionsPag.totalElements"
+          :total-page="myCorrectionsPag.totalPages"
+          @changePage="(p) => handlePageChange('my-corrections', p)"
+        />
       </div>
 
       <!-- TAB 3: MY LEAVES (CÁ NHÂN XEM VÀ HỦY ĐƠN) -->
@@ -198,6 +218,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: MY LEAVES -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="myLeavesPag.pageSize"
+          :current-page="myLeavesPag.pageNo"
+          :item-label="'requests'"
+          :total-items="myLeavesPag.totalElements"
+          :total-page="myLeavesPag.totalPages"
+          @changePage="(p) => handlePageChange('my-leaves', p)"
+        />
       </div>
 
       <!-- TAB 4: HR MANAGEMENT -->
@@ -225,7 +255,7 @@
               <td class="py-4 px-6 font-mono text-xs text-slate-600">
                 {{ formatTime(item.checkInTime) }} – {{ formatTime(item.checkOutTime) }}
               </td>
-              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ item.workedHours }}h</td>
+              <td class="py-4 px-6 text-center font-mono text-xs font-semibold">{{ calcWorkedHours(item.checkInTime, item.checkOutTime) }}</td>
               <td class="py-4 px-6 text-center"><StatusBadge :content="item.status" :type="item.status" /></td>
               <td class="py-4 px-6 text-right">
                 <button @click="openManualUpdateModal(item)" class="text-xs text-slate-600 hover:text-black font-semibold border border-slate-200 px-3 py-1.5 rounded-lg hover:bg-slate-50 cursor-pointer">
@@ -236,6 +266,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: HR ATTENDANCE -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="hrAttendancePag.pageSize"
+          :current-page="hrAttendancePag.pageNo"
+          :item-label="'records'"
+          :total-items="hrAttendancePag.totalElements"
+          :total-page="hrAttendancePag.totalPages"
+          @changePage="(p) => handlePageChange('hr-attendance', p)"
+        />
       </div>
 
       <!-- TAB 5: CORRECTIONS APPROVAL -->
@@ -279,6 +319,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: HR CORRECTIONS -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="hrCorrectionsPag.pageSize"
+          :current-page="hrCorrectionsPag.pageNo"
+          :item-label="'requests'"
+          :total-items="hrCorrectionsPag.totalElements"
+          :total-page="hrCorrectionsPag.totalPages"
+          @changePage="(p) => handlePageChange('hr-corrections', p)"
+        />
       </div>
 
       <!-- TAB 6: LEAVE APPROVALS (HR DUYỆT ĐƠN NGHỈ PHÉP TOÀN CÔNG TY) -->
@@ -329,6 +379,16 @@
             </tbody>
           </table>
         </div>
+        <!-- PAGINATION: HR LEAVES -->
+        <PaginationSection
+          class="mt-4"
+          :page-size="hrLeavesPag.pageSize"
+          :current-page="hrLeavesPag.pageNo"
+          :item-label="'requests'"
+          :total-items="hrLeavesPag.totalElements"
+          :total-page="hrLeavesPag.totalPages"
+          @changePage="(p) => handlePageChange('hr-leaves', p)"
+        />
       </div>
 
       <!-- MODAL 1: GIẢI TRÌNH CÔNG -->
@@ -507,13 +567,13 @@ import StatusBadge from '../components/StatusBadge.vue';
 import ToastMessage from '../components/ToastMessage.vue';
 import ModalGeneric from '../components/ModalGeneric.vue';
 import DateTimePicker from '../components/DateTimePicker.vue';
+import PaginationSection from '../components/PaginationSection.vue';
 import { useAttendanceStore } from '../store/attendanceStore';
 import { useAuthStore } from '../store/authStore';
 import { useLeaveTypeStore } from '../store/leaveTypeStore';
 import { useUploadStore } from '../store/uploadStore';
-
 import { storeToRefs } from 'pinia';
-import { Clock, LogIn, LogOut, AlertTriangle, Paperclip, Upload, X, LoaderCircle } from '@lucide/vue';
+import { Clock, LogIn, LogOut, AlertTriangle, Paperclip, Upload, X, LoaderCircle, Calendar, Pencil, Trash2, Plus } from '@lucide/vue';
 
 const attendanceStore = useAttendanceStore();
 const authStore = useAuthStore();
@@ -537,6 +597,25 @@ const myLeaves = ref([]);
 const hrAttendances = ref([]);
 const hrCorrections = ref([]);
 const hrLeaves = ref([]);
+
+// ---- Pagination state cho từng tab ----
+const PAGE_SIZE = 10;
+
+const myAttendancePag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+const myCorrectionsPag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+const myLeavesPag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+const hrAttendancePag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+const hrCorrectionsPag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+const hrLeavesPag = reactive({ pageNo: 1, pageSize: PAGE_SIZE, totalElements: 0, totalPages: 1 });
+
+const handlePageChange = (tab, page) => {
+  if (tab === 'my-attendance') { myAttendancePag.pageNo = page; loadMyAttendances(); }
+  else if (tab === 'my-corrections') { myCorrectionsPag.pageNo = page; loadMyCorrections(); }
+  else if (tab === 'my-leaves') { myLeavesPag.pageNo = page; loadMyLeaves(); }
+  else if (tab === 'hr-attendance') { hrAttendancePag.pageNo = page; loadHRAttendances(); }
+  else if (tab === 'hr-corrections') { hrCorrectionsPag.pageNo = page; loadHRCorrections(); }
+  else if (tab === 'hr-leaves') { hrLeavesPag.pageNo = page; loadHRLeaves(); }
+};
 
 // PHÂN QUYỀN HR / ADMIN
 const isHR = computed(() => {
@@ -619,6 +698,8 @@ const cancelLeaveModal = reactive({
   requestId: null
 });
 
+
+
 const selectedLeaveType = computed(() => {
   if (!leaveTypes.value || !leaveModal.leaveTypeId) return null;
   return leaveTypes.value.find(t => t.id === leaveModal.leaveTypeId);
@@ -636,6 +717,19 @@ const isSingleDayLeave = computed(() => {
 const formatTime = (isoString) => {
   if (!isoString) return '—';
   return new Date(isoString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+};
+
+// Tính worked hours trực tiếp từ checkIn/checkOut, hiển thị dạng "Xh Ym"
+const calcWorkedHours = (checkInTime, checkOutTime) => {
+  if (!checkInTime || !checkOutTime) return '--';
+  const diffMs = new Date(checkOutTime) - new Date(checkInTime);
+  if (diffMs <= 0) return '--';
+  const totalMinutes = Math.floor(diffMs / 1000 / 60);
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  if (h === 0) return `${m}m`;
+  if (m === 0) return `${h}h`;
+  return `${h}h ${m}m`;
 };
 
 // 🌟 XỬ LÝ UPLOAD FILE NGHỈ PHÉP LÊN CLOUDINARY
@@ -697,9 +791,18 @@ const handleWebSwipe = async (logType) => {
 const loadMyAttendances = async () => {
   isLoading.value = true;
   try {
-    myAttendances.value = await attendanceStore.fetchMyAttendances();
+    // fetchMyAttendances không hỗ trợ phân trang (GET /me trả toàn bộ)
+    const data = await attendanceStore.fetchMyAttendances();
+    const list = Array.isArray(data) ? data : (data?.items || []);
+    // Phân trang client-side cho My Attendance
+    myAttendancePag.totalElements = list.length;
+    myAttendancePag.totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));
+    const start = (myAttendancePag.pageNo - 1) * PAGE_SIZE;
+    myAttendances.value = list.slice(start, start + PAGE_SIZE);
+    // Cache toàn bộ để phân trang mượt
+    myAttendances._allData = list;
   } catch (err) {
-    console.error("Load my attendances error:", err);
+    console.error('Load my attendances error:', err);
   } finally {
     isLoading.value = false;
   }
@@ -707,19 +810,25 @@ const loadMyAttendances = async () => {
 
 const loadMyCorrections = async () => {
   try {
-    const res = await attendanceStore.fetchMyCorrections('', 0, 20);
+    const page0 = myCorrectionsPag.pageNo - 1;
+    const res = await attendanceStore.fetchMyCorrections('', page0, PAGE_SIZE);
     myCorrections.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+    myCorrectionsPag.totalElements = res?.totalElements || res?.data?.totalElements || myCorrections.value.length;
+    myCorrectionsPag.totalPages = res?.totalPages || res?.data?.totalPages || Math.max(1, Math.ceil(myCorrectionsPag.totalElements / PAGE_SIZE));
   } catch (err) {
-    console.error("Load my corrections error:", err);
+    console.error('Load my corrections error:', err);
   }
 };
 
 const loadMyLeaves = async () => {
   try {
-    const res = await attendanceStore.fetchMyLeaveRequests(0, 20);
+    const page0 = myLeavesPag.pageNo - 1;
+    const res = await attendanceStore.fetchMyLeaveRequests(page0, PAGE_SIZE);
     myLeaves.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+    myLeavesPag.totalElements = res?.totalElements || res?.data?.totalElements || myLeaves.value.length;
+    myLeavesPag.totalPages = res?.totalPages || res?.data?.totalPages || Math.max(1, Math.ceil(myLeavesPag.totalElements / PAGE_SIZE));
   } catch (err) {
-    console.error("Load my leaves error:", err);
+    console.error('Load my leaves error:', err);
   }
 };
 
@@ -727,10 +836,13 @@ const loadHRAttendances = async () => {
   if (!isHR.value) return;
   isLoading.value = true;
   try {
-    const res = await attendanceStore.fetchHRAttendances(0, 20);
+    const page0 = hrAttendancePag.pageNo - 1;
+    const res = await attendanceStore.fetchHRAttendances(page0, PAGE_SIZE);
     hrAttendances.value = res?.content || res?.data?.items || res?.items || [];
+    hrAttendancePag.totalElements = res?.totalElements || res?.data?.totalElements || hrAttendances.value.length;
+    hrAttendancePag.totalPages = res?.totalPages || res?.data?.totalPages || Math.max(1, Math.ceil(hrAttendancePag.totalElements / PAGE_SIZE));
   } catch (err) {
-    console.error("Load HR attendances error:", err);
+    console.error('Load HR attendances error:', err);
   } finally {
     isLoading.value = false;
   }
@@ -740,13 +852,16 @@ const loadHRCorrections = async () => {
   if (!isHR.value) return;
   isLoading.value = true;
   try {
+    const page0 = hrCorrectionsPag.pageNo - 1;
     const fetchFn = attendanceStore.fetchHRCorrections || attendanceStore.fetchAllCorrectionsHR;
     if (typeof fetchFn === 'function') {
-      const res = await fetchFn(0, 20);
+      const res = await fetchFn(page0, PAGE_SIZE);
       hrCorrections.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+      hrCorrectionsPag.totalElements = res?.totalElements || res?.data?.totalElements || hrCorrections.value.length;
+      hrCorrectionsPag.totalPages = res?.totalPages || res?.data?.totalPages || Math.max(1, Math.ceil(hrCorrectionsPag.totalElements / PAGE_SIZE));
     }
   } catch (err) {
-    console.error("Load HR Corrections catch error:", err);
+    console.error('Load HR Corrections catch error:', err);
   } finally {
     isLoading.value = false;
   }
@@ -756,10 +871,13 @@ const loadHRLeaves = async () => {
   if (!isHR.value) return;
   isLoading.value = true;
   try {
-    const res = await attendanceStore.fetchLeaveRequests(0, 20);
+    const page0 = hrLeavesPag.pageNo - 1;
+    const res = await attendanceStore.fetchLeaveRequests(page0, PAGE_SIZE);
     hrLeaves.value = res?.content || res?.items || res?.data?.items || (Array.isArray(res) ? res : []);
+    hrLeavesPag.totalElements = res?.totalElements || res?.data?.totalElements || hrLeaves.value.length;
+    hrLeavesPag.totalPages = res?.totalPages || res?.data?.totalPages || Math.max(1, Math.ceil(hrLeavesPag.totalElements / PAGE_SIZE));
   } catch (err) {
-    console.error("Load HR Leaves error:", err);
+    console.error('Load HR Leaves error:', err);
   } finally {
     isLoading.value = false;
   }

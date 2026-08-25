@@ -4,6 +4,7 @@ import LoginPage from "../views/LoginPage.vue";
 import RegisterPage from "../views/RegisterPage.vue";
 import DashboardPage from "../views/DashboardPage.vue";
 import AttendancePage from "../views/AttendancePage.vue";
+import ShiftSchedulePage from "../views/ShiftSchedulePage.vue";
 import BranchPage from "../views/BranchPage.vue";
 import DepartmentPage from "../views/DepartmentPage.vue";
 import PositionPage from "../views/PositionPage.vue";
@@ -33,6 +34,8 @@ import PerformancePage from "../views/PerformancePage.vue";
 import MyPerformance from "../views/MyPerformance.vue";
 import PerformanceReviewManagement from "../views/PerformanceReviewManagement.vue";
 import KpiTemplateManagement from "../views/KpiTemplateManagement.vue";
+import WorkShiftPage from "../views/WorkShiftPage.vue";
+
 const routes = [
     {
         path: '/',
@@ -64,6 +67,14 @@ const routes = [
         path: '/attendance',
         component: AttendancePage,
         name: 'Attendance',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/shifts',
+        component: ShiftSchedulePage,
+        name: 'Shifts',
         meta: {
             requiresAuth: true
         }
@@ -257,6 +268,16 @@ const routes = [
     }
     ,
     {
+        path: '/work-shifts',
+        component: WorkShiftPage,
+        name: 'WorkShifts',
+        meta: {
+            requiresAuth: true,
+            permission: 'WORK_SHIFT',
+            hrOnly: true
+        }
+    },
+    {
         path: '/contracts',
         component: ContractPage,
         name: 'Contracts',
@@ -278,6 +299,15 @@ const routes = [
         path: '/contracts/:id',
         component: ContractDetailPage,
         name: 'ContractDetail',
+        meta: {
+            requiresAuth: true,
+            permission: 'CONTRACT'
+        }
+    },
+    {
+        path: '/contracts/:id/edit',
+        component: ContractFormPage,
+        name: 'ContractEdit',
         meta: {
             requiresAuth: true,
             permission: 'CONTRACT'
@@ -330,6 +360,22 @@ router.beforeEach(async (to, from, next) => {
 
         if (to.meta.permission && !authStore.isSystemAdmin && !authStore.canView(to.meta.permission)) {
             return next({ name: 'NotFound' })
+        }
+
+        // hrOnly: chỉ cho HR / Admin vào, Employee bị redirect về Dashboard
+        if (to.meta.hrOnly && !authStore.isSystemAdmin) {
+            const perms = authStore.permissions || []
+            const hrPerms = ['FULL_ACCESS', 'WORK_SHIFT_FULL', 'WORK_SHIFT_CREATE', 'WORK_SHIFT_UPDATE', 'WORK_SHIFT_DELETE', 'WORK_SHIFT_WRITE']
+            const user = authStore.user || {}
+            const roles = (user.roles || []).map(r => (typeof r === 'string' ? r : r.name || '').toUpperCase())
+            const hrRoles = ['HR', 'ADMIN', 'HR_MANAGER', 'ROLE_HR', 'ROLE_ADMIN', 'COMPANY_ADMIN', 'SYSTEM_ADMIN']
+
+            const hasHRPerm = perms.some(p => hrPerms.includes(typeof p === 'string' ? p : p.name || ''))
+            const hasHRRole = roles.some(r => hrRoles.includes(r))
+
+            if (!hasHRPerm && !hasHRRole) {
+                return next({ name: 'Dashboard' })
+            }
         }
     }
 
