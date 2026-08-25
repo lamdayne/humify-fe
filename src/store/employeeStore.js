@@ -1,6 +1,7 @@
 import { defineStore } from "pinia";
 import axiosInstance from "../axios/axios"
 import { ref } from "vue";
+import { cleanParams } from "../utils/requestUtils.js";
 
 export const useEmployeeStore = defineStore('employee', () => {
     const employees = ref([])
@@ -127,7 +128,32 @@ export const useEmployeeStore = defineStore('employee', () => {
             throw error
         }
     }
-
+    
+    const getEmployees = async ({
+                                    page = 0,
+                                    size = 100,
+                                    sorts = null
+                                } = {}) => {
+        try {
+            return await axiosInstance.get(
+                "/employees",
+                {
+                    params: cleanParams({
+                        page,
+                        size,
+                        sorts
+                    })
+                }
+            );
+        } catch (error) {
+            console.error(
+                "Get employees error:",
+                error
+            );
+            throw error;
+        }
+    };
+  
     const fetchEmployeesFiltered = async (page = 0, size = 10, filters = {}) => {
         try {
             const params = new URLSearchParams();
@@ -161,6 +187,7 @@ export const useEmployeeStore = defineStore('employee', () => {
         importEmployees,
         transferEmployee,
         updateEmployeeStatus,
+        getEmployees,
         fetchEmployeesFiltered,
         fetchEmployeesNoMutate
     }

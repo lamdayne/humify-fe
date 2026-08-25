@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { ref } from "vue";
 import axiosInstance from "../axios/axios";
-
+import { cleanParams } from "../utils/requestUtils.js";
 export const useUserStore = defineStore("user", () => {
     const users = ref([]);
 
@@ -50,13 +50,38 @@ export const useUserStore = defineStore("user", () => {
             throw error;
         }
     };
+    const getUsers = async ({
+                                page = 0,
+                                size = 100,
+                                sorts = null
+                            } = {}) => {
+        try {
+            return await axiosInstance.get(
+                "/users",
+                {
+                    params: cleanParams({
+                        page,
+                        size,
+                        sorts
+                    })
+                }
+            );
+        } catch (error) {
+            console.error(
+                "Get users error:",
+                error
+            );
 
+            throw error;
+        }
+    };
     return {
         users,
         fetchUsers,
         createUser,
         changeRole,
         changePassword,
-        updateStatus
+        updateStatus,
+        getUsers
     };
 });
