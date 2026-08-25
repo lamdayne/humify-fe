@@ -187,7 +187,7 @@ export const useEmployeeStore = defineStore('employee', () => {
         importEmployees,
         transferEmployee,
         updateEmployeeStatus,
-        getEmployees
+        getEmployees,
         fetchEmployeesFiltered,
         fetchEmployeesNoMutate
     }
