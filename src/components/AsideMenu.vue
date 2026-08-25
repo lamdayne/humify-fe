@@ -137,6 +137,38 @@ const menus = [
         name: 'Project',
         permission: 'PROJECT'
     },
+
+  {
+    label: 'MyPerformance',
+    icon: TrendingUp,
+    name: 'MyPerformance',
+    permission: null
+  },
+  {
+    id: 'Performance',
+    label: 'Performance',
+    icon: TrendingUp,
+    children: [
+      {
+        label: 'Performance Reviews',
+        icon: TrendingUp,
+        name: 'Performance',
+        permission: 'PERFORMANCE'
+      },
+      {
+        label: 'PerformanceManagement',
+        icon: TrendingUp,
+        name: 'PerformanceManagement',
+        permission: 'PERFORMANCE'
+      },
+      {
+        label: 'KpiTemplate',
+        icon: TrendingUp,
+        name: 'KpiTemplateManagement',
+        permission: 'PERFORMANCE'
+      },
+    ]
+  },
     {
         id: 'organization',
         label: 'Organization',

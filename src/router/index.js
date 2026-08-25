@@ -29,7 +29,10 @@ import AccountPage from "../views/AccountPage.vue";
 import ContractPage from "../views/ContractPage.vue";
 import ContractFormPage from "../views/ContractFormPage.vue";
 import ContractDetailPage from "../views/ContractDetailPage.vue";
-
+import PerformancePage from "../views/PerformancePage.vue";
+import MyPerformance from "../views/MyPerformance.vue";
+import PerformanceReviewManagement from "../views/PerformanceReviewManagement.vue";
+import KpiTemplateManagement from "../views/KpiTemplateManagement.vue";
 const routes = [
     {
         path: '/',
@@ -206,6 +209,41 @@ const routes = [
         meta: {
             requiresAuth: true,
             permission: 'PAYROLL'
+        }
+    },
+    {
+        path: '/performance',
+        component: PerformancePage,
+        name: 'Performance',
+        meta: {
+            requiresAuth: true,
+            permission: 'PERFORMANCE'
+        }
+    },
+    {
+        path: '/performance',
+        component: MyPerformance,
+        name: 'MyPerformance',
+        meta: {
+            requiresAuth: true
+        }
+    },
+    {
+        path: '/performance',
+        component: PerformanceReviewManagement,
+        name: 'PerformanceManagement',
+        meta: {
+            requiresAuth: true,
+            permission: 'PERFORMANCE'
+        }
+    },
+    {
+        path: '/performance',
+        component: KpiTemplateManagement,
+        name: 'KpiTemplateManagement',
+        meta: {
+            requiresAuth: true,
+            permission: 'PERFORMANCE'
         }
     },
     {
