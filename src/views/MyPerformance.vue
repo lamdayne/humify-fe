@@ -353,24 +353,27 @@
 
 
           <!-- Empty -->
+          <!-- Empty -->
+          <!-- Empty -->
           <div
               v-else-if="reviews.length === 0"
-              class="px-6 py-16 text-center"
+              class="flex w-full flex-col items-center justify-center px-6 py-16 text-center"
           >
             <div
-                class="mx-auto flex h-16 w-16 items-center justify-center rounded-2xl bg-slate-100 text-2xl text-slate-400"
+                class="flex h-16 w-16 shrink-0 items-center justify-center
+             rounded-2xl bg-slate-100 text-2xl text-slate-400"
             >
               ★
             </div>
 
             <h3
-                class="mt-5 text-lg font-bold text-slate-900"
+                class="mt-5 w-full text-lg font-bold text-slate-900"
             >
               No performance reviews
             </h3>
-
             <p
-                class="mx-auto mt-2 max-w-md text-sm text-slate-500"
+                class="mt-2 w-full whitespace-nowrap text-center
+           text-sm text-slate-500"
             >
               You do not have any performance reviews matching the selected filters.
             </p>

@@ -364,7 +364,10 @@
               No performance reviews
             </h3>
 
-            <p class="mx-auto mt-2 max-w-md text-sm text-slate-500">
+            <p
+                class="mt-2 w-full whitespace-nowrap text-center
+           text-sm text-slate-500"
+            >
               No performance reviews match the current filters.
             </p>
           </div>
