@@ -139,7 +139,7 @@ const menus = [
     },
 
   {
-    label: 'MyPerformance',
+    label: 'My Performance',
     icon: TrendingUp,
     name: 'MyPerformance',
     permission: null
@@ -150,19 +150,19 @@ const menus = [
     icon: TrendingUp,
     children: [
       {
-        label: 'Performance Reviews',
+        label: 'Reviews',
         icon: TrendingUp,
         name: 'Performance',
         permission: 'PERFORMANCE'
       },
       {
-        label: 'PerformanceManagement',
+        label: 'Manage Reviews',
         icon: TrendingUp,
         name: 'PerformanceManagement',
         permission: 'PERFORMANCE'
       },
       {
-        label: 'KpiTemplate',
+        label: 'KPI Templates',
         icon: TrendingUp,
         name: 'KpiTemplateManagement',
         permission: 'PERFORMANCE'

@@ -1,5 +1,11 @@
 <template>
+  <ToastMessage
+      :show="toast.show"
+      :message="toast.message"
+      :type="toast.type"
+  />
   <MainContent>
+
     <div class="min-h-screen bg-slate-50 p-4 md:p-6 lg:p-8">
       <div class="mx-auto max-w-7xl space-y-6">
 
@@ -18,7 +24,7 @@
                   class="flex h-11 w-11 items-center justify-center
                          rounded-xl bg-blue-50 text-blue-600"
               >
-                <ClipboardCheck class="h-6 w-6" />
+                <ClipboardCheck class="h-6 w-6"/>
               </div>
 
               <div>
@@ -57,7 +63,7 @@
                          text-sm font-semibold text-white
                          shadow-sm transition hover:bg-blue-700"
               >
-                <Plus class="h-4 w-4" />
+                <Plus class="h-4 w-4"/>
 
                 Create Review
               </button>
@@ -372,7 +378,7 @@
                        justify-center rounded-2xl
                        bg-slate-100 text-slate-400"
             >
-              <ClipboardCheck class="h-8 w-8" />
+              <ClipboardCheck class="h-8 w-8"/>
             </div>
 
             <h3 class="mt-5 text-lg font-bold text-slate-900">
@@ -488,7 +494,7 @@
                 >
                   View Details
 
-                  <ChevronRight class="h-4 w-4" />
+                  <ChevronRight class="h-4 w-4"/>
                 </button>
 
               </div>
@@ -832,7 +838,25 @@
                   </div>
 
                 </div>
+                <div
+                    v-if="createFormError"
+                    class="mx-8 mb-4 flex items-start gap-3 rounded-lg
+           border border-red-200 bg-red-50 px-4 py-3"
+                >
+                  <CircleX
+                      class="mt-0.5 h-5 w-5 shrink-0 text-red-500"
+                  />
 
+                  <div>
+                    <p class="text-sm font-semibold text-red-700">
+                      Unable to create performance review
+                    </p>
+
+                    <p class="mt-1 text-sm text-red-600">
+                      {{ createFormError }}
+                    </p>
+                  </div>
+                </div>
 
                 <!-- Footer -->
                 <div
@@ -1117,38 +1141,24 @@
   </MainContent>
 
 
-  <ToastMessage
-      :message="toast.message"
-      :type="toast.type"
-      :show="toast.show"
-  />
+
 </template>
 
 
 <script setup>
-import {
-  onBeforeUnmount,
-  onMounted,
-  reactive,
-  ref
-} from "vue";
+import {onBeforeUnmount, onMounted, reactive, ref,} from "vue";
 
-import {
-  ChevronRight,
-  ClipboardCheck,
-  Plus,
-  RefreshCw
-} from "@lucide/vue";
+import {ChevronRight, ClipboardCheck, Plus, RefreshCw,CircleX} from "@lucide/vue";
 
 import MainContent from "../components/MainContent.vue";
 import ToastMessage from "../components/ToastMessage.vue";
 import PaginationSection from "../components/PaginationSection.vue";
 import SummaryCard from "../components/SummaryCard.vue";
-import { useEmployeeStore } from "../store/employeeStore.js";
-import { useUserStore } from "../store/userStore.js";
+import {useEmployeeStore} from "../store/employeeStore.js";
+import {useUserStore} from "../store/userStore.js";
 
 
-import { usePerformanceStore } from "../store/performanceStore.js";
+import {usePerformanceStore} from "../store/performanceStore.js";
 
 const employeeStore = useEmployeeStore();
 const userStore = useUserStore();
@@ -1205,8 +1215,6 @@ const filters = reactive({
 });
 
 
-
-
 // =====================================================
 // PAGINATION
 // =====================================================
@@ -1222,7 +1230,7 @@ const pagination = reactive({
 // =====================================================
 // CREATE FORM
 // =====================================================
-
+const createFormError = ref("");
 const createForm = reactive({
   employeeId: null,
   reviewerId: null,
@@ -1230,8 +1238,6 @@ const createForm = reactive({
   periodStart: "",
   periodEnd: ""
 });
-
-
 
 
 // =====================================================
@@ -1263,7 +1269,280 @@ const triggerToast = (
     toast.show = false;
   }, 3000);
 };
+// =====================================================
+// API ERROR MESSAGES
+// =====================================================
 
+const API_ERROR_MESSAGES = {
+
+  // AUTH
+  UNAUTHORIZED:
+      "Your session has expired. Please sign in again.",
+  ACCESS_DENIED:
+      "You do not have permission to perform this action.",
+  FORBIDDEN:
+      "You do not have permission to perform this action.",
+  // USER
+  USER_NOT_FOUND:
+      "User not found.",
+  USER_INACTIVE:
+      "This user account is inactive.",
+  // EMPLOYEE
+  EMPLOYEE_NOT_FOUND:
+      "Employee not found.",
+  EMPLOYEE_INACTIVE:
+      "This employee is inactive.",
+  // PERFORMANCE REVIEW
+  PERFORMANCE_REVIEW_NOT_FOUND:
+      "Performance review not found.",
+  PERFORMANCE_REVIEW_EXISTED:
+      "A performance review already exists for this employee and review period.",
+  PERFORMANCE_REVIEW_INVALID_PERIOD:
+      "The selected review period is invalid.",
+  PERFORMANCE_REVIEW_INVALID_STATUS:
+      "This action is not allowed for the current review status.",
+  PERFORMANCE_REVIEW_ALREADY_COMPLETED:
+      "This performance review has already been completed.",
+  PERFORMANCE_REVIEW_NOT_EDITABLE:
+      "This performance review can no longer be edited.",
+  // REVIEWER
+  REVIEWER_NOT_FOUND:
+      "Reviewer not found.",
+  REVIEWER_INVALID:
+      "The selected reviewer is not valid.",
+  INVALID_REVIEWER:
+      "The selected user is not allowed to review this employee.",
+  REVIEWER_NOT_ALLOWED:
+      "The selected user is not allowed to review this employee.",
+  REVIEWER_INACTIVE:
+      "The selected reviewer is inactive.",
+  // KPI TEMPLATE
+  KPI_TEMPLATE_NOT_FOUND:
+      "KPI template not found.",
+  KPI_TEMPLATE_INACTIVE:
+      "The selected KPI template is inactive.",
+  KPI_TEMPLATE_ITEMS_EMPTY:
+      "The selected KPI template does not contain any KPI items.",
+  KPI_TEMPLATE_WEIGHT_INVALID:
+      "The total KPI weight must equal 100%.",
+  // KPI
+  KPI_NOT_FOUND:
+      "KPI not found.",
+  KPI_INVALID_TARGET:
+      "The KPI target value is invalid.",
+  KPI_INVALID_WEIGHT:
+      "The KPI weight is invalid.",
+  // VALIDATION
+  VALIDATION_ERROR:
+      "The provided data is invalid.",
+  INVALID_REQUEST:
+      "The request data is invalid.",
+  BAD_REQUEST:
+      "The request is invalid.",
+  // COMPANY
+  COMPANY_NOT_FOUND:
+      "Company not found.",
+  COMPANY_ACCESS_DENIED:
+      "You do not have permission to access this company's data.",
+  // GENERAL
+  INTERNAL_SERVER_ERROR:
+      "An unexpected server error occurred. Please try again later.",
+  UNKNOWN_ERROR:
+      "Something went wrong. Please try again."
+};
+const getApiErrorMessage = (
+    error,
+    fallbackMessage = "Something went wrong. Please try again."
+) => {
+  const data = error?.response?.data;
+  const code = data?.code;
+
+  // Error code mapped by frontend
+  if (code && API_ERROR_MESSAGES[code]) {
+    return API_ERROR_MESSAGES[code];
+  }
+
+  // Spring validation errors
+  if (data?.errors) {
+    if (Array.isArray(data.errors)) {
+      const message = data.errors
+          .map(item =>
+              item.defaultMessage ||
+              item.message
+          )
+          .filter(Boolean)
+          .join(", ");
+
+      if (message) {
+        return message;
+      }
+    }
+
+    if (typeof data.errors === "object") {
+      const message = Object.values(data.errors)
+          .filter(Boolean)
+          .join(", ");
+
+      if (message) {
+        return message;
+      }
+    }
+  }
+
+  // Backend message
+  if (data?.message) {
+    return data.message;
+  }
+
+  // Network error
+  if (!error?.response) {
+    if (error?.code === "ERR_NETWORK") {
+      return "Unable to connect to the server. Please check your connection.";
+    }
+
+    if (error?.code === "ECONNABORTED") {
+      return "The request timed out. Please try again.";
+    }
+  }
+
+  return fallbackMessage;
+};
+const handleApiError = (
+    error,
+    fallbackMessage = "Something went wrong. Please try again."
+) => {
+
+  console.error(
+      "API error:",
+      error?.response?.data || error
+  );
+
+  // =========================
+  // NETWORK ERROR
+  // =========================
+
+  if (!error?.response) {
+
+    if (error?.code === "ERR_NETWORK") {
+      triggerToast(
+          "Unable to connect to the server. Please check your connection.",
+          "error"
+      );
+      return;
+    }
+
+    if (error?.code === "ECONNABORTED") {
+      triggerToast(
+          "The request timed out. Please try again.",
+          "error"
+      );
+      return;
+    }
+
+    triggerToast(
+        fallbackMessage,
+        "error"
+    );
+
+    return;
+  }
+
+
+  const status = error.response.status;
+  const data = error.response.data;
+  const code = data?.code;
+
+
+  // =========================
+  // BACKEND ERROR CODE
+  // =========================
+
+  if (code && API_ERROR_MESSAGES[code]) {
+
+    triggerToast(
+        API_ERROR_MESSAGES[code],
+        "error"
+    );
+
+    return;
+  }
+
+
+  // =========================
+  // SPRING VALIDATION ERROR
+  // =========================
+
+  if (data?.errors) {
+
+    if (Array.isArray(data.errors)) {
+
+      const message = data.errors
+          .map(item =>
+              item.defaultMessage ||
+              item.message
+          )
+          .filter(Boolean)
+          .join(", ");
+
+      if (message) {
+        triggerToast(message, "error");
+        return;
+      }
+
+    } else if (typeof data.errors === "object") {
+
+      const message = Object.values(
+          data.errors
+      )
+          .filter(Boolean)
+          .join(", ");
+
+      if (message) {
+        triggerToast(message, "error");
+        return;
+      }
+    }
+  }
+
+
+  // =========================
+  // HTTP STATUS FALLBACK
+  // =========================
+
+  const statusMessages = {
+    400: "The request data is invalid.",
+    401: "Your session has expired. Please sign in again.",
+    403: "You do not have permission to perform this action.",
+    404: "The requested resource could not be found.",
+    405: "This request method is not supported.",
+    409: "The request conflicts with existing data.",
+    422: "The provided data could not be processed.",
+    429: "Too many requests. Please try again later.",
+    500: "An unexpected server error occurred. Please try again later.",
+    502: "The server is currently unavailable.",
+    503: "The service is temporarily unavailable.",
+    504: "The server took too long to respond."
+  };
+
+
+  // Backend has a message but the code is not mapped yet
+  if (data?.message) {
+
+    triggerToast(
+        data.message,
+        "error"
+    );
+
+    return;
+  }
+
+
+  triggerToast(
+      statusMessages[status] ||
+      fallbackMessage,
+      "error"
+  );
+};
 // search
 const loadEmployeeOptions = async () => {
   try {
@@ -1429,7 +1708,14 @@ const loadCreateFormData = async () => {
     reviewers.value =
         (userResponse?.data?.data?.items ?? [])
             .filter(user =>
-                user.active === true
+                user.active === true &&
+                user.roles?.some(role =>
+                    [
+                      "SYS_ADMIN",
+                      "COMPANY_ADMIN",
+                      "MANAGER"
+                    ].includes(role.name)
+                )
             );
 
     templates.value =
@@ -1439,22 +1725,20 @@ const loadCreateFormData = async () => {
             );
 
   } catch (error) {
-    console.error(
-        "Load create review form data error:",
-        error.response?.data || error
-    );
 
-    triggerToast(
-        error.response?.data?.message ||
-        "Failed to load create review data.",
-        "error"
+    reviewers.value = [];
+    templates.value = [];
+
+    handleApiError(
+        error,
+        "Failed to load performance review form data."
     );
 
   } finally {
+
     formLoading.value = false;
   }
 };
-
 
 const loadReviews = async () => {
 
@@ -1497,27 +1781,22 @@ const loadReviews = async () => {
     pagination.totalElements =
         data.totalElements ?? 0;
 
-  } catch (error) {
+  }catch (error) {
 
-    console.error(
-        "Load performance reviews error:",
-        error.response?.data || error
-    );
+  reviews.value = [];
 
-    reviews.value = [];
+  pagination.totalPages = 0;
+  pagination.totalElements = 0;
 
-    pagination.totalPages = 0;
-    pagination.totalElements = 0;
+  handleApiError(
+      error,
+      "Failed to load performance reviews."
+  );
 
-    triggerToast(
-        error.response?.data?.message ||
-        "Failed to load performance reviews.",
-        "error"
-    );
+} finally {
 
-  } finally {
-    loading.value = false;
-  }
+  loading.value = false;
+}
 };
 
 
@@ -1580,7 +1859,6 @@ const handlePageChange = async (page) => {
 // =====================================================
 // CREATE
 // =====================================================
-
 const resetCreateForm = () => {
   Object.assign(createForm, {
     employeeId: null,
@@ -1589,6 +1867,8 @@ const resetCreateForm = () => {
     periodStart: "",
     periodEnd: ""
   });
+
+  createFormError.value = "";
 
   employeeSearch.value = "";
   employeeOptions.value = [];
@@ -1615,34 +1895,25 @@ const closeCreateReview = () => {
 
   resetCreateForm();
 };
-
-
 const createReview = async () => {
 
-  if (!createForm.employeeId) {
-    triggerToast(
-        "Please enter employee ID.",
-        "error"
-    );
+  createFormError.value = "";
 
+  if (!createForm.employeeId) {
+    createFormError.value =
+        "Please select an employee.";
     return;
   }
 
   if (!createForm.reviewerId) {
-    triggerToast(
-        "Please enter reviewer ID.",
-        "error"
-    );
-
+    createFormError.value =
+        "Please select a reviewer.";
     return;
   }
 
   if (!createForm.templateId) {
-    triggerToast(
-        "Please enter KPI template ID.",
-        "error"
-    );
-
+    createFormError.value =
+        "Please select a KPI template.";
     return;
   }
 
@@ -1650,11 +1921,8 @@ const createReview = async () => {
       !createForm.periodStart ||
       !createForm.periodEnd
   ) {
-    triggerToast(
-        "Please select review period.",
-        "error"
-    );
-
+    createFormError.value =
+        "Please select a review period.";
     return;
   }
 
@@ -1662,45 +1930,32 @@ const createReview = async () => {
       createForm.periodEnd <
       createForm.periodStart
   ) {
-    triggerToast(
-        "Period end must be after period start.",
-        "error"
-    );
-
+    createFormError.value =
+        "The end date must be on or after the start date.";
     return;
   }
 
   const payload = {
-    employeeId:
-        Number(createForm.employeeId),
-
-    reviewerId:
-        Number(createForm.reviewerId),
-
-    templateId:
-        Number(createForm.templateId),
-
-    periodStart:
-    createForm.periodStart,
-
-    periodEnd:
-    createForm.periodEnd
+    employeeId: Number(createForm.employeeId),
+    reviewerId: Number(createForm.reviewerId),
+    templateId: Number(createForm.templateId),
+    periodStart: createForm.periodStart,
+    periodEnd: createForm.periodEnd
   };
 
   try {
 
     saving.value = true;
 
-    await performanceStore.createReview(
-        payload
-    );
+    await performanceStore.createReview(payload);
 
     showCreateModal.value = false;
 
     resetCreateForm();
 
     triggerToast(
-        "Performance review created successfully."
+        "Performance review created successfully.",
+        "success"
     );
 
     pagination.currentPage = 1;
@@ -1709,18 +1964,14 @@ const createReview = async () => {
 
   } catch (error) {
 
-    console.error(
-        "Create performance review error:",
-        error.response?.data || error
-    );
-
-    triggerToast(
-        error.response?.data?.message ||
-        "Failed to create performance review.",
-        "error"
-    );
+    createFormError.value =
+        getApiErrorMessage(
+            error,
+            "Failed to create the performance review."
+        );
 
   } finally {
+
     saving.value = false;
   }
 };
@@ -1749,25 +2000,19 @@ const openDetail = async (review) => {
     selectedReview.value =
         response?.data?.data ?? null;
 
-  } catch (error) {
+  }  catch (error) {
 
-    console.error(
-        "Load review detail error:",
-        error.response?.data || error
-    );
+  showDetailModal.value = false;
 
-    showDetailModal.value = false;
+  handleApiError(
+      error,
+      "Failed to load performance review details."
+  );
 
-    triggerToast(
-        error.response?.data?.message ||
-        "Failed to load review detail.",
-        "error"
-    );
+} finally {
 
-  } finally {
-
-    detailLoading.value = false;
-  }
+  detailLoading.value = false;
+}
 };
 
 
