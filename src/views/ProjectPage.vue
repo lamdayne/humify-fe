@@ -23,7 +23,7 @@
             <ProjectSkeleton v-if="isLoading"></ProjectSkeleton>
             <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-3">
                 <router-link :to="`/project/${project.id}`" v-for="project in projects" :key="project.id"
-                    class="bg-slate w-full flex flex-col justify-between h-35 rounded-xl border border-slate-200 shadow-xs p-4 cursor-pointer">
+                    class="bg-white w-full flex flex-col justify-between h-35 rounded-xl border border-slate-200 shadow-xs p-4 cursor-pointer">
                     <div class="flex items-center justify-between">
                         <h1 class="text-lg font-semibold">{{ project.name }}</h1>
                         <StatusBadge :type="resolveStatusType(project.status)" :content="project.status"></StatusBadge>
@@ -85,19 +85,25 @@
                             class="flex flex-col gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-all"
                             :class="projectValue.type === 'KANBAN' ? 'border-blue-500 bg-blue-50' : 'border-slate-200 hover:border-slate-300'">
                             <div class="flex items-center gap-2">
-                                <input type="radio" id="typeKanban" value="KANBAN" v-model="projectValue.type" class="accent-blue-600">
+                                <input type="radio" id="typeKanban" value="KANBAN" v-model="projectValue.type"
+                                    class="accent-blue-600">
                                 <span class="text-xs font-bold text-slate-800">Kanban</span>
                             </div>
-                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Continuous flow with columns. No sprints, no backlog.</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Continuous flow with columns. No
+                                sprints,
+                                no backlog.</p>
                         </label>
                         <label for="typeScrum"
                             class="flex flex-col gap-1.5 p-3 border-2 rounded-xl cursor-pointer transition-all"
                             :class="projectValue.type === 'SCRUM' ? 'border-purple-500 bg-purple-50' : 'border-slate-200 hover:border-slate-300'">
                             <div class="flex items-center gap-2">
-                                <input type="radio" id="typeScrum" value="SCRUM" v-model="projectValue.type" class="accent-purple-600">
+                                <input type="radio" id="typeScrum" value="SCRUM" v-model="projectValue.type"
+                                    class="accent-purple-600">
                                 <span class="text-xs font-bold text-slate-800">Scrum</span>
                             </div>
-                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Sprint-based workflow with Backlog. Best for iterative delivery.</p>
+                            <p class="text-[10px] text-slate-500 leading-relaxed pl-5">Sprint-based workflow with
+                                Backlog. Best
+                                for iterative delivery.</p>
                         </label>
                     </div>
                 </div>
