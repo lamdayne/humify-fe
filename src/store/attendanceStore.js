@@ -8,8 +8,11 @@ export const useAttendanceStore = defineStore("attendance", () => {
     // --- 1. ATTENDANCE & SUMMARY MANAGEMENT ---
     // ==========================================
 
-    const fetchHRAttendances = async (page = 0, size = 10, searchParams = []) => {
+    const fetchHRAttendances = async (page = 0, size = 10, searchParams = [], sorts = ['workDate:desc']) => {
         let url = `/attendances?page=${page}&size=${size}`;
+        if (sorts && sorts.length > 0) {
+            sorts.forEach(s => url += `&sorts=${encodeURIComponent(s)}`);
+        }
         if (searchParams && searchParams.length > 0) {
             searchParams.forEach(p => url += `&attendance=${encodeURIComponent(p)}`);
         }

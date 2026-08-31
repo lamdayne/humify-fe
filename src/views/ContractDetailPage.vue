@@ -17,7 +17,7 @@
           <!-- Backdrop -->
           <div class="absolute inset-0 bg-black/40 backdrop-blur-sm" @click="showDeleteModal = false"></div>
           <!-- Modal content -->
-          <div class="relative bg-white rounded-2xl shadow-2xl max-w-md w-full mx-4 p-6 space-y-4 border border-slate-200/80">
+          <div class="relative bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-8 space-y-4 border border-slate-200/80" style="min-width: 380px;">
             <div class="flex items-center gap-3">
               <div class="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center shrink-0">
                 <Trash2 class="w-5 h-5 text-red-600" />
@@ -92,11 +92,11 @@
       </div>
 
       <!-- MAIN LAYOUT 2 COLUMNS -->
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-stretch">
 
         <!-- LEFT COLUMN: GENERAL TERMS & FINANCIALS -->
-        <div class="lg:col-span-2 space-y-6">
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6">
+        <div class="lg:col-span-2 flex flex-col">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm space-y-6 flex-1">
             <h3 class="text-base font-bold text-slate-900 border-b border-slate-100 pb-3">General Terms</h3>
 
             <div class="grid grid-cols-2 gap-6">
@@ -156,8 +156,8 @@
         </div>
 
         <!-- RIGHT COLUMN: EMPLOYEE CARD -->
-        <div class="space-y-6">
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-center space-y-4">
+        <div class="flex flex-col">
+          <div class="bg-white border border-slate-200/80 rounded-2xl p-6 shadow-sm text-center space-y-4 flex-1">
             <div class="w-16 h-16 rounded-full bg-slate-900 text-white font-bold flex items-center justify-center mx-auto text-xl shadow-md uppercase">
               {{ contract.employeeName?.charAt(0) || 'E' }}
             </div>
@@ -170,21 +170,6 @@
               <div class="flex justify-between"><span>Created At:</span> <span class="font-semibold text-slate-800">{{ formatDate(contract.createdAt) }}</span></div>
               <div v-if="contract.updatedAt" class="flex justify-between"><span>Updated At:</span> <span class="font-semibold text-slate-800">{{ formatDate(contract.updatedAt) }}</span></div>
             </div>
-          </div>
-
-          <!-- Quick Actions Card -->
-          <div class="bg-white border border-slate-200/80 rounded-2xl p-5 shadow-sm space-y-3">
-            <h4 class="text-[11px] font-bold text-slate-400 uppercase tracking-widest">Quick Actions</h4>
-            <button @click="goToEdit"
-              class="w-full flex items-center gap-2.5 px-4 py-2.5 bg-slate-900 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold cursor-pointer transition-all">
-              <Pencil class="w-3.5 h-3.5" />
-              Edit Contract
-            </button>
-            <button @click="showDeleteModal = true"
-              class="w-full flex items-center gap-2.5 px-4 py-2.5 border border-red-200 bg-red-50 hover:bg-red-100 text-red-600 rounded-xl text-xs font-semibold cursor-pointer transition-all">
-              <Trash2 class="w-3.5 h-3.5" />
-              Delete Contract
-            </button>
           </div>
         </div>
 

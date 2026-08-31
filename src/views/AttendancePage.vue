@@ -794,6 +794,8 @@ const loadMyAttendances = async () => {
     // fetchMyAttendances không hỗ trợ phân trang (GET /me trả toàn bộ)
     const data = await attendanceStore.fetchMyAttendances();
     const list = Array.isArray(data) ? data : (data?.items || []);
+    // Sắp xếp từ ngày mới nhất đến cũ nhất
+    list.sort((a, b) => new Date(b.workDate) - new Date(a.workDate));
     // Phân trang client-side cho My Attendance
     myAttendancePag.totalElements = list.length;
     myAttendancePag.totalPages = Math.max(1, Math.ceil(list.length / PAGE_SIZE));

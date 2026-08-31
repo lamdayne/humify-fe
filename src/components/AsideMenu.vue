@@ -217,15 +217,13 @@ const menus = [
         label: 'Work Shifts',
         icon: Timer,
         name: 'WorkShifts',
-        permission: 'WORK_SHIFT',
-        hrOnly: true
+        permission: 'WORK_SHIFT'
     },
     { 
         label: 'Shifts',
         icon: CalendarCheck,
         name: 'Shifts',
-        permission: null
-
+        permission: 'WORK_SHIFT'
     },
     {
         label: 'Leave Types',
@@ -288,15 +286,6 @@ const canSeeItem = (item) => {
     if (authStore.isSystemAdmin) return true
     // isSystemAdmin flag → chỉ SystemAdmin mới thấy
     if (item?.isSystemAdmin) return false
-    // hrOnly: chỉ HR / Company Admin mới thấy
-    if (item?.hrOnly) {
-        const user = authStore.user || {}
-        const userRoles = (user.roles || []).map(r => (typeof r === 'string' ? r : r.name || '').toUpperCase())
-        const userPerms = (authStore.permissions || []).map(p => (typeof p === 'string' ? p : p.name || '').toUpperCase())
-        const hrRoles = ['HR', 'ADMIN', 'HR_MANAGER', 'ROLE_HR', 'ROLE_ADMIN', 'COMPANY_ADMIN', 'SYSTEM_ADMIN']
-        const hrPerms = ['FULL_ACCESS', 'WORK_SHIFT_FULL', 'WORK_SHIFT_CREATE', 'WORK_SHIFT_UPDATE', 'WORK_SHIFT_DELETE', 'WORK_SHIFT_WRITE']
-        return userRoles.some(r => hrRoles.includes(r)) || userPerms.some(p => hrPerms.includes(p))
-    }
     // Kiểm tra quyền READ hoặc FULL
     return authStore.canView(item.permission)
 }
