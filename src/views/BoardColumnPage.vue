@@ -173,6 +173,17 @@ const columnStore = useColumnStore()
 const taskStore = useTaskStore()
 const sprintStore = useSprintStore()
 
+const props = defineProps({
+    activeFilters: {
+        type: Array,
+        default: () => []
+    },
+    includeUnassigned: {
+        type: Boolean,
+        default: false
+    }
+})
+
 const isAddingColumn = ref(false)
 const newColumnTitle = ref('')
 const draggedColumn = ref(null)
@@ -194,8 +205,11 @@ const taskY = ref(null)
 const popupRef = ref(null)
 
 const columns = ref([])
+const allTasks = ref([])
 const memberOfProject = ref(null)
 const columnInfo = reactive({ id: null, title: '', category: '' })
+const projectSprints = ref([])
+const activeSprintIds = ref(new Set())
 
 const toastOpen = ref(false)
 const toastInfo = reactive({ message: null, type: 'success' })
@@ -409,16 +423,39 @@ const handleUpdateColumn = async (colId) => {
     }
 }
 
+const distributeTasksToColumns = (tasks) => {
+    // Clear all tasks from columns
+    columns.value.forEach(col => col.tasks = [])
+
+    tasks.forEach(task => {
+        if (!task.parentId) {
+            if (projectSprints.value.length > 0) {
+                // Scrum mode: show task only if its sprint is ACTIVE
+                if (task.sprintId && activeSprintIds.value.has(task.sprintId)) {
+                    const col = columns.value.find(c => c.id === task.columnId)
+                    if (col) col.tasks.push({ ...task })
+                }
+            } else {
+                // Kanban mode: show all tasks
+                const col = columns.value.find(c => c.id === task.columnId)
+                if (col) col.tasks.push({ ...task })
+            }
+        }
+    })
+
+    columns.value.forEach(col => col.tasks.sort((a, b) => a.position - b.position))
+}
+
 onMounted(async () => {
     const projectId = route.params?.id;
     project.id = projectId
 
     // Fetch sprints to check if Scrum project
     await sprintStore.fetchSprints(projectId)
-    const projectSprints = sprintStore.sprints
+    projectSprints.value = sprintStore.sprints
     // Collect IDs of ALL ACTIVE sprints (multiple sprints can be active simultaneously)
-    const activeSprintIds = new Set(
-        projectSprints.filter(s => s.status === 'ACTIVE').map(s => s.id)
+    activeSprintIds.value = new Set(
+        projectSprints.value.filter(s => s.status === 'ACTIVE').map(s => s.id)
     )
 
     const res = await columnStore.fetchColumnsByProjectId(projectId)
@@ -434,31 +471,54 @@ onMounted(async () => {
     })).sort((a, b) => a.position - b.position)
 
     const taskRes = await taskStore.fetchTaskByProjectId(projectId)
-    const tasksCol = taskRes.data?.data?.items || []
+    allTasks.value = taskRes.data?.data?.items || []
 
-    tasksCol.forEach(task => {
-        if (!task.parentId) {
-            if (projectSprints.length > 0) {
-                // Scrum mode: show task only if its sprint is ACTIVE
-                if (task.sprintId && activeSprintIds.has(task.sprintId)) {
-                    const col = columns.value.find(c => c.id === task.columnId)
-                    if (col) col.tasks.push({ ...task })
-                }
-            } else {
-                // Kanban mode: show all tasks
-                const col = columns.value.find(c => c.id === task.columnId)
-                if (col) col.tasks.push({ ...task })
-            }
-        }
-    })
-
-
-    columns.value.forEach(col => col.tasks.sort((a, b) => a.position - b.position))
+    distributeTasksToColumns(allTasks.value)
 
     const memberRes = await projectStore.getAllMemberByProjectId(projectId)
     memberOfProject.value = memberRes?.data?.items.filter(member => member.status === 'ACTIVE')
     document.addEventListener('click', handleClickOutside)
 })
+
+// Watch activeFilters and includeUnassigned to apply filter
+watch([() => props.activeFilters, () => props.includeUnassigned], async ([newFilters, unassigned]) => {
+    const projectId = project.id
+    if (!projectId) return
+
+    const hasApiFilters = newFilters && newFilters.length > 0
+
+    if (hasApiFilters && !unassigned) {
+        // Only API filters
+        try {
+            const res = await taskStore.filterTasksByProjectId(projectId, newFilters)
+            const filteredTasks = res.data?.data || []
+            distributeTasksToColumns(filteredTasks)
+        } catch (e) {
+            console.error('Filter error:', e)
+        }
+    } else if (hasApiFilters && unassigned) {
+        // API filters + unassigned (merge results)
+        try {
+            const res = await taskStore.filterTasksByProjectId(projectId, newFilters)
+            const apiTasks = res.data?.data || []
+            const unassignedTasks = allTasks.value.filter(t => !t.assignee)
+            // Merge and deduplicate
+            const mergedMap = new Map()
+            apiTasks.forEach(t => mergedMap.set(t.id, t))
+            unassignedTasks.forEach(t => mergedMap.set(t.id, t))
+            distributeTasksToColumns(Array.from(mergedMap.values()))
+        } catch (e) {
+            console.error('Filter error:', e)
+        }
+    } else if (unassigned) {
+        // Only unassigned filter
+        const unassignedTasks = allTasks.value.filter(t => !t.assignee)
+        distributeTasksToColumns(unassignedTasks)
+    } else {
+        // No filters active, show all tasks
+        distributeTasksToColumns(allTasks.value)
+    }
+}, { deep: true })
 
 onBeforeUnmount(() => {
     document.removeEventListener('click', handleClickOutside)
