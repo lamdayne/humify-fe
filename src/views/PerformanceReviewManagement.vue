@@ -1713,7 +1713,7 @@ const loadCreateFormData = async () => {
                     [
                       "SYS_ADMIN",
                       "COMPANY_ADMIN",
-                      "MANAGER"
+                      "HR_MANAGER"
                     ].includes(role.name)
                 )
             );
