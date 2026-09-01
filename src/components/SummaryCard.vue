@@ -5,16 +5,18 @@
   >
     <div class="flex items-start justify-between gap-4">
 
-      <!-- CONTENT -->
-      <div>
-        <p class="text-sm font-medium text-slate-500">
-          {{ title }}
-        </p>
+      <!-- CONTENT --><div class="min-w-0">
+      <!-- Cố định vùng title đủ cho 2 dòng -->
+      <p
+          class="flex h-10 items-start text-sm font-medium leading-5 text-slate-500"
+      >
+        {{ title }}
+      </p>
 
-        <p class="mt-2 text-3xl font-bold tracking-tight text-slate-900">
-          {{ value ?? 0 }}
-        </p>
-      </div>
+      <p class="mt-1 text-3xl font-bold leading-none tracking-tight text-slate-900">
+        {{ value ?? 0 }}
+      </p>
+    </div>
 
       <!-- ICON -->
       <div
@@ -69,7 +71,21 @@
               d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a3 3 0 006 0M9 5a3 3 0 016 0m-6 8l2 2 4-4"
           />
         </svg>
-
+        <!-- PENDING -->
+        <svg
+            v-else-if="icon === 'pending'"
+            class="h-5 w-5"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+        >
+          <path
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              stroke-width="2"
+              d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
         <!-- COMPLETED -->
         <svg
             v-else-if="icon === 'completed'"
