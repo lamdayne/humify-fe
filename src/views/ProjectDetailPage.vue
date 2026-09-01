@@ -26,8 +26,9 @@
                 </button>
             </div>
 
-            <!-- Right Share Button -->
-            <div class="mr-2">
+            <!-- Right: Filter + Share Button -->
+            <div class="flex items-center gap-2 mr-2">
+                <TaskFilterPopover v-if="activeMainTab === 'board'" :members="memberOfProject" @filter-change="onFilterChange" />
                 <PrimaryButton content="Share" @click="showShareModal">
                     <template #icon>
                         <Plus class="w-4 h-4"></Plus>
@@ -38,7 +39,7 @@
 
         <!-- Main Content View Switcher -->
         <ProjectSummaryTab v-if="activeMainTab === 'summary'" :project-id="currentProject?.id" @switchTab="activeMainTab = $event" />
-        <BoardColumnPage v-else-if="activeMainTab === 'board'" />
+        <BoardColumnPage v-else-if="activeMainTab === 'board'" :activeFilters="activeFilters" :includeUnassigned="includeUnassigned" />
         <ProjectBacklogPage v-else-if="activeMainTab === 'backlog'" />
 
         <!-- Share Modal -->
@@ -166,6 +167,7 @@ import ToastMessage from '../components/ToastMessage.vue';
 import BoardColumnPage from './BoardColumnPage.vue';
 import ProjectBacklogPage from './ProjectBacklogPage.vue';
 import ProjectSummaryTab from '../components/project/ProjectSummaryTab.vue';
+import TaskFilterPopover from '../components/board/TaskFilterPopover.vue';
 import { useProject } from '../store/projectStore.js';
 import { useSprintStore } from '../store/sprintStore.js';
 
@@ -176,6 +178,13 @@ const sprintStore = useSprintStore();
 const activeMainTab = ref('summary');
 const currentProject = ref(null);
 const openShareModal = ref(false);
+const activeFilters = ref([]);
+const includeUnassigned = ref(false);
+
+const onFilterChange = (params, unassigned) => {
+    activeFilters.value = params;
+    includeUnassigned.value = unassigned;
+};
 const isTabActive = ref('members');
 const memberPendingApprove = ref([]);
 const memberOfProject = ref([]);

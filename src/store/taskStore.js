@@ -157,6 +157,17 @@ export const useTaskStore = defineStore('tasks', () => {
         }
     }
 
+    const filterTasksByProjectId = async (projectId, params = []) => {
+        try {
+            const queryString = params.map(p => `params=${encodeURIComponent(p)}`).join('&')
+            const url = `/projects/${projectId}/tasks/filter${queryString ? '?' + queryString : ''}`
+            const res = await axiosInstance.get(url)
+            return res
+        } catch (e) {
+            throw e
+        }
+    }
+
     return {
         fetchTaskByProjectId,
         createTask,
@@ -174,6 +185,7 @@ export const useTaskStore = defineStore('tasks', () => {
         getWorklogs,
         createWorklog,
         updateWorklog,
-        deleteWorklog
+        deleteWorklog,
+        filterTasksByProjectId
     }
 })
