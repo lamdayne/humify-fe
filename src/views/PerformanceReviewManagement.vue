@@ -487,7 +487,7 @@
 
                   <!-- Delete -->
                   <button
-                      v-if="review.status !== 'COMPLETED'"
+                      v-if="review.status === 'DRAFT'"
                       type="button"
                       @click="openDeleteConfirm(review)"
                       class="inline-flex items-center justify-center gap-2
