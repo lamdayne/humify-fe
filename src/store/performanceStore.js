@@ -314,6 +314,19 @@ export const usePerformanceStore = defineStore(
                 throw error;
             }
         };
+        const deleteReview = async (reviewId) => {
+            try {
+                return await axiosInstance.delete(
+                    `/performance-reviews/${reviewId}`
+                );
+            } catch (error) {
+                console.error(
+                    "Delete performance review error:",
+                    error
+                );
+                throw error;
+            }
+        };
         return {
             createReview,
             getReviews,
@@ -328,7 +341,8 @@ export const usePerformanceStore = defineStore(
             getKpiTemplates,
             createKpiTemplate,
             updateKpiTemplate,
-            deleteKpiTemplate
+            deleteKpiTemplate,
+            deleteReview
         };
     }
 );

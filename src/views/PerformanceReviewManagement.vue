@@ -483,19 +483,40 @@
                 </div>
 
 
-                <button
-                    @click="openDetail(review)"
-                    class="inline-flex items-center justify-center gap-2
-                           rounded-xl border border-slate-200
-                           px-4 py-2.5 text-sm font-semibold
-                           text-slate-700 transition
-                           hover:border-blue-200
-                           hover:bg-blue-50 hover:text-blue-600"
-                >
-                  View Details
+                <div class="flex items-center gap-2">
 
-                  <ChevronRight class="h-4 w-4"/>
-                </button>
+                  <!-- Delete -->
+                  <button
+                      v-if="review.status !== 'COMPLETED'"
+                      type="button"
+                      @click="openDeleteConfirm(review)"
+                      class="inline-flex items-center justify-center gap-2
+             rounded-xl border border-red-200
+             px-4 py-2.5 text-sm font-semibold
+             text-red-600 transition
+             hover:border-red-300 hover:bg-red-50"
+                  >
+                    <Trash2 class="h-4 w-4"/>
+                    Delete
+                  </button>
+
+                  <!-- View -->
+                  <button
+                      type="button"
+                      @click="openDetail(review)"
+                      class="inline-flex items-center justify-center gap-2
+             rounded-xl border border-slate-200
+             px-4 py-2.5 text-sm font-semibold
+             text-slate-700 transition
+             hover:border-blue-200
+             hover:bg-blue-50 hover:text-blue-600"
+                  >
+                    View Details
+
+                    <ChevronRight class="h-4 w-4"/>
+                  </button>
+
+                </div>
 
               </div>
 
@@ -1135,7 +1156,99 @@
             </div>
           </div>
         </Teleport>
+        <!-- ===================================================== -->
+        <!-- DELETE CONFIRM MODAL -->
+        <!-- ===================================================== -->
 
+        <Teleport to="body">
+          <div
+              v-if="showDeleteModal"
+              @click.self="closeDeleteConfirm"
+              class="fixed inset-0 z-[9999] flex items-center justify-center
+             bg-slate-950/60 p-4 backdrop-blur-md"
+          >
+            <div
+                class="flex max-h-[92vh] flex-col overflow-hidden
+               rounded-3xl bg-white
+               shadow-[0_25px_80px_rgba(15,23,42,0.3)]"
+                style="width: 100%; max-width: 720px;"
+            >
+              <!-- Content -->
+              <div class="p-6">
+
+                <div
+                    class="flex h-12 w-12 items-center justify-center
+                   rounded-xl bg-red-50 text-red-600"
+                >
+                  <Trash2 class="h-6 w-6"/>
+                </div>
+
+                <h2 class="mt-5 text-lg font-bold text-slate-900">
+                  Delete Performance Review?
+                </h2>
+
+                <p class="mt-2 text-sm leading-6 text-slate-500">
+                  Are you sure you want to delete the performance review for
+                  <strong class="font-semibold text-slate-700">
+                    {{
+                      reviewToDelete?.employeeName ||
+                      `Employee #${reviewToDelete?.employeeId}`
+                    }}
+                  </strong>?
+                </p>
+
+                <p class="mt-2 text-sm text-slate-500">
+                  This review will no longer appear in the performance review list.
+                </p>
+
+              </div>
+
+              <!-- Footer -->
+              <div
+                  class="flex justify-end gap-3 border-t border-slate-200
+                 bg-slate-50 px-6 py-4"
+              >
+                <button
+                    type="button"
+                    @click="closeDeleteConfirm"
+                    :disabled="deleting"
+                    class="rounded-xl border border-slate-300
+                   bg-white px-5 py-2.5
+                   text-sm font-semibold text-slate-700
+                   transition hover:bg-slate-50
+                   disabled:opacity-50"
+                >
+                  Cancel
+                </button>
+
+                <button
+                    type="button"
+                    @click="confirmDeleteReview"
+                    :disabled="deleting"
+                    class="inline-flex items-center justify-center gap-2
+                   rounded-xl bg-red-600 px-5 py-2.5
+                   text-sm font-semibold text-white
+                   transition hover:bg-red-700
+                   disabled:cursor-not-allowed
+                   disabled:opacity-50"
+                >
+                  <RefreshCw
+                      v-if="deleting"
+                      class="h-4 w-4 animate-spin"
+                  />
+
+                  <Trash2
+                      v-else
+                      class="h-4 w-4"
+                  />
+
+                  {{ deleting ? "Deleting..." : "Delete Review" }}
+                </button>
+              </div>
+
+            </div>
+          </div>
+        </Teleport>
       </div>
     </div>
   </MainContent>
@@ -1148,7 +1261,7 @@
 <script setup>
 import {onBeforeUnmount, onMounted, reactive, ref,} from "vue";
 
-import {ChevronRight, ClipboardCheck, Plus, RefreshCw,CircleX} from "@lucide/vue";
+import {ChevronRight, ClipboardCheck, Plus, RefreshCw,CircleX,Trash2} from "@lucide/vue";
 
 import MainContent from "../components/MainContent.vue";
 import ToastMessage from "../components/ToastMessage.vue";
@@ -1202,7 +1315,9 @@ const filterEmployeeRef = ref(null);
 
 let filterEmployeeSearchTimer = null;
 
-
+const showDeleteModal = ref(false);
+const reviewToDelete = ref(null);
+const deleting = ref(false);
 // =====================================================
 // FILTER
 // =====================================================
@@ -2139,6 +2254,68 @@ const formatDate = (value) => {
       parts;
 
   return `${day}/${month}/${year}`;
+};
+// =====================================================
+// DELETE REVIEW
+// =====================================================
+
+const openDeleteConfirm = (review) => {
+
+  if (!review?.id) {
+    return;
+  }
+
+  reviewToDelete.value = review;
+  showDeleteModal.value = true;
+};
+
+
+const closeDeleteConfirm = () => {
+
+  if (deleting.value) {
+    return;
+  }
+
+  showDeleteModal.value = false;
+  reviewToDelete.value = null;
+};
+
+
+const confirmDeleteReview = async () => {
+
+  if (!reviewToDelete.value?.id) {
+    return;
+  }
+
+  try {
+
+    deleting.value = true;
+
+    await performanceStore.deleteReview(
+        reviewToDelete.value.id
+    );
+
+    showDeleteModal.value = false;
+    reviewToDelete.value = null;
+
+    triggerToast(
+        "Performance review deleted successfully.",
+        "success"
+    );
+
+    await loadReviews();
+
+  } catch (error) {
+
+    handleApiError(
+        error,
+        "Failed to delete performance review."
+    );
+
+  } finally {
+
+    deleting.value = false;
+  }
 };
 
 
